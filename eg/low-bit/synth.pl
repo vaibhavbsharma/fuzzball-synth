@@ -6,8 +6,8 @@ use strict;
 srand($ARGV[0]);
 
 # Paths to binaries: these probably differ on your system
-my $fuzzball = "/home/smcc/bitblaze/fuzzball/trunk-gh/exec_utils/fuzzball";
-my $stp = "/home/smcc/bitblaze/fuzzball/trunk-gh/stp/stp";
+my $fuzzball = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh/exec_utils/fuzzball";
+my $stp = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh/stp/stp";
 
 my $bin = "./low-bit";
 
@@ -18,7 +18,7 @@ my $bin = "./low-bit";
 my $main_addr = "0x" . substr(`nm $bin | fgrep " T main"`, 0, 8);
 
 my($atoi_x_addr, $atoi_y_addr) =
-  map("0x0" . substr($_, 1, 7), `objdump -dr $bin | grep 'call.*atoi'`);
+  map("0x0" . substr($_, 1, 7), `objdump -dr $bin | grep 'call.*strtoul'`);
 
 my $fields_addr = "0x" . substr(`nm $bin | fgrep " B the_adaptor"`, 0, 8);
 
@@ -118,7 +118,7 @@ sub try_synth {
     my($testsr) = @_;
     open(TESTS, ">tests");
     for my $t (@$testsr) {
-	print TESTS $t->[0], " ", $t->[1], "\n";
+	printf TESTS "%x %x\n", $t->[0], $t->[1];
     }
     close TESTS;
     my @args = ($fuzzball, "-linux-syscalls", $bin,

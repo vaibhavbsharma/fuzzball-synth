@@ -33,17 +33,17 @@ struct adaptor {
    I used. */
 int f1_with_f2(struct adaptor *ap, int x, int y) {
     int a, b, c, d;
-    assert(!(ap->a_is_const & ~1));
-    assert(ap->a_is_const | !(ap->a_val & ~1));
+    /*assert(!(ap->a_is_const & ~1));*/
+    /*assert(ap->a_is_const | !(ap->a_val & ~1));*/
     a = ap->a_is_const ? ap->a_val : (ap->a_val ? y : x);
-    assert(!(ap->b_is_const & ~1));
-    assert(ap->b_is_const | !(ap->b_val & ~1));
+    /*assert(!(ap->b_is_const & ~1));*/
+    /*assert(ap->b_is_const | !(ap->b_val & ~1));*/
     b = ap->b_is_const ? ap->b_val : (ap->b_val ? y : x);
-    assert(!(ap->c_is_const & ~1));
-    assert(ap->c_is_const | !(ap->c_val & ~1));
+    /*assert(!(ap->c_is_const & ~1));*/
+    /*assert(ap->c_is_const | !(ap->c_val & ~1));*/
     c = ap->c_is_const ? ap->c_val : (ap->c_val ? y : x);
-    assert(!(ap->d_is_const & ~1));
-    assert(ap->d_is_const | !(ap->d_val & ~1));
+    /*assert(!(ap->d_is_const & ~1));*/
+    /*assert(ap->d_is_const | !(ap->d_val & ~1));*/
     d = ap->d_is_const ? ap->d_val : (ap->d_val ? y : x);
     return f2(a, b, c, d);
 }
@@ -135,8 +135,8 @@ int main(int argc, char **argv) {
 	   input, and print the results. If you explore this with x
 	   and y symbolic, you can check whether the adaptor works for
 	   all inputs. */
-	x = atoi(argv[1]);
-	y = atoi(argv[2]);
+	x = strtoul(argv[1], 0, 0);
+	y = strtoul(argv[2], 0, 0);
 	compare(x, y);
     } else {
 	/* Try a sequence of tests from a file. This is the mode to
@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
 		return 1;
 	    }
 	}
-	while (fscanf(fh, "%d %d", &x, &y) != EOF) {
+	while (fscanf(fh, "%x %x", &x, &y) != EOF) {
 	    compare(x, y);
 	}
 	printf("All tests succeeded!\n");
