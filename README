@@ -1,0 +1,10 @@
+This directory contains materials related to using the binary-level
+symbolic execution tool FuzzBALL to search for adaptors that show the
+equivalence between binary code fragments. FuzzBALL itself is not
+included; it is an open-source project available at:
+
+https://github.com/bitblaze-fuzzball/fuzzball
+
+We have not yet build a general-purpose tool: the "eg" directory
+contains examples of applying FuzzBALL in this style to specific
+examples.

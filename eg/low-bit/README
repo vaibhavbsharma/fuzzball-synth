@@ -1,0 +1,30 @@
+This directory contains an example of how to use the binary-level
+symbolic execution tool FuzzBALL to search for adaptors that show the
+equivalence between binary code fragments. The two functions,
+appearing as "f1" and "f2" in the source file low-bit.c, perform
+arithmetic and bitwise operations that might initially appear
+different. But the system can systematically search through a space of
+possible adaption code, in this case filling each parameter of f2
+either with one of the parameters of f1 (duplication allowed), or with
+a constant value. This allows the system to discover that f2 can be
+used to implement functionality equivalent to f1, by passing the first
+argument "x" of f1 as both the first two parameters "a" and "b" of f2,
+passing "y" and "c", and passing the constant value 1 for "d".
+
+The system performs this search by developing a set of test cases that
+exercise the behavior and distinguish between correct and incorrect
+adaptors. At each step, the algorithm first searches for an adaptor
+that is makes the output of the functions equivalent across the
+current set of test inputs. Then it fixes that adaptor and searches to
+see if there is a test input that demonstrates the adapted function to
+have different behavior (a "counterexample"). If so, it adds that to
+the set of test cases and continues.
+
+In this example, the two functions have been wrapped with support code
+into a standalone program, which can be compiled from the source code
+provided. Then "synth.pl" implements the search process as a loop that
+repeatedly calls the FuzzBALL tool. The program should be compiled in
+32-bit mode (e.g., with the -m32 option to GCC), and the top of
+synth.pl should be modified to reflect the correct paths to the
+"fuzzball" and "stp" binaries used.
+
