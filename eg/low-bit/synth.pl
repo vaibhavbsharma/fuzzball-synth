@@ -5,9 +5,26 @@ use strict;
 # Only script argument is a random seed, to see new behavior
 srand($ARGV[0]);
 
-# Paths to binaries: these probably differ on your system
-my $fuzzball = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh/exec_utils/fuzzball";
-my $stp = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh/stp/stp";
+# Paths to binaries: these probably differ on your system. You can add
+# your locations to the list, or set the environment variable.
+my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
+my $fuzzball;
+if (exists $ENV{FUZZBALL_LOC}) {
+    $fuzzball = $ENV{FUZZBALL_LOC};
+} elsif (-x "$smcc_umn/exec_utils/fuzzball") {
+    $fuzzball = "$smcc_umn/exec_utils/fuzzball";
+} else {
+    $fuzzball = "fuzzball";
+}
+
+my $stp;
+if (exists $ENV{STP_LOC}) {
+    $stp = $ENV{STP_LOC};
+} elsif (-x "$smcc_umn/stp/stp") {
+    $stp = "$smcc_umn/stp/stp";
+} else {
+    $stp = "stp";
+}
 
 my $bin = "./low-bit";
 
@@ -21,6 +38,9 @@ my($atoi_x_addr, $atoi_y_addr) =
   map("0x0" . substr($_, 1, 7), `objdump -dr $bin | grep 'call.*strtoul'`);
 
 my $fields_addr = "0x" . substr(`nm $bin | fgrep " B the_adaptor"`, 0, 8);
+
+my $match_jne_addr =
+  "0x" . substr(`objdump -dr $bin | grep 'jne.*compare+'`, 1, 7);
 
 # An adaptor is represented by a C struct, whose structure we
 # reproduce here.
@@ -72,6 +92,7 @@ sub check_adaptor {
 		@solver_opts, "-fuzz-start-addr", $main_addr,
 		"-skip-call-ret-symbol-once", "$atoi_x_addr=x",
 		"-skip-call-ret-symbol-once", "$atoi_y_addr=y",
+		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, "0", "0");
@@ -125,6 +146,8 @@ sub try_synth {
 		@solver_opts, "-fuzz-start-addr", $main_addr,
 		@sym_field_opts,
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
+		"-branch-preference", "$match_jne_addr:1",
+		#"-trace-conditions", "-trace-temps", "-omit-pf-af",
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, "tests");
     open(LOG, "-|", @args);
@@ -144,7 +167,7 @@ sub try_synth {
 	    print "  $_";
 	    last;
 	}
-	print "  $_";
+	print "  $_" unless /^Input vars:/;
     }
     close LOG;
     if (!$success) {

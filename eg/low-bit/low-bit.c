@@ -4,6 +4,38 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef EG2
+/* Not equivalent, note signed modulo */
+int f1(int x, int y) {
+    return (x << 1) | (y % 2);
+}
+
+int f2(int a, int b, int c, int d) {
+    return a + b + (c & d);
+}
+#elif defined(EG3)
+/* A weird-bit-operation example that's more like synthesis, figuring
+   out constants for a fast implementation of population count. One
+   adaptor is 0,00000000,1,55555555,1,33333333,1,0f0f0f0f */
+int f1(unsigned x, int unused) {
+    int count = 0, i;
+    for (i = 0; i < 32; i++) {
+	count += (x & 1);
+	x >>= 1;
+    }
+    return count;
+}
+
+int f2(unsigned x, int c1, int c2, int c3) {
+    x = x - ((x >> 1) & c1);
+    x = (x & c2) + ((x >> 2) & c2);
+    x = (x + (x >> 4)) & c3;
+    x += x >> 8;
+    x += x >> 16;
+    return x & 0x3f;
+}
+#else
+/* Equivalent with 0,00000000,0,00000000,0,00000001,1,00000001 */
 int f1(int x, unsigned y) {
     return (x << 1) | (y % 2);
 }
@@ -11,6 +43,7 @@ int f1(int x, unsigned y) {
 int f2(int a, int b, int c, int d) {
     return a + b + (c & d);
 }
+#endif
 
 /* Values assigned to this structure represent an adaptor. */
 struct adaptor {
@@ -24,6 +57,20 @@ struct adaptor {
     int d_val;
 } the_adaptor;
 
+/* The real implementation of wrap_2_to_4 is in wrap.S, written in
+   assembly to be sure it does not include branches (which would slow
+   down symbolic execution). But that code should be functionally
+   equivalent to the following: */
+int wrap_2_to_4_c(struct adaptor *ap, int (*f)(int, int, int, int),
+		  int x, int y) {
+    int a, b, c, d;
+    a = ap->a_is_const ? ap->a_val : (ap->a_val ? y : x);
+    b = ap->b_is_const ? ap->b_val : (ap->b_val ? y : x);
+    c = ap->c_is_const ? ap->c_val : (ap->c_val ? y : x);
+    d = ap->d_is_const ? ap->d_val : (ap->d_val ? y : x);
+    return (*f)(a, b, c, d);
+}
+
 /* Adapted implementation of f1 using f2. Removing the assertions
    would make this faster, but if we don't check somewhere that the
    values are sensible, the search may generate non-sensible adaptors.
@@ -32,20 +79,7 @@ struct adaptor {
    doesn't oblige in compiling them that way with the default settings
    I used. */
 int f1_with_f2(struct adaptor *ap, int x, int y) {
-    int a, b, c, d;
-    /*assert(!(ap->a_is_const & ~1));*/
-    /*assert(ap->a_is_const | !(ap->a_val & ~1));*/
-    a = ap->a_is_const ? ap->a_val : (ap->a_val ? y : x);
-    /*assert(!(ap->b_is_const & ~1));*/
-    /*assert(ap->b_is_const | !(ap->b_val & ~1));*/
-    b = ap->b_is_const ? ap->b_val : (ap->b_val ? y : x);
-    /*assert(!(ap->c_is_const & ~1));*/
-    /*assert(ap->c_is_const | !(ap->c_val & ~1));*/
-    c = ap->c_is_const ? ap->c_val : (ap->c_val ? y : x);
-    /*assert(!(ap->d_is_const & ~1));*/
-    /*assert(ap->d_is_const | !(ap->d_val & ~1));*/
-    d = ap->d_is_const ? ap->d_val : (ap->d_val ? y : x);
-    return f2(a, b, c, d);
+    return wrap_2_to_4(ap, f2, x, y);
 }
 
 /* An adaptor can be represented in ASCII as a comma-seperated
