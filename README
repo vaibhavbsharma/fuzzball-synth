@@ -1,15 +1,23 @@
 Code in this directory was authored by the University of Minnesota. 
 
-University of Minnesota Proprietary Information per CFAR ACA.Copyright © 2015, University of MinnesotaUniversity of Minnesota’s development of non-commercial software is provided to the Government with Unlimited Rights under the terms of the contract.
-
+University of Minnesota Proprietary Information per CFAR ACA.
+Copyright (C) 2015, University of Minnesota
+University of Minnesota's development of non-commercial software is
+provided to the Government with Unlimited Rights under the terms of
+the contract.
 
 This directory contains materials related to using the binary-level
 symbolic execution tool FuzzBALL to search for adaptors that show the
 equivalence between binary code fragments. FuzzBALL itself is not
-included; it is an open-source project available at:
+included in this directory; there is a suitable branched version of it
+in
 
-https://github.com/bitblaze-fuzzball/fuzzball
+  ../../tools/fuzzball
 
-We have not yet build a general-purpose tool: the "eg" directory
+and you can also see the public upstream version at
+
+  https://github.com/bitblaze-fuzzball/fuzzball
+
+We don't yet have a end-to-end automated tool: the "eg" directory
 contains examples of applying FuzzBALL in this style to specific
 examples.
