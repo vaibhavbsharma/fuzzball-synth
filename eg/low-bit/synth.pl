@@ -8,11 +8,14 @@ srand($ARGV[0]);
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
 my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
+my $smcc_home = "/home/smcc/bitblaze/fuzzball/trunk-gh";
 my $fuzzball;
 if (exists $ENV{FUZZBALL_LOC}) {
     $fuzzball = $ENV{FUZZBALL_LOC};
 } elsif (-x "$smcc_umn/exec_utils/fuzzball") {
     $fuzzball = "$smcc_umn/exec_utils/fuzzball";
+} elsif (-x "$smcc_home/exec_utils/fuzzball") {
+    $fuzzball = "$smcc_home/exec_utils/fuzzball";
 } else {
     $fuzzball = "fuzzball";
 }
@@ -22,6 +25,8 @@ if (exists $ENV{STP_LOC}) {
     $stp = $ENV{STP_LOC};
 } elsif (-x "$smcc_umn/stp/stp") {
     $stp = "$smcc_umn/stp/stp";
+} elsif (-x "$smcc_home/stp/stp") {
+    $stp = "$smcc_home/stp/stp";
 } else {
     $stp = "stp";
 }
@@ -32,15 +37,15 @@ my $bin = "./low-bit";
 # matching the output of "nm" and "objdump". Not the most robust
 # possible approach.
 
-my $main_addr = "0x" . substr(`nm $bin | fgrep " T main"`, 0, 8);
+my $main_addr = "0x" . substr(`nm $bin | fgrep " T main"`, 0, 16);
 
 my($atoi_x_addr, $atoi_y_addr) =
-  map("0x0" . substr($_, 1, 7), `objdump -dr $bin | grep 'call.*strtoul'`);
+  map("0x" . substr($_, 2, 6), `objdump -dr $bin | grep 'call.*strtoul'`);
 
-my $fields_addr = "0x" . substr(`nm $bin | fgrep " B the_adaptor"`, 0, 8);
+my $fields_addr = "0x" . substr(`nm $bin | fgrep " B the_adaptor"`, 0, 16);
 
 my $match_jne_addr =
-  "0x" . substr(`objdump -dr $bin | grep 'jne.*compare+'`, 1, 7);
+  "0x" . substr(`objdump -dr $bin | grep 'jne.*compare+'`, 2, 6);
 
 # An adaptor is represented by a C struct, whose structure we
 # reproduce here.
@@ -88,7 +93,8 @@ for my $fr (@fields) {
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
     my($adapt) = @_;
-    my @args = ($fuzzball, "-linux-syscalls", $bin, "-env", "ADAPTOR=$adapt",
+    my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
+		$bin, "-env", "ADAPTOR=$adapt",
 		@solver_opts, "-fuzz-start-addr", $main_addr,
 		"-skip-call-ret-symbol-once", "$atoi_x_addr=x",
 		"-skip-call-ret-symbol-once", "$atoi_y_addr=y",
@@ -142,7 +148,7 @@ sub try_synth {
 	printf TESTS "%x %x\n", $t->[0], $t->[1];
     }
     close TESTS;
-    my @args = ($fuzzball, "-linux-syscalls", $bin,
+    my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, "-fuzz-start-addr", $main_addr,
 		@sym_field_opts,
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",

@@ -1,2 +1,7 @@
 low-bit
 tests
+synth
+synth.cmi
+synth.cmo
+synth.cmx
+synth.o
