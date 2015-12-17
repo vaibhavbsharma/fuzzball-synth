@@ -1,0 +1,85 @@
+This directory contains an example of multiple versions of C code that
+attempt to convert a filename into a DOS-like uppercase 8+3 character
+version, but which suffer from security vulnerabilities. To start this
+is an example of how FuzzBALL can search for whether a single attack
+input can exploit multiple variants; in the future we might also do
+equivalence checking or adaptor synthesis.
+
+Note that I (SMcC) have not finished polishing this example to the
+point where it runs reliably on different machines; before I set it
+aside I also think there was a problem where the attack would occasionally
+overwrite local variables and make the program and FuzzBALL go into
+an infinite loop. So you might think of it just as an example to read
+for now.
+
+dossify1 and dossify2 have the same interface: they take a
+null-terminated input string as the first argument, and a pointer to a
+13-or-more character output buffer as the second argument. The two
+implementations take slightly different approaches to converting the
+characters to upper case and truncating the base filename and
+extension, but both suffer from stack buffer overflow
+vulnerabilities.
+
+To make a fairly realistic example of return-address overwrite while
+still letting both functions execute, the program is set up to run
+them on the same input, but they use longjmp() to jump back to the
+main function even if their normal return address has been corrupted.
+For FuzzBALL's convenience, we've also created an global variable for
+the input which is used if no command-line argument is supplied. And
+I've written a branch and table-free implementation of toupper() to
+reduce state-space explosion.
+
+Further, to make this an example of multiple attacks, we've added a
+notional target function named shellcode() which we imagine is the
+address that the attacker want to overwrite the return address
+with. There are assertions at the end of both functions which will
+fail unless the return address has been properly overwritten for an
+attack; thus the program will only complete successfully if the same
+input exploits both implementations.
+
+There are some addresses from the binary that FuzzBALL needs to be
+configured with (for the example to run at all or to speed it up), so
+for convenience I've checked in a binary that matches up with a
+particular example command line. An explanation of the options:
+
+  -linux-syscalls
+  Simulate a complete Linux binary
+
+  -trace-iterations -trace-stopping
+  Print the number of each path explored along with the reason it
+  stopped.
+  
+  -trace-assigns-string -solve-final-pc
+  Print a sample input that would trigger each execution path, as an
+  escaped string. The last one printed in each iteration will be the
+  one that triggers that particular path.
+
+  -solver smtlib -stp-path .../stp
+  In brief testing this example runs faster with STP than with Z3
+
+  -symbolic-region 0x0804a060+59
+  Make the "input" global variable (c.f. "nm dossify | fgrep input")
+  hold 59 bytes of symbolic data (the 60th byte will be concrete and
+  null).
+
+  -fuzz-start-addr 0x80488fd
+  Start each exploration path at the entry point of the main function
+  (c.f. "nm dossify | fgrep main"), so that any computation before
+  that point does not need to be repeated.
+
+  -disqualify-addr 0x080484d0
+  Stop each execution path as soon as __assert_fail (c.f. "objdump -d
+  dossify | fgrep assert_fail") is called, so as to not bother with
+  the I/O work of actually printing the failure message.
+
+  ./dossify -- ./dossify
+  Run the binary "./dossify" as if it were called with the command
+  line "./dossify", with no extra command-line options.
+
+For instance on my machine the complete command looks like:
+
+~/bitblaze/fuzzball/trunk-gh/exec_utils/fuzzball -trace-iterations -linux-syscalls -fuzz-start-addr 0x80488fd -symbolic-region 0x0804a060+59 -trace-assigns-string -disqualify-addr 0x080484d0 -solve-final-pc -trace-stopping -solver smtlib -stp-path ~/bitblaze/fuzzball/trunk-gh/stp/stp ./dossify -- ./dossify
+
+The default non-null character the solver picks is usually \0x01, but
+any non-dot character is mostly equivalent, so you can make the output
+a bit more readable by piping it through "perl -pe 's/\\x01/x/g'".
