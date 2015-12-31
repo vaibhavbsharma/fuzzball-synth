@@ -42,7 +42,7 @@ int ispalindrome(const char *bufferIn, size_t bufferInLen)
     memset(string, 0, sizeof(string));
 
     // Strip bad ending characters and store in string
-    end = my_memchr(bufferIn, '\n', bufferInLen);
+    end = my_memchr(bufferIn, '\t', bufferInLen);
     if (end == NULL)
         end = my_strchr(bufferIn, '\0');
     len = end-bufferIn;
@@ -59,12 +59,14 @@ int ispalindrome(const char *bufferIn, size_t bufferInLen)
     return pal;
 }
 
-int ispalindrome_strlen(const char *s) {
+int f1(const char *s) {
+//int ispalindrome_strlen(const char *s) {
     return ispalindrome(s, my_strlen(s));
 }
 
 /* http://stackoverflow.com/questions/16946115/reversing-a-string-with-strrev-c*/
-int ispal(const char *s)
+int f2(const char *s)
+//int ispal(const char *s)
 {
     const char *p = s + my_strlen(s) - 1;
     while (s < p)
@@ -89,24 +91,13 @@ int wrap_tr(struct adaptor *ap, int (*f)(const char *), const char *s) {
     return f(buf);
 }
 
-#define is_hex(c) (((c) - '0' < 10u) | ((c) - 'a' < 6u))
-#define parse_hex(c) (((c) - '0' < 10u) ? (c) - '0' : (c) - 'a' + 10)
-
-void parse_adaptor(struct adaptor *ap, char *s) {
-    int i;
-    for (i = 0; i < 256; i++) {
-	assert(is_hex(s[3*i]));
-	assert(is_hex(s[3*i + 1]));
-	ap->table[i] = parse_hex(s[3*i]) << 4 | parse_hex(s[3*i + 1]);
-	if (i < 255)
-	    assert(s[3*i + 2] == ',');
-    }
-}
-
 void compare(char *s) {
     int r1, r2;
-    r1 = ispalindrome_strlen(s);
-    r2 = wrap_tr(&the_adaptor, ispal, s);
+    r1 = f1(s);
+    //r1 = ispalindrome_strlen(s);
+    r2 = f1(s);
+    //r2 = ispalindrome_strlen(s);
+    //r2 = wrap_tr(&the_adaptor, ispal, s);
     if (r1 == r2) {
         /* printf("Match, both give %d\n", r1); */
         printf("Match\n");
@@ -121,13 +112,11 @@ char the_input[64];
 
 int main(int argc, char **argv) {
     char buf[64];
-    if (argv[1][0] == 'c' && argc == 4) {
-	parse_adaptor(&the_adaptor, argv[2]);
-	strncpy(the_input, argv[3], 64);
+    if (argv[1][0] == 'c' && argc == 3) {
+      strncpy(the_input, argv[3], 64);
 	the_input[63] = 0;
 	compare(the_input);
-    } else if (argv[1][0] == 's' && argc == 3) {
-	parse_adaptor(&the_adaptor, argv[2]);
+    } else if (argv[1][0] == 's' && argc == 2) {
 	the_input[63] = 0;
 	compare(the_input);
     } else if (argv[1][0] == 'f' && argc == 3) {
