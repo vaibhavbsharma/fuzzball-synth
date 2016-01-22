@@ -11,13 +11,17 @@
 #define A1
 
 /*
-// distributive law: equivalent with x=(a*b) and y=(a*c)
-int f1(int a, int b, int c) {
-    return a * (b + c);
+// absolute value: equivalent with x = (a ^ (a >> 31)) - (a >> 31)
+// - but the synthesized adaptor might look more like: x = (a / (a >> (-1 & 31))),
+//   which is the same as (a / 1) when a is positive and (a / -1) when a is negative
+//   because of how division is implemented in the arithmetic adaptor
+int f1(int a) {
+    return abs(a);
 }
-int f2(int x, int y) {
-    return x + y;
-}*/
+int f2(int x) {
+    return x;
+}
+*/
 
 // turn off the rightmost 1 bit: equivalent with x = a & (a-1)
 int f1(int a) {
@@ -37,6 +41,7 @@ int f1(int a) {
 int f2(int x) {
     return x;
 }
+
 
 /* Compare the results of the two functions; note that the second call to f1()
    will be replaced by a call to f2() by FuzzBALL */
