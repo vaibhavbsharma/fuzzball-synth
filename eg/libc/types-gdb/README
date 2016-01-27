@@ -1,0 +1,12 @@
+This directory currently has the results of an attempt to enumerate
+the public functions in the Ubuntu 14.04 version of glibc 2.19, and
+determine their types according to GDB. This was a partially-automated
+approach where I enumerated function names from the output of "nm",
+then checked which functions were documented and/or declared in header
+files by trying to get that program to compile. Then I printed the
+function types using GDB's "ptype" command with a script. "longjmp"
+crashes before reaching the first line so I did it manually. The
+results are types.out, containing 1400 functions. One disadvantage
+clear from this technique is that it does not give useful types for
+functions that are implemented in assembly language, like most syscall
+wrappers. Also the types would still not be trivial to parse.
