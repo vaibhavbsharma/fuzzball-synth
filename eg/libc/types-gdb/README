@@ -10,3 +10,11 @@ results are types.out, containing 1400 functions. One disadvantage
 clear from this technique is that it does not give useful types for
 functions that are implemented in assembly language, like most syscall
 wrappers. Also the types would still not be trivial to parse.
+
+I then took a second try by using the same C code from the first
+attempt, but using Clang to parse it and get source-level types.
+Luckily it seems like it was enough to parse the output of the Clang
+"-Xclang -ast-dump" option instead of writing C++ code. The results of
+this are in clang-types.out, where I've also tried to count the number
+of arguments (with a "+" for varargs functions).
+
