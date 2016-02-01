@@ -33,6 +33,8 @@ for my $i (0 .. $#names) {
     my $num_args;
     if ($top =~ /\.\.\./) {
 	$num_args = "$commas+";
+    } elsif ($top =~ /\(void\)/) {
+	$num_args = 0;
     } else {
 	$num_args = $commas + 1;
     }
