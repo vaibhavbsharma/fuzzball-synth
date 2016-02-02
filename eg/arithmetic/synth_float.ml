@@ -1,5 +1,6 @@
 (* usage: synth.ml <bin> <# outer args> <# inner args> <rand. seed>
-   Note that the FUZZBALL_LOC and STP_LOC enviroment variables need to be set *)
+   Note that the FUZZBALL_LOC and Z3_LOC/MATHSAT_LOC enviroment variables 
+   need to be set *)
 
 open Printf
 #load "str.cma"  (* used for regular expressions *)
@@ -31,12 +32,11 @@ let _ =
 
 (* default adaptor has all values set to 0 *)
 let create_adapt num_args =
-  let tree_depth = 3 in (* hardcoded for now *)
+  let tree_depth = 2 in (* hardcoded for now *)
   let rec create_tree d base var_name = 
     if d > 0
     then ["-extra-condition " ^ (var_name ^ "_type_" ^ base) ^ ":reg8_t==0:reg8_t";
-          "-extra-condition " ^ (var_name ^ "_val_" ^ base) ^ ":reg32_t==0:reg32_t"]
-          (*** "-extra-condition " ^ (var_name ^ "_val_" ^ base) ^ ":reg64_t==0:reg64_t"] ***)
+          "-extra-condition " ^ (var_name ^ "_val_" ^ base) ^ ":reg64_t==0:reg64_t"]
          @ (create_tree (d-1) (base ^ "0") var_name)
          @ (create_tree (d-1) (base ^ "1") var_name)
     else [] in
@@ -56,8 +56,7 @@ let tests = ref [] (* will be a list of lists *)
    print out the current set of tests *)
 let print_tests () = 
   List.iter 
-    (fun test -> List.iter (fun el -> printf "%x %!" el) test; printf "\n%!") 
-    (***(fun test -> List.iter (fun el -> printf "%Lx %!" el) test; printf "\n%!") ***)
+    (fun test -> List.iter (fun el -> printf "%.8f %!" el) test; printf "\n%!") 
     !tests
   
 (* print_adaptor : () -> ()
@@ -93,26 +92,28 @@ let fuzzball =
   try Sys.getenv "FUZZBALL_LOC" 
   with Not_found -> failwith "Set the location of fuzzball with 'export FUZZBALL_LOC=...'"
 
-let stp =
-  try Sys.getenv "STP_LOC" 
-  with Not_found -> failwith "Set the location of stp with 'export STP_LOC=...'"
+let solver =
+  try Sys.getenv "MATHSAT_LOC" 
+  with Not_found -> 
+    try Sys.getenv "Z3_LOC"
+        with Not_found -> 
+          failwith "Set the location of the solver with 'export <SOLVER>_LOC=...'"
 
 let main_addr = 
   match syscall ("nm " ^ bin ^ " | fgrep ' T main'") with
-  | [str] -> "0x" ^ String.sub str 0 8
-  (*| [str] -> "0x" ^ String.sub str 0 16*)
+  | [str] -> "0x" ^ String.sub str 0 16
   | _ -> failwith "Unexpected main address format"
 
-let input_addr =
+let symbolic_input =
+  (* note: this assumes that the values we want to make symbolic have single
+           character variable names; not great error handling here... *)
   let rec loop l n =
-    match l with
-    | [] -> (if n <> outer_nargs 
-             then printf "Unexpected number of strtoul calls; something may have gone wrong\n%!" 
-             else ()); []
-    | (h::t) -> let x = String.make 1 (Char.chr ((Char.code 'a') + n)) in
-                ("-skip-call-ret-symbol-once 0x0" ^ (String.sub h 2 6) ^ "=" ^ x)
-                :: (loop t (n+1))
-  in loop (syscall ("objdump -dr " ^ bin ^ " | grep 'call.*strtoul'")) 0
+    if n = outer_nargs
+    then []
+    else let x = String.make 1 (Char.chr ((Char.code 'a') + n)) in
+         ("-symbolic-long 0x0" ^ (String.sub (List.hd l) 0 16) ^ "=" ^ x) 
+           :: (loop (List.tl l) (n+1))
+  in loop (syscall ("nm " ^ bin ^ " | grep ' B [a-z]$'")) 0
 
 let outer_call_addr =
   match syscall ("objdump -dr " ^ bin ^ " | grep 'call.*f1'") with
@@ -121,8 +122,7 @@ let outer_call_addr =
 
 let inner_func_addr = 
   match syscall ("nm " ^ bin ^ " | fgrep ' T f2'") with
-  | [str] -> "0x" ^ String.sub str 0 8
-  (*| [str] -> "0x" ^ String.sub str 0 16*)
+  | [str] -> "0x" ^ String.sub str 0 16
   | _ -> failwith "Unexpected inner function format"
 
 let match_jne_addr =
@@ -130,15 +130,14 @@ let match_jne_addr =
   | [str] -> "0x" ^ String.sub str 2 6
   | _ -> failwith "Unexpected jne address format"
 
-let solver_opts = ["-solver"; "smtlib"; "-solver-path"; stp]
+let solver_opts = ["-solver smtlib"; "-solver-path"; solver]
 
 let fields = 
-  let tree_depth = 3 in (* hardcoded for now *)
+  let tree_depth = 2 in (* hardcoded for now *)
   let rec create_tree d base var_name =
     if d > 0
-    then [(var_name ^ "_type_" ^ base, 8, format_of_string "%01x");
-          (var_name ^ "_val_" ^ base, 32, format_of_string "%04x")]
-          (***(var_name ^ "_val_" ^ base, 64, format_of_string "%L08x")]***)
+    then [(var_name ^ "_type_" ^ base, 8);
+          (var_name ^ "_val_" ^ base, 64)]
          @ (create_tree (d-1) (base ^ "0") var_name)
          @ (create_tree (d-1) (base ^ "1") var_name)
     else [] in
@@ -156,21 +155,20 @@ let check_adaptor () =
   let cmd = [fuzzball; "-linux-syscalls"; bin]
             @ solver_opts @ ["-arch";"x64"]
             @ ["-fuzz-start-addr"; main_addr]
-            @ input_addr
+            @ symbolic_input
             @ ["-branch-preference"; match_jne_addr ^ ":0";
                "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
                "-synthesize-adaptor"; 
-               "arithmetic_int:" ^
+               "arithmetic_float:" ^
                outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^
                inner_func_addr ^ ":" ^ (string_of_int inner_nargs)]
             @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
             @ ["-zero-memory";
                "-random-seed"; string_of_int (Random.int 10000000); 
-               "--"; bin]
-            @ Array.to_list (Array.make outer_nargs "0") in
+               "--"; bin]  in
+  let _ = printf "%s\n%!" (String.concat " " cmd) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
-  let ce = ref (Array.make outer_nargs 0) in
-  (*** let ce = ref (Array.make outer_nargs 0L) in ***)
+  let ce = ref (Array.make outer_nargs 0.0) in
   (* read_results : string list -> (int * int) -> bool -> (bool * (int * int))
      read through the results of the call to FuzzBALL keeping track of
      the number of matches and mismatches, and record a counterexample
@@ -189,8 +187,9 @@ let check_adaptor () =
             (fun v ->
                if (match_regex v "^.=0x[0-9a-f]+$")
                then let idx = (Char.code (String.get v 0)) - (Char.code 'a') in
-                    (***let value = Int64.of_string (String.sub v 2 ((String.length v) - 2)) in***)
-                    let value = int_of_string (String.sub v 2 ((String.length v) - 2)) in
+                    let value = Int64.float_of_bits 
+                                  (Int64.of_string 
+                                    (String.sub v 2 ((String.length v) - 2))) in
                     Array.set !ce idx value
                else ())
             (Str.split (Str.regexp " ") line);
@@ -213,8 +212,7 @@ let try_synth () =
   let test_str = String.concat "\n"  
                    (List.map 
                      (fun test -> String.concat " " 
-                                    (***(List.map (fun el -> sprintf "%Lx" el) test)) ***)
-                                    (List.map (fun el -> sprintf "%x" el) test)) 
+                                    (List.map (fun el -> sprintf "%.8f" el) test)) 
                      !tests) in
   let testc = open_out "tests" in
   let _ = output_string testc test_str in
@@ -224,13 +222,14 @@ let try_synth () =
             @ ["-fuzz-start-addr"; main_addr]
             @ ["-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
                "-synthesize-adaptor"; 
-               "arithmetic_int:" ^
+               "arithmetic_float:" ^
                outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^ 
                inner_func_addr ^ ":" ^ (string_of_int inner_nargs); 
                "-branch-preference"; match_jne_addr ^ ":1";
                "-zero-memory";
                "-random-seed"; string_of_int (Random.int 10000000);
                "--"; bin; "-f tests"] in
+  let _ = printf "%s\n%!" (String.concat " " cmd) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
   (* read_results : string list -> bool -> string
      read through the results of the call to FuzzBALL looking for a case
@@ -253,8 +252,7 @@ let try_synth () =
                if (match_regex v "^.*=0x[0-9a-f]+$")
                then match Str.split (Str.regexp "=") v with
                     | name::value::[] -> 
-                        (*** specified_vals := (name, Int64.of_string value) :: !specified_vals ***)
-                        specified_vals := (name, int_of_string value) :: !specified_vals
+                        specified_vals := (name, Int64.of_string value) :: !specified_vals
                     | _ -> failwith "Parse failure on variable assignment"
                else if (match_regex v "^Input$\\|^vars:$") 
                     then () 
@@ -265,13 +263,11 @@ let try_synth () =
                        | (k',v)::t -> if k = k' then Some v else getval t k in
           let new_adaptor = ref [] in
           List.iter 
-            (fun (name, size, fmt) -> 
+            (fun (name, size) -> 
                let v = match getval !specified_vals name with 
-                       | None -> 0 | Some v -> v in
-                       (***| None -> 0L | Some v -> v in***)
+                       | None -> 0L | Some v -> v in
                new_adaptor := !new_adaptor @
-                 [sprintf "-extra-condition %s:reg%d_t==0x%x:reg%d_t"
-                 (***"-extra-condition %s:reg%d_t==0x%Lx:reg%d_t"***)
+                 [sprintf "-extra-condition %s:reg%d_t==0x%Lx:reg%d_t"
                     name size v size])
             fields;
           (* after finding a suitable adaptor, we are done *)
@@ -299,8 +295,7 @@ let rec main () =
       print_adaptor ();
   | (_, test) -> (* we need to synthesize a new adaptor *)
       printf "Adding test: %!";
-      List.iter (Printf.printf "%d %!") test;
-      (***List.iter (Printf.printf "%Ld %!") test;***)
+      List.iter (Printf.printf "%.8f %!") test;
       printf "\n";
       tests := !tests @ [test];
       adapt := try_synth ();
@@ -309,7 +304,8 @@ let rec main () =
       main () (* repeat *)
 ;;
 
-main ();;      
+main ();;
+ 
 
 
   
