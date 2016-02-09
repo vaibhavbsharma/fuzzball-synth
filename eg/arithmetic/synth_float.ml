@@ -125,12 +125,12 @@ let inner_func_addr =
   | [str] -> "0x" ^ String.sub str 0 16
   | _ -> failwith "Unexpected inner function format"
 
-let match_jne_addr =
+(*let match_jne_addr =
   match syscall ("objdump -dr " ^ bin ^ " | grep 'jne.*compare+'") with
   | [str] -> "0x" ^ String.sub str 2 6
-  | _ -> failwith "Unexpected jne address format"
+  | _ -> failwith "Unexpected jne address format"*)
 
-let solver_opts = ["-solver smtlib"; "-solver-path"; solver]
+let solver_opts = ["-solver smtlib-batch"; "-solver-path"; solver]
 
 let fields = 
   let tree_depth = 2 in (* hardcoded for now *)
@@ -156,7 +156,7 @@ let check_adaptor () =
             @ solver_opts @ ["-arch";"x64"]
             @ ["-fuzz-start-addr"; main_addr]
             @ symbolic_input
-            @ ["-branch-preference"; match_jne_addr ^ ":0";
+            @ [(*"-branch-preference"; match_jne_addr ^ ":0";*)
                "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
                "-synthesize-adaptor"; 
                "arithmetic_float:" ^
@@ -225,7 +225,7 @@ let try_synth () =
                "arithmetic_float:" ^
                outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^ 
                inner_func_addr ^ ":" ^ (string_of_int inner_nargs); 
-               "-branch-preference"; match_jne_addr ^ ":1";
+               (*"-branch-preference"; match_jne_addr ^ ":1";*)
                "-zero-memory";
                "-random-seed"; string_of_int (Random.int 10000000);
                "--"; bin; "-f tests"] in
