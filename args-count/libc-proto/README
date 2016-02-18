@@ -1,0 +1,16 @@
+Code in this directory was authored by the University of Minnesota.
+
+University of Minnesota Proprietary Information per CFAR ACA.
+Copyright (C) 2015, University of Minnesota
+University of Minnesota's development of non-commercial software is
+provided to the Government with Unlimited Rights under the terms of
+the contract.
+
+To run this code, you should already have compiled FuzzBALL and STP
+under the tools/fuzzball directory of the repository. In this
+directory (perhaps via symlink or copying), "types.dat" should be a
+file listing the library functions you want to investigate including
+their ground-truth argument counts (for instance
+../../eg/libc/types-gdb/clang-types.out), and "libc-2.19.so" should be
+an x86-64 Linux binary of the GNU C library.
+

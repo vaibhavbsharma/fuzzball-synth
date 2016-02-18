@@ -1,0 +1,15 @@
+Code in this directory was authored by the University of Minnesota.
+
+University of Minnesota Proprietary Information per CFAR ACA.
+Copyright (C) 2015, University of Minnesota
+University of Minnesota's development of non-commercial software is
+provided to the Government with Unlimited Rights under the terms of
+the contract.
+
+This directory contains scripts which build on top of FuzzBALL to
+analyze the interface of a binary-code function, particularly which
+registers or stack locations might contain arguments.
+
+The "libc-proto" directory is our first prototype for experiments on
+the GNU C library, which uses the simple approach of pattern matching
+on the textual trace output that FuzzBALL already produces.

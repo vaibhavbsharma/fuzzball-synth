@@ -1,4 +1,4 @@
-Code in this directory was authored by the University of Minnesota. 
+Code in this directory was authored by the University of Minnesota.
 
 University of Minnesota Proprietary Information per CFAR ACA.
 Copyright (C) 2015, University of Minnesota
@@ -21,3 +21,7 @@ and you can also see the public upstream version at
 We don't yet have a end-to-end automated tool: the "eg" directory
 contains examples of applying FuzzBALL in this style to specific
 examples.
+
+The "args-count" directory contains related tools which use FuzzBALL
+to infer which registers represent the arguments to a binary code
+function.
