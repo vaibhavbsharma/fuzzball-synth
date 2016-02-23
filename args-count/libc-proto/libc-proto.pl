@@ -36,7 +36,7 @@ my @state_args = ("-symbolic-regs",
 my @trace_args = ("-trace-stopping", "-trace-iterations",
 		  "-trace-loads", "-trace-stores",
 		  "-trace-temps", "-omit-pf-af",
-		  "-trace-decisions",
+		  "-trace-conditions",
 		  "-trace-sym-addrs",
 		  "-tracepoint", "0xc0000000:R_RAX:reg64_t");
 my @solver_args = ("-solver-path", $stp,
