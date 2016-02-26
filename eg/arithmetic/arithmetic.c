@@ -142,8 +142,7 @@ int main(int argc, char **argv) {
         }
         #elif defined(A2)
         while (fscanf(fh, "%x %x", &a, &b) != EOF) {
-            //compare(a, b);
-            printf("%d, %d\n", f1(a,b), f2((a * 2) + (0 + b), (b - 2) * (a - 2)));
+            compare(a, b);
         }
         #elif defined(A3)
         while (fscanf(fh, "%x %x %x", &a, &b, &c) != EOF) {
