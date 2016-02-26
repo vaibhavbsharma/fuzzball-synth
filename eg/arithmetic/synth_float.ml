@@ -56,7 +56,7 @@ let tests = ref [] (* will be a list of lists *)
    print out the current set of tests *)
 let print_tests () = 
   List.iter 
-    (fun test -> List.iter (fun el -> printf "%.8f %!" el) test; printf "\n%!") 
+    (fun test -> List.iter (fun el -> printf "%Lx %!" el) test; printf "\n%!") 
     !tests
   
 (* print_adaptor : () -> ()
@@ -88,16 +88,14 @@ let syscall cmd =
 
 (*** FUZZBall command line arguments ***)
 
-let fuzzball = 
-  try Sys.getenv "FUZZBALL_LOC" 
-  with Not_found -> failwith "Set the location of fuzzball with 'export FUZZBALL_LOC=...'"
+(* a hardcoded path for the fevis repository *)
+let fuzzball = "../../../../tools/fuzzball/exec_utils/fuzzball"
 
+(* Z3 or MathSAT are required for floating point operations *)
 let solver =
-  try Sys.getenv "MATHSAT_LOC" 
+  try Sys.getenv "SOLVER" 
   with Not_found -> 
-    try Sys.getenv "Z3_LOC"
-        with Not_found -> 
-          failwith "Set the location of the solver with 'export <SOLVER>_LOC=...'"
+    failwith "Set the location of the solver with 'export SOLVER=...'"
 
 let main_addr = 
   match syscall ("nm " ^ bin ^ " | fgrep ' T main'") with
@@ -115,6 +113,18 @@ let symbolic_input =
            :: (loop (List.tl l) (n+1))
   in loop (syscall ("nm " ^ bin ^ " | grep ' B [a-z]$'")) 0
 
+(* commented out because -skip-call-ret-symbol is being uncooperative
+let symbolic_input =
+  let rec loop l n =
+    match l with
+    | [] -> (if n <> outer_nargs 
+             then printf "\nUnexpected number of strtoul calls; something may have gone wrong\n\n%!" 
+             else ()); []
+    | (h::t) -> let x = String.make 1 (Char.chr ((Char.code 'a') + n)) in
+                ("-skip-call-ret-symbol-once 0x0" ^ (String.sub h 2 6) ^ "=" ^ x)
+                :: (loop t (n+1))
+  in loop (syscall ("objdump -dr " ^ bin ^ " | grep 'call.*strtoul'")) 0
+*)
 let outer_call_addr =
   match syscall ("objdump -dr " ^ bin ^ " | grep 'call.*f1'") with
   | [str1; str2] -> "0x0" ^ String.sub str2 2 6
@@ -165,10 +175,10 @@ let check_adaptor () =
             @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
             @ ["-zero-memory";
                "-random-seed"; string_of_int (Random.int 10000000); 
-               "--"; bin]  in
+               "--"; bin] in
   let _ = printf "%s\n%!" (String.concat " " cmd) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
-  let ce = ref (Array.make outer_nargs 0.0) in
+  let ce = ref (Array.make outer_nargs 0L) in
   (* read_results : string list -> (int * int) -> bool -> (bool * (int * int))
      read through the results of the call to FuzzBALL keeping track of
      the number of matches and mismatches, and record a counterexample
@@ -187,9 +197,8 @@ let check_adaptor () =
             (fun v ->
                if (match_regex v "^.=0x[0-9a-f]+$")
                then let idx = (Char.code (String.get v 0)) - (Char.code 'a') in
-                    let value = Int64.float_of_bits 
-                                  (Int64.of_string 
-                                    (String.sub v 2 ((String.length v) - 2))) in
+                    let value = Int64.of_string 
+                                  (String.sub v 2 ((String.length v) - 2)) in
                     Array.set !ce idx value
                else ())
             (Str.split (Str.regexp " ") line);
@@ -212,7 +221,7 @@ let try_synth () =
   let test_str = String.concat "\n"  
                    (List.map 
                      (fun test -> String.concat " " 
-                                    (List.map (fun el -> sprintf "%.8f" el) test)) 
+                                    (List.map (fun el -> sprintf "%Lx" el) test)) 
                      !tests) in
   let testc = open_out "tests" in
   let _ = output_string testc test_str in
@@ -295,7 +304,7 @@ let rec main () =
       print_adaptor ();
   | (_, test) -> (* we need to synthesize a new adaptor *)
       printf "Adding test: %!";
-      List.iter (Printf.printf "%.8f %!") test;
+      List.iter (Printf.printf "%Lx %!") test;
       printf "\n";
       tests := !tests @ [test];
       adapt := try_synth ();

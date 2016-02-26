@@ -8,14 +8,16 @@
 #include <string.h>
 
 // define AN for N arguments to f1, currently only account for 1-3 arguments
-#define A2
+#define A3
 
-// to make these values symbolic, find their address using nm and then use the
-// symbolic-long option
-double a, b, c;
+// this allows us to read input as hex values using strtoul
+union Data {
+    unsigned long int ul;
+    double d;
+};
 
+union Data a, b, c;
 
-/*
 // distributive law: equivalent with x=(a*b) and y=(a*c)
 double f1(double a, double b, double c) {
     return a * (b + c);
@@ -23,13 +25,11 @@ double f1(double a, double b, double c) {
 double f2(double x, double y) {
     return x + y;
 }
-*/
-double f1(double x, double y) {
-    return x + y;
-}
-double f2(double x) {
-    return x;
-}
+
+//double f1(double x, double y) { return x + y; }
+//double f1(double x, double y) { return x - y; }
+//double f1(double x, double y) { return x * y; }
+//double f2(double x) { return x; }
 
 /* Compare the results of the two functions; note that the second call to f1()
    will be replaced by a call to f2() by FuzzBALL */
@@ -58,6 +58,7 @@ void compare(double a, double b, double c) {
 }
 
 int main(int argc, char **argv) {
+
     #ifdef A1
     if (argc != 1 && argc != 2 && argc != 3) {
         fprintf(stderr, "Usage: \"%s -f <input_file>\" or \"%s a\"\n", argv[0], argv[0]);
@@ -87,46 +88,45 @@ int main(int argc, char **argv) {
             return 1;
         }
         #ifdef A1
-        while (fscanf(fh, "%lf", &a) != EOF) {
-            compare(a);
+        while (fscanf(fh, "%lx", &a.ul) != EOF) {
+            compare(a.d);
         }
         #elif defined(A2)
-        while (fscanf(fh, "%lf %lf", &a, &b) != EOF) {
-            compare(a, b);
+        while (fscanf(fh, "%lx %lx", &a.ul, &b.ul) != EOF) {
+            compare(a.d, b.d);
         }
         #else
-        while (fscanf(fh, "%lf %lf %lf", &a, &b, &c) != EOF) {
-            compare(a, b, c);
+        while (fscanf(fh, "%lx %lx %lx", &a.ul, &b.ul, &c.ul) != EOF) {
+            compare(a.d, b.d, c.d);
         }
         #endif
         printf("All tests succeeded!\n");
     } else if (argc == 1) {
         // here FuzzBALL should be running with a, b, c symbolic
         #ifdef A1
-        compare(a);  
+        compare(a.d);  
         #elif defined(A2)
-        compare(a, b);  
+        compare(a.d, b.d);  
         #else
-        compare(a, b, c);  
+        compare(a.d, b.d, c.d);  
         #endif
     } else {
         /* Compare the adapted and target implementations on one
            input, and print the results. If you explore this with x
            and y symbolic, you can check whether the adaptor works for
            all inputs. */
-        char* end;
         #ifdef A1
-        a = strtod(argv[1], &end);
-        compare(a);  
+        a.ul = strtoul(argv[1], 0, 0);
+        compare(a.d);  
         #elif defined(A2)
-        a = strtod(argv[1], &end);
-        b = strtod(argv[2], &end);
-        compare(a, b);  
+        a.ul = strtoul(argv[1], 0, 0);
+        b.ul = strtoul(argv[2], 0, 0);
+        compare(a.d, b.d);  
         #else
-        a = strtod(argv[1], &end);
-        b = strtod(argv[2], &end);
-        c = strtod(argv[3], &end);
-        compare(a, b, c);  
+        a.ul = strtoul(argv[1], 0, 0);
+        b.ul = strtoul(argv[2], 0, 0);
+        c.ul = strtoul(argv[3], 0, 0);
+        compare(a.d, b.d, c.d);  
         #endif
     }
     return 0;

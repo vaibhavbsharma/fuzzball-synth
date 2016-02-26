@@ -8,7 +8,7 @@
 #include <string.h>
 
 // define AN for N arguments to f1, currently only account for 1-4 arguments
-#define A1
+#define A2
 
 /*
 // absolute value: equivalent with x = (a ^ (a >> 31)) - (a >> 31)
@@ -24,7 +24,7 @@ int f2(int x) {
 */
 
 // turn off the rightmost 1 bit: equivalent with x = a & (a-1)
-int f1(int a) {
+/*int f1(int a) {
     int i;
     
     if (a == 0) {
@@ -40,9 +40,36 @@ int f1(int a) {
 }
 int f2(int x) {
     return x;
+}*/
+
+/*
+int f1(int a, int b) {
+    return a + b;
+}
+int f2(int x) {
+    return x;
+}*/
+
+// returns 1 if (x,y) is in the square with corners at (0,0), (1,1)
+int f1(int x, int y) {
+    return 0 <= x && x <= 1 && 0 <= y && y <= 1;
 }
 
+// returns 1 if (x,y) is in the square with corners at (2,1), (4,4)
+int f2(int x, int y) {
+    return 2 <= x && x <= 4 && 1 <= y && y <= 4;
+}
 
+/*
+// returns 1 if (x,y) is in the square with corners at (3,4), (5,7)
+int f2(int x, int y) {
+    return 3 <= x && x <= 5 && 4 <= y && y <= 7;
+}
+
+int poly(x,y,a1,a2) {
+    return x*a1 + y*a2;
+}
+*/
 /* Compare the results of the two functions; note that the second call to f1()
    will be replaced by a call to f2() by FuzzBALL */
 #ifdef A1
@@ -115,7 +142,8 @@ int main(int argc, char **argv) {
         }
         #elif defined(A2)
         while (fscanf(fh, "%x %x", &a, &b) != EOF) {
-            compare(a, b);
+            //compare(a, b);
+            printf("%d, %d\n", f1(a,b), f2((a * 2) + (0 + b), (b - 2) * (a - 2)));
         }
         #elif defined(A3)
         while (fscanf(fh, "%x %x %x", &a, &b, &c) != EOF) {
