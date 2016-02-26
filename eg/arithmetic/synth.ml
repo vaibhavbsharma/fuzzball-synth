@@ -53,8 +53,8 @@ let tests = ref [] (* will be a list of lists *)
 (*** (optional) restrict the generated counterexamples ***)
 
 (* may be useful for ignoring edge cases on which f1 and f2 should diverge *)
-let restrict_counterexamples = ["-extra-condition \"a:reg32_t<2147483646:reg32_t\"";
-                                "-extra-condition \"b:reg32_t<1431655764:reg32_t\""]
+let restrict_counterexamples = [(*"-extra-condition \"a:reg32_t<2147483646:reg32_t\"";
+                                "-extra-condition \"b:reg32_t<1431655764:reg32_t\""*)]
 
 
 (*** utility functions ***)
