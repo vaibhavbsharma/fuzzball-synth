@@ -13,7 +13,7 @@ open Printf
 (* 'outer function' = the 'black box' function (f1)
    'inner function' = the function whose arguments we want to adapt (f2) *)
 let print_usage () = 
-  (printf "usage: synth.ml <bin> <# outer args> <# inner args> <rand. seed>\n%!";
+  (printf "usage: synth.ml <bin> <# outer args> <# inner args> <string length> <rand. seed>\n%!";
    exit 1)
 let bin = 
   try Sys.argv.(1)
@@ -24,10 +24,12 @@ let outer_nargs =
 let inner_nargs =
   try int_of_string Sys.argv.(3)
   with Invalid_argument _ -> print_usage ()
-let _ = 
-  try Random.init (int_of_string Sys.argv.(4))
+let string_length = 
+  try int_of_string Sys.argv.(4)
   with Invalid_argument _ -> print_usage ()
-
+let _ = 
+  try Random.init (int_of_string Sys.argv.(5))
+  with Invalid_argument _ -> print_usage ()
 
 (*** default adaptor ***)
 let rec create_adapt n =
@@ -92,7 +94,6 @@ let main_addr =
   | [str] -> "0x" ^ String.sub str 0 16
   | _ -> failwith "Unexpected main address format"
 
-let string_length = 3
 let outer_var_skip_str = 
   match syscall ("nm " ^ bin ^ " | fgrep 'B str_input'") with
   | str::[] ->
@@ -170,60 +171,66 @@ let check_adaptor () =
      the number of matches and mismatches, and record a counterexample
      for the first mismatch *)
   let rec read_results (matches, fails) this_ce f1_completed = 
-    try
-      let line = input_line ic in
-      let _ = printf "  %s\n%!" line in
-      match line with
-        | "Match" -> read_results (matches + 1, fails) this_ce true
-        | "Mismatch" -> read_results (matches, fails + 1) true true
-	| "Finished f1" -> read_results (matches, fails) this_ce true
-	| _ when ((match_regex line "^Stopping at null deref.*$") && f1_completed) ||
-	    ((match_regex line "^Stopping at access to unsupported address.*$") && f1_completed) ->
-	  read_results (matches, fails + 1) true f1_completed
-        | _ when (match_regex line "^Input vars: .*$") && this_ce && f1_completed ->
-          (* use regular expressions to pull out values for x and y;
-             if no values for x and y are specified, assume that they are 0 *)
-          List.iter 
-            (fun v ->
-              if (match_regex v "^input0_[0-9]=0x[0-9a-f]+$") 
-              then 
-                let arg_num = int_of_string (String.sub v 7 1) in
-                let arg_val = Int64.of_string (String.sub v 9 
-                                                 ((String.length v) - 9)) in
-                Array.set !ce arg_num arg_val
-	      else if (match_regex v "^input0_[0-9][0-9]=0x[0-9a-f]+$")
-	      then let arg_num = int_of_string (String.sub v 7 2) in
-		   let arg_val = Int64.of_string (String.sub v 10
-						    ((String.length v) - 10)) in
-		   Array.set !ce arg_num arg_val
-	      else if (match_regex v "^input1_[0-9]=0x[0-9a-f]+$") 
-              then 
-                let arg_num = int_of_string (String.sub v 7 1) in
-                let arg_val = Int64.of_string (String.sub v 9 
-                                                 ((String.length v) - 9)) in
-                Array.set !ce_2 arg_num arg_val
-	      else if (match_regex v "^input1_[0-9][0-9]=0x[0-9a-f]+$")
-	      then let arg_num = int_of_string (String.sub v 7 2) in
-		   let arg_val = Int64.of_string (String.sub v 10
-						    ((String.length v) - 10)) in
-		   Array.set !ce_2 arg_num arg_val
-	    )
-            (Str.split (Str.regexp " ") line);
-          (* after updating ce once, we are done and should return *)
-	  (*if outer_nargs == 1 then*)
-          (*(false, !ce)*)
-	  (*else if outer_nargs == 2 then*)
-          (false, [!ce; !ce_2])
-	  ;
-        | _ -> read_results (matches, fails) this_ce f1_completed
-    with End_of_file ->
-      let _ = Unix.close_process_in ic in
-      if matches = 0 && fails = 0 
-      then failwith "Missing results from check run"
-      else (*if outer_nargs = 1 then*)
-	(*(true, !ce)*)
-        (*else if outer_nargs = 2 then*)
-        (true, [!ce; !ce_2]) 
+    let line = 
+      try
+	input_line ic
+      with End_of_file ->
+	let _ = Unix.close_process_in ic in
+	""
+    in
+    if (String.compare line "") <> 0 then   
+      (let _ = printf "  %s\n%!" line in
+       match line with
+       | "Match" -> read_results (matches + 1, fails) this_ce true
+       | "Mismatch" -> read_results (matches, fails + 1) true true
+       | "Finished f1" -> read_results (matches, fails) this_ce true
+       | _ when ((match_regex line "^Stopping at null deref.*$") && f1_completed) ||
+	   ((match_regex line "^Stopping at access to unsupported address.*$") && f1_completed) ->
+	 read_results (matches, fails + 1) true f1_completed
+       | _ when (match_regex line "^Input vars: .*$") && this_ce && f1_completed ->
+         (* use regular expressions to pull out values for x and y;
+            if no values for x and y are specified, assume that they are 0 *)
+         List.iter 
+           (fun v ->
+             if (match_regex v "^input0_[0-9]=0x[0-9a-f]+$") 
+             then 
+               let arg_num = int_of_string (String.sub v 7 1) in
+               let arg_val = Int64.of_string (String.sub v 9 
+                                                ((String.length v) - 9)) in
+               Array.set !ce arg_num arg_val
+	     else if (match_regex v "^input0_[0-9][0-9]=0x[0-9a-f]+$")
+	     then let arg_num = int_of_string (String.sub v 7 2) in
+		  let arg_val = Int64.of_string (String.sub v 10
+						   ((String.length v) - 10)) in
+		  Array.set !ce arg_num arg_val
+	     else if (match_regex v "^input1_[0-9]=0x[0-9a-f]+$") 
+             then 
+               let arg_num = int_of_string (String.sub v 7 1) in
+               let arg_val = Int64.of_string (String.sub v 9 
+                                                ((String.length v) - 9)) in
+               Array.set !ce_2 arg_num arg_val
+	     else if (match_regex v "^input1_[0-9][0-9]=0x[0-9a-f]+$")
+	     then let arg_num = int_of_string (String.sub v 7 2) in
+		  let arg_val = Int64.of_string (String.sub v 10
+						   ((String.length v) - 10)) in
+		  Array.set !ce_2 arg_num arg_val
+	   )
+           (Str.split (Str.regexp " ") line);
+         (* after updating ce once, we are done and should return *)
+	 (*if outer_nargs == 1 then*)
+         (*(false, !ce)*)
+	 (*else if outer_nargs == 2 then*)
+         (false, [!ce; !ce_2])
+	 ;
+       | _ -> read_results (matches, fails) this_ce f1_completed)
+    else (
+    if matches = 0 && fails = 0 
+    then failwith "Missing results from check run"
+    else (*if outer_nargs = 1 then*)
+      (*(true, !ce)*)
+      (*else if outer_nargs = 2 then*)
+      (true, [!ce; !ce_2]) 
+    )
   in
   read_results (0, 0) false false
 
@@ -248,8 +255,8 @@ let try_synth () =
                inner_func_addr ^ ":"^(string_of_int inner_nargs) ^ ":" ^
 	       (string_of_int string_length);
                "-branch-preference"; match_jne_addr ^ ":1";
-	       "-path-depth-limit 1200";(*^(string_of_int (800*(!n_tests)));*)
-	       (*"-iteration-limit 4000";set by trial-and-error*)
+	       (*"-path-depth-limit 1200";^(string_of_int (800*(!n_tests)));*)
+	       "-iteration-limit 4000";(*set by trial-and-error*)
 	       "-trace-binary-paths-bracketed";
 	       "-trace-conditions";
 	       "-omit-pf-af";
@@ -269,55 +276,63 @@ let try_synth () =
      read through the results of the call to FuzzBALL looking for a case
      where all test are successfully passed *)
   let rec read_results success = 
+    let line = 
     try
-      let line = input_line ic in
-      let _ = if not (match_regex line "^Input vars: .%$")
-	then printf " %s\n%!" line
-	else () in
-      match line with
-      | "All tests succeeded!" -> read_results true
-      | _ when (match_regex line "^Input vars: .*$") && success ->
-            (* use regular expressions to pull out values for the adaptor fields
-               and return the adaptor *)
-            let specified_vals = ref [] in
-            printf "  %s\n%!" line;
-            List.iter 
-              (fun v ->
-                 if (match_regex v "^.*=0x[0-9a-f]+$")
-                 then match Str.split (Str.regexp "=") v with
-                      | name::value::[] -> 
-                          specified_vals := (name,value) :: !specified_vals
-                      | _ -> failwith "Parse failure on variable assignment"
-                 else if (match_regex v "^Input$\\|^vars:$") 
-                      then () 
-                      else failwith "Parse failure on variable assignment")
-              (Str.split (Str.regexp " ") line);
-            let rec getval l k = 
-              match l with [] -> None 
-                         | (k',v)::t -> if k = k' then Some v else getval t k in
-            let new_adaptor = ref [] in
-            List.iter
-              (fun(name, size, _ ) ->
-                 match getval !specified_vals name with
-                 | None -> 
-                   new_adaptor := !new_adaptor @ 
-                   [sprintf "-extra-condition %s:reg%d_t==%s:reg%d_t" 
-                      name size "0x00000000" size]
-                 | Some v -> 
-                   new_adaptor := !new_adaptor @
-                   [sprintf "-extra-condition %s:reg%d_t==%s:reg%d_t" 
-                     name size v size])
-              fields;
-              (*Printf.printf "new_adaptor = %s\n" 
-                (String.concat " " !new_adaptor);*)
-            !new_adaptor 
-        | _ -> read_results success 
+      input_line ic
     with End_of_file ->
       let _ = Unix.close_process_in ic in
       if not success
       then (printf "Synthesis failure: seems the functions are not equivalent.\n%!";
-	    exit 2)
-      else [] in
+	    exit 2;
+	    "")
+      else "" 
+    in
+    if (String.compare line "") <> 0 then
+      (let _ = 
+	 if not (match_regex line "^Input vars: .%$")
+	 then printf " %s\n%!" line
+	 else () 
+       in
+       match line with
+       | "All tests succeeded!" -> read_results true
+       | _ when (match_regex line "^Input vars: .*$") && success ->
+            (* use regular expressions to pull out values for the adaptor fields
+               and return the adaptor *)
+         let specified_vals = ref [] in
+         printf "  %s\n%!" line;
+         List.iter 
+           (fun v ->
+             if (match_regex v "^.*=0x[0-9a-f]+$")
+             then match Str.split (Str.regexp "=") v with
+             | name::value::[] -> 
+               specified_vals := (name,value) :: !specified_vals
+             | _ -> failwith "Parse failure on variable assignment"
+             else if (match_regex v "^Input$\\|^vars:$") 
+             then () 
+             else failwith "Parse failure on variable assignment")
+           (Str.split (Str.regexp " ") line);
+         let rec getval l k = 
+           match l with [] -> None 
+           | (k',v)::t -> if k = k' then Some v else getval t k in
+         let new_adaptor = ref [] in
+         List.iter
+           (fun(name, size, _ ) ->
+             match getval !specified_vals name with
+             | None -> 
+               new_adaptor := !new_adaptor @ 
+                 [sprintf "-extra-condition %s:reg%d_t==%s:reg%d_t" 
+                     name size "0x00000000" size]
+             | Some v -> 
+               new_adaptor := !new_adaptor @
+                 [sprintf "-extra-condition %s:reg%d_t==%s:reg%d_t" 
+                     name size v size])
+           fields;
+         (*Printf.printf "new_adaptor = %s\n" 
+           (String.concat " " !new_adaptor);*)
+         !new_adaptor 
+       | _ -> read_results success) 
+    else []
+  in
   read_results false
 
 
