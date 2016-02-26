@@ -1,5 +1,4 @@
-(* usage: synth.ml <bin> <# outer args> <# inner args> <rand. seed>
-   Note that the FUZZBALL_LOC and STP_LOC enviroment variables need to be set *)
+(* usage: synth.ml <bin> <# outer args> <# inner args> <rand. seed> *)
 
 open Printf
 #load "str.cma"  (* used for regular expressions *)
@@ -29,9 +28,10 @@ let _ =
 
 (*** current adaptor and test set ***)
 
+let tree_depth = 3 (* hardcoded for now *)
+
 (* default adaptor has all values set to 0 *)
 let create_adapt num_args =
-  let tree_depth = 3 in (* hardcoded for now *)
   let rec create_tree d base var_name = 
     if d > 0
     then ["-extra-condition " ^ (var_name ^ "_type_" ^ base) ^ ":reg8_t==0:reg8_t";
@@ -48,6 +48,13 @@ let create_adapt num_args =
 let adapt = ref (create_adapt inner_nargs)
 
 let tests = ref [] (* will be a list of lists *)
+
+
+(*** (optional) restrict the generated counterexamples ***)
+
+(* may be useful for ignoring edge cases on which f1 and f2 should diverge *)
+let restrict_counterexamples = ["-extra-condition \"a:reg32_t<2147483646:reg32_t\"";
+                                "-extra-condition \"b:reg32_t<1431655764:reg32_t\""]
 
 
 (*** utility functions ***)
@@ -89,18 +96,14 @@ let syscall cmd =
 
 (*** FUZZBall command line arguments ***)
 
-let fuzzball = 
-  try Sys.getenv "FUZZBALL_LOC" 
-  with Not_found -> failwith "Set the location of fuzzball with 'export FUZZBALL_LOC=...'"
+(* hardcoded paths for the fevis repository *)
+let fuzzball = "../../../../tools/fuzzball/exec_utils/fuzzball"
 
-let stp =
-  try Sys.getenv "STP_LOC" 
-  with Not_found -> failwith "Set the location of stp with 'export STP_LOC=...'"
+let stp = "../../../../tools/fuzzball/stp/stp"
 
 let main_addr = 
   match syscall ("nm " ^ bin ^ " | fgrep ' T main'") with
-  | [str] -> "0x" ^ String.sub str 0 8
-  (*| [str] -> "0x" ^ String.sub str 0 16*)
+  | [str] -> "0x" ^ String.sub str 0 16
   | _ -> failwith "Unexpected main address format"
 
 let input_addr =
@@ -121,8 +124,7 @@ let outer_call_addr =
 
 let inner_func_addr = 
   match syscall ("nm " ^ bin ^ " | fgrep ' T f2'") with
-  | [str] -> "0x" ^ String.sub str 0 8
-  (*| [str] -> "0x" ^ String.sub str 0 16*)
+  | [str] -> "0x" ^ String.sub str 0 16
   | _ -> failwith "Unexpected inner function format"
 
 let match_jne_addr =
@@ -133,7 +135,6 @@ let match_jne_addr =
 let solver_opts = ["-solver"; "smtlib"; "-solver-path"; stp]
 
 let fields = 
-  let tree_depth = 3 in (* hardcoded for now *)
   let rec create_tree d base var_name =
     if d > 0
     then [(var_name ^ "_type_" ^ base, 8, format_of_string "%01x");
@@ -163,11 +164,13 @@ let check_adaptor () =
                "arithmetic_int:" ^
                outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^
                inner_func_addr ^ ":" ^ (string_of_int inner_nargs)]
+            @ restrict_counterexamples
             @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
             @ ["-zero-memory";
                "-random-seed"; string_of_int (Random.int 10000000); 
                "--"; bin]
             @ Array.to_list (Array.make outer_nargs "0") in
+  let _ = printf "%s\n%!" (String.concat " " cmd) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
   let ce = ref (Array.make outer_nargs 0) in
   (*** let ce = ref (Array.make outer_nargs 0L) in ***)
@@ -231,6 +234,7 @@ let try_synth () =
                "-zero-memory";
                "-random-seed"; string_of_int (Random.int 10000000);
                "--"; bin; "-f tests"] in
+  let _ = printf "%s\n%!" (String.concat " " cmd) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
   (* read_results : string list -> bool -> string
      read through the results of the call to FuzzBALL looking for a case
