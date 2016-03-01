@@ -1,7 +1,7 @@
 Code in this directory was authored by the University of Minnesota.
 
 University of Minnesota Proprietary Information per CFAR ACA.
-Copyright (C) 2015, University of Minnesota
+Copyright (C) 2015-2016, University of Minnesota
 University of Minnesota's development of non-commercial software is
 provided to the Government with Unlimited Rights under the terms of
 the contract.
@@ -14,3 +14,7 @@ their ground-truth argument counts (for instance
 ../../eg/libc/types-gdb/clang-types.out), and "libc-2.19.so" should be
 an x86-64 Linux binary of the GNU C library.
 
+For code that operates on floating point, STP is not so suitable
+because it does not support the theory of floating-point operators. If
+you make a symlink in this directory named z3 and pointing to a recent
+Z3 binary, the script will use it in preference to STP.

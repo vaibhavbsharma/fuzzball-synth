@@ -6,6 +6,7 @@ $| = 1;
 
 my $fuzzball = "../../../../tools/fuzzball/exec_utils/fuzzball";
 my $stp = "../../../../tools/fuzzball/stp/stp";
+my $z3 = "./z3";
 my $load_base = 0x400000;
 
 my $types = "types.dat";
@@ -28,6 +29,19 @@ my @funcs;
 #@funcs = ("endmntent");
 #@funcs = ("isinf");
 
+if (@ARGV) {
+    @funcs = @ARGV;
+}
+
+my $solver;
+if (-e $z3) {
+    $solver = $z3;
+} elsif (-e $stp) {
+    $solver = $stp;
+} else {
+    die "Couldn't find a suitable SMT solver";
+}
+
 my @base_args = ("-arch", "x64");
 my @state_args = ("-symbolic-regs",
 		  "-initial-rsp", "0xbfff0000",
@@ -42,7 +56,7 @@ my @trace_args = ("-trace-stopping", "-trace-iterations",
 		  "-trace-conditions",
 		  "-trace-sym-addrs",
 		  "-tracepoint", "0xc0000000:R_RAX:reg64_t");
-my @solver_args = ("-solver-path", $stp,
+my @solver_args = ("-solver-path", $solver,
 		   "-solver", "smtlib",
 		   "-solver-timeout", 10);
 my @limit_args = ("-num-paths", 100,
@@ -75,18 +89,22 @@ while (<F>) {
 }
 close F;
 
-#@funcs = sort keys %known_funcs; # alphabetical order
-@funcs = @known_funcs; # address order
+if (not @funcs) {
+    #@funcs = sort keys %known_funcs; # alphabetical order
+    @funcs = @known_funcs; # address order
+}
 
 for my $func (@funcs) {
-    printf "%30s: ", $func;
     my $addr = $sym2addr{$func};
     my $start_addr = $load_base + $addr;
     my @cmd = ($fuzzball, @base_args, @state_args, @trace_args,
 	       @solver_args, @limit_args, @syscall_args,
 	       "-start-addr", sprintf("0x%x", $start_addr),
 	       $libc);
-    #print "@cmd\n";
+    if (@funcs == 1) {
+	print "@cmd\n";
+    }
+    printf "%30s: ", $func;
     my $start_time = time();
     open(LOG, "-|", @cmd) or die;
     my %seen;
