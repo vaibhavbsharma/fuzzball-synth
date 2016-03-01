@@ -24,6 +24,8 @@ my @funcs;
 #@funcs = ("connect");
 #@funcs = ("hcreate_r");
 #@funcs = ("hsearch");
+#@funcs = ("endmntent");
+#@funcs = ("isinf");
 
 my @base_args = ("-arch", "x64");
 my @state_args = ("-symbolic-regs",
@@ -106,6 +108,12 @@ for my $func (@funcs) {
 	$seen{"r13"}++ if /initial_r13/;
 	$seen{"r14"}++ if /initial_r14/;
 	$seen{"r15"}++ if /initial_r15/;
+	$seen{"xmm0"}++ if /initial_ymm0_0/;
+	$seen{"xmm1"}++ if /initial_ymm1_0/;
+	$seen{"xmm2"}++ if /initial_ymm2_0/;
+	$seen{"xmm3"}++ if /initial_ymm3_0/;
+	$seen{"xmm4"}++ if /initial_ymm4_0/;
+	$seen{"xmm5"}++ if /initial_ymm5_0/;
     }
     close LOG;
     my $std_args = join(" ",
