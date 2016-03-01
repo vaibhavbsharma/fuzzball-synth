@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
+use Time::HiRes qw(time);
 $| = 1;
 
 my $fuzzball = "../../../../tools/fuzzball/exec_utils/fuzzball";
@@ -86,6 +87,7 @@ for my $func (@funcs) {
 	       "-start-addr", sprintf("0x%x", $start_addr),
 	       $libc);
     #print "@cmd\n";
+    my $start_time = time();
     open(LOG, "-|", @cmd) or die;
     my %seen;
     while (<LOG>) {
@@ -116,6 +118,9 @@ for my $func (@funcs) {
 	$seen{"xmm5"}++ if /initial_ymm5_0/;
     }
     close LOG;
+    my $end_time = time();
+    my $time = $end_time - $start_time;
+    printf "(%8.3f) ", $time;
     my $std_args = join(" ",
 			($seen{"rdi"} ? "rdi" : "   "),
 			($seen{"rsi"} ? "rsi" : "   "),
