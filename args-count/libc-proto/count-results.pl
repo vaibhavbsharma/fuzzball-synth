@@ -74,6 +74,9 @@ my $args_fn = 0;
 my $args_match = 0;
 my $args_fp = 0;
 
+my $num_funcs = 0;
+my $total_time = 0;
+
 while (<>) {
     if (/^(\s*(\w+): )$/) {
 	print "Incomplete at $2\n";
@@ -81,6 +84,7 @@ while (<>) {
     }
     /^(\s*(\w+): )([F\(].*)$/
 	or die "Pre-parse failure on <$_>";
+    $num_funcs++;
     my($pre, $name, $f) = ($1, $2, $3);
     my $line = $_;
     my $fail = 0;
@@ -100,13 +104,14 @@ while (<>) {
     $line =~ /^\s*\w+: \(\s*(\d+\.\d+)([T ])\s*(\d+)\)([a-z0-9 ]+)/
 	or die "parse failure on <$line>";
     my($time, $tout, $paths, $regs) = ($1, $2, $3, $4);
+    $total_time += $time;
     my @regs = split(" ", $regs);
     $args_seen += @regs;
     if ($tout eq "T") {
         $hard_touts++;
     } elsif ($paths == 301) {
 	$pathouts++;
-    } else {
+    } elsif (not $fail) {
 	$completes++;
     }
     my $info = $func_info{$name};
@@ -161,3 +166,7 @@ print "\n";
 print  "Arguments:  false pos.   matching   false neg.\n";
 printf "                 %5d      %5d        %5d\n",
     $args_fp, $args_match, $args_fn;
+print "\n";
+printf "Num. funcs   Total time    Avg. time\n";
+printf "      %4d    %8.3f     %8.3f\n",
+  $num_funcs, $total_time, $total_time/$num_funcs;
