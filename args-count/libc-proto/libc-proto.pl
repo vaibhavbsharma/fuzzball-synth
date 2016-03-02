@@ -13,6 +13,7 @@ my $types = "types.dat";
 my $ldso = "ld-linux-x86-64.so.2";
 my $libc = "libc-2.19.so";
 my $hard_timeout = 30; # seconds
+my $iters_limit = 100;
 
 my @funcs;
 #@funcs = ("abs", "labs", "llabs");
@@ -51,7 +52,8 @@ my @state_args = ("-symbolic-regs",
 		  "-store-long", "0xc0000008=0x9090909090909090",
 		  "-store-long", "0xc0000010=0x9090909090909090",
 		  "-fuzz-end-addr", "0xc0000001");
-my @trace_args = ("-trace-stopping", "-trace-iterations",
+my @trace_args = ("-trace-stopping",
+		  "-trace-iterations", "-trace-completed-iterations",
 		  "-trace-loads", "-trace-stores",
 		  "-trace-temps", "-omit-pf-af",
 		  "-trace-conditions",
@@ -60,12 +62,12 @@ my @trace_args = ("-trace-stopping", "-trace-iterations",
 my @solver_args = ("-solver-path", $solver,
 		   "-solver", "smtlib",
 		   "-solver-timeout", 10);
-my @limit_args = ("-num-paths", 100,
+my @limit_args = ("-num-paths", $iters_limit,
 		  "-iteration-limit", 1000);
 #my @syscall_args = ("-linux-syscalls",
 #		    "-stop-on-symbolic-syscall-args",
 #		    "-symbolic-syscall-error", 38); # ENOSYS
-my @syscall_args = ();
+my @syscall_args = ("-noop-syscalls", "-trace-syscalls");
 
 my %sym2addr;
 open(NM, "nm -n $libc |") or die;
@@ -105,15 +107,21 @@ for my $func (@funcs) {
     if (@funcs == 1) {
 	print "@cmd\n";
     }
-    printf "%30s: ", $func;
+    printf "%20s: ", $func;
     my $start_time = time();
     my $timed_out = 0;
     my %seen;
+    my($iters_started, $iters_finished) = (0, 0);
     eval {
 	local $SIG{ALRM} = sub { die "alarm\n" };
 	alarm $hard_timeout;
 	open(LOG, "-|", @cmd) or die;
 	while (<LOG>) {
+	    if (/^Iteration (\d+):/) {
+		$iters_started = $1;
+	    } elsif (/^Iteration (\d+) completed/) {
+		$iters_finished = $1;
+	    }
 	    if (/^(Store to|Load from) conc\. mem bff..... = initial_\w+_\d+:reg64_t/) {
 		# Ignore saves and restores of unmodified registers
 		# on the stack
@@ -155,7 +163,13 @@ for my $func (@funcs) {
     }
     my $end_time = time();
     my $time = $end_time - $start_time;
-    printf "(%8.3f%s) ", $time, ($timed_out ? "T" : "");
+    my $iters;
+    if ($iters_finished == $iters_limit) {
+	$iters = $iters_limit + 1;
+    } else {
+	$iters = $iters_started;
+    }
+    printf "(%8.3f%s%3d) ", $time, ($timed_out ? "T" : " "), $iters;
     my $std_args = join(" ",
 			($seen{"rdi"} ? "rdi" : "   "),
 			($seen{"rsi"} ? "rsi" : "   "),
