@@ -12,8 +12,8 @@ my $load_base = 0x400000;
 my $types = "types.dat";
 my $ldso = "ld-linux-x86-64.so.2";
 my $libc = "libc-2.19.so";
-my $hard_timeout = 30; # seconds
-my $iters_limit = 100;
+my $hard_timeout = 60; # seconds
+my $iters_limit = 300;
 
 my @funcs;
 #@funcs = ("abs", "labs", "llabs");
