@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use Time::HiRes qw(time);
+use Time::HiRes qw(time alarm);
 $| = 1;
 
 my $fuzzball = "../../../../tools/fuzzball/exec_utils/fuzzball";
@@ -12,6 +12,7 @@ my $load_base = 0x400000;
 my $types = "types.dat";
 my $ldso = "ld-linux-x86-64.so.2";
 my $libc = "libc-2.19.so";
+my $hard_timeout = 30; # seconds
 
 my @funcs;
 #@funcs = ("abs", "labs", "llabs");
@@ -106,39 +107,55 @@ for my $func (@funcs) {
     }
     printf "%30s: ", $func;
     my $start_time = time();
-    open(LOG, "-|", @cmd) or die;
+    my $timed_out = 0;
     my %seen;
-    while (<LOG>) {
-	if (/^(Store to|Load from) conc\. mem bff..... = initial_\w+_\d+:reg64_t/) {
-	    next;
+    eval {
+	local $SIG{ALRM} = sub { die "alarm\n" };
+	alarm $hard_timeout;
+	open(LOG, "-|", @cmd) or die;
+	while (<LOG>) {
+	    if (/^(Store to|Load from) conc\. mem bff..... = initial_\w+_\d+:reg64_t/) {
+		# Ignore saves and restores of unmodified registers
+		# on the stack
+		next;
+	    } elsif (/^At c0000000, R_RAX:reg64_t is /) {
+		s/initial_rax//g;
+		# Ignore the "use" of %rax in the final %rax value
+		next;
+	    }
+	    #print $_;
+	    $seen{"rdi"}++ if /initial_rdi/;
+	    $seen{"rsi"}++ if /initial_rsi/;
+	    $seen{"rdx"}++ if /initial_rdx/;
+	    $seen{"rcx"}++ if /initial_rcx/;
+	    $seen{"r8"}++ if /initial_r8/;
+	    $seen{"r9"}++ if /initial_r9/;
+	    $seen{"rax"}++ if /initial_rax/;
+	    $seen{"rbx"}++ if /initial_rbx/;
+	    $seen{"rbp"}++ if /initial_rbp/;
+	    $seen{"r10"}++ if /initial_r10/;
+	    $seen{"r11"}++ if /initial_r11/;
+	    $seen{"r12"}++ if /initial_r12/;
+	    $seen{"r13"}++ if /initial_r13/;
+	    $seen{"r14"}++ if /initial_r14/;
+	    $seen{"r15"}++ if /initial_r15/;
+	    $seen{"xmm0"}++ if /initial_ymm0_0/;
+	    $seen{"xmm1"}++ if /initial_ymm1_0/;
+	    $seen{"xmm2"}++ if /initial_ymm2_0/;
+	    $seen{"xmm3"}++ if /initial_ymm3_0/;
+	    $seen{"xmm4"}++ if /initial_ymm4_0/;
+	    $seen{"xmm5"}++ if /initial_ymm5_0/;
 	}
-	#print $_;
-	$seen{"rdi"}++ if /initial_rdi/;
-	$seen{"rsi"}++ if /initial_rsi/;
-	$seen{"rdx"}++ if /initial_rdx/;
-	$seen{"rcx"}++ if /initial_rcx/;
-	$seen{"r8"}++ if /initial_r8/;
-	$seen{"r9"}++ if /initial_r9/;
-	$seen{"rax"}++ if /initial_rax/;
-	$seen{"rbx"}++ if /initial_rbx/;
-	$seen{"rbp"}++ if /initial_rbp/;
-	$seen{"r10"}++ if /initial_r10/;
-	$seen{"r11"}++ if /initial_r11/;
-	$seen{"r12"}++ if /initial_r12/;
-	$seen{"r13"}++ if /initial_r13/;
-	$seen{"r14"}++ if /initial_r14/;
-	$seen{"r15"}++ if /initial_r15/;
-	$seen{"xmm0"}++ if /initial_ymm0_0/;
-	$seen{"xmm1"}++ if /initial_ymm1_0/;
-	$seen{"xmm2"}++ if /initial_ymm2_0/;
-	$seen{"xmm3"}++ if /initial_ymm3_0/;
-	$seen{"xmm4"}++ if /initial_ymm4_0/;
-	$seen{"xmm5"}++ if /initial_ymm5_0/;
+	close LOG;
+	alarm 0;
+    };
+    if ($@ eq "alarm\n") {
+	close LOG;
+	$timed_out = 1;
     }
-    close LOG;
     my $end_time = time();
     my $time = $end_time - $start_time;
-    printf "(%8.3f) ", $time;
+    printf "(%8.3f%s) ", $time, ($timed_out ? "T" : "");
     my $std_args = join(" ",
 			($seen{"rdi"} ? "rdi" : "   "),
 			($seen{"rsi"} ? "rsi" : "   "),
