@@ -116,7 +116,7 @@ splice(@fields, 2 * $f2nargs);
 my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp);
 
 my @synth_opt = ("-synthesize-adaptor",
-		 join(":", "simple", $wrap_f2_addr, $f1nargs, $f2_addr, $f2nargs));
+		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
 
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
