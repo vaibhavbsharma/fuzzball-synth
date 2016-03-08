@@ -142,8 +142,8 @@ int main(int argc, char **argv) {
         }
         #elif defined(A2)
         while (fscanf(fh, "%x %x", &a, &b) != EOF) {
-            compare(a, b);
-            //printf("%d, %d\n", f1(a,b), f2((2 + 0) * (1 + b), (a + 3) + (5 * 0)));
+            //compare(a, b);
+            printf("(%d,%d) -> %d\n", a, b, f1(a,b) == f2(b, 2));
         }
         #elif defined(A3)
         while (fscanf(fh, "%x %x %x", &a, &b, &c) != EOF) {

@@ -132,7 +132,7 @@ let match_jne_addr =
   | [str] -> "0x" ^ String.sub str 2 6
   | _ -> failwith "Unexpected jne address format"
 
-let solver_opts = ["-solver"; "smtlib"; "-solver-path"; stp]
+let solver_opts = ["-solver"; "smtlib-batch"; "-solver-path"; stp]
 
 let fields = 
   let rec create_tree d base var_name =
@@ -181,7 +181,7 @@ let check_adaptor () =
   let rec read_results (matches, fails) record_ce = 
     try
       let line = input_line ic in
-      let _ = printf " %s\n%!" line in
+      (*let _ = printf " %s\n%!" line in*)
       match line with
       | "Match" -> read_results (matches + 1, fails) record_ce
       | "Mismatch" -> read_results (matches, fails + 1) true
@@ -242,16 +242,16 @@ let try_synth () =
   let rec read_results success = 
     try
       let line = input_line ic in
-      let _ = if not (match_regex line "^Input vars: .*$")
+      (*let _ = if not (match_regex line "^Input vars: .*$")
               then printf " %s\n%!" line 
-              else () in
+              else () in*)
       match line with 
       | "All tests succeeded!" -> read_results true
       | _ when (match_regex line "^Input vars: .*$") && success ->
           (* use regular expressions to pull out values for the adaptor fields
              and return the adaptor *)
           let specified_vals = ref [] in
-          printf "  %s\n%!" line;
+          (*printf "  %s\n%!" line;*)
           List.iter 
             (fun v ->
                if (match_regex v "^.*=0x[0-9a-f]+$")
@@ -295,19 +295,27 @@ let try_synth () =
      start with a simple adaptor and no tests and alternate between test 
      generation and synthesis, updating the adaptor and test set as needed ***)
 let rec main () =
+  let start_ver = Unix.gettimeofday () in
   match check_adaptor () with
   | (true, _) -> (* we found a suitable adaptor *)
+      let end_ver = Unix.gettimeofday () in
+      printf "Time for verification: %fs\n" (end_ver -. start_ver);
       printf "Success!\nFinal test set:\n%!";
       print_tests ();
       printf "Final adaptor:\n%!";
       print_adaptor ();
   | (_, test) -> (* we need to synthesize a new adaptor *)
+      let end_ver = Unix.gettimeofday () in
+      printf "Time for verification: %fs\n" (end_ver -. start_ver);
       printf "Adding test: %!";
       List.iter (Printf.printf "%d %!") test;
       (***List.iter (Printf.printf "%Ld %!") test;***)
       printf "\n";
       tests := !tests @ [test];
-      adapt := try_synth ();
+      let start_syn = Unix.gettimeofday () in
+      let _ = adapt := try_synth () in
+      let end_syn = Unix.gettimeofday () in
+      printf "Time for synthesis: %fs\n" (end_syn -. start_syn);
       printf "Synthesized adaptor:\n%!";
       print_adaptor ();
       main () (* repeat *)
