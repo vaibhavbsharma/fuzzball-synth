@@ -45,6 +45,9 @@ my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
 while (<F>) {
     my($num, $nargs, $name, $type) = split(" ", $_, 4);
+    if ($nargs =~ /\+/) {
+	$nargs = substr($nargs,0,1);
+    }
     push @func_info, [$num, $nargs, $name, $type];
 }
 close F;
