@@ -113,7 +113,7 @@ my @fields =
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp);
+my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",10);
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
@@ -200,6 +200,7 @@ sub try_synth {
 		#"-trace-conditions", "-trace-temps", "-omit-pf-af",
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, $f1num, $f2num, "f", "tests");
+    print "@args\n";
     open(LOG, "-|", @args);
     my($success, %fields);
     $success = 0;
