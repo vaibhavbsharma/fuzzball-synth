@@ -1,0 +1,35 @@
+use strict;
+use Time::HiRes qw(time alarm);
+$| = 1;
+
+my $hard_timeout = 60; #seconds
+for (my $f1_num=0; $f1_num <= 1314; $f1_num++) {
+    my $f2_num = $f1_num + 1;
+    print "$f1_num\n";
+    #my @cmd = ("ls ",sprintf("-ltr"));
+    #my @cmd = ("perl","sleep-parent.pl");
+    #my @cmd = ("perl synth-one.pl 0 ",sprintf("1 0"));
+    my @cmd = ("perl synth-one.pl",sprintf("%d %d 0",$f1_num,$f2_num),"2>&1");
+    my $pid=0;
+    eval {
+	local $SIG{ALRM} = sub { die "alarm\n" };
+	alarm $hard_timeout;
+	print "@cmd\n";
+	$pid = open(LOG, "-|", join(" ",@cmd)) or die "Failed to execute command";
+	while (<LOG>) {
+	    print $_;
+	    next;
+	}
+	close LOG;
+	alarm 0;
+    };
+    print "*******Stopped******\n";
+    print $@;
+    print "*******Stopped******\n";
+    if ($@ eq "alarm\n") {
+	print "calling close LOG\n";
+	kill 'TERM',$pid;
+	close LOG or warn $! ? "Error closing pipe: $!":"Exit status $? from close";
+	print "killed by alarm\n";
+    }
+}
