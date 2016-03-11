@@ -261,5 +261,5 @@ while (!$done) {
     }
 
     $adapt = try_synth(\@tests);
-    print "Synthesized adaptor $adapt_s\n";
+    print "Synthesized adaptor ".join(",",@$adapt)."\n";
 }
