@@ -181,7 +181,7 @@ let check_adaptor () =
   let rec read_results (matches, fails) record_ce = 
     try
       let line = input_line ic in
-      (*let _ = printf " %s\n%!" line in*)
+      let _ = printf " %s\n%!" line in
       match line with
       | "Match" -> read_results (matches + 1, fails) record_ce
       | "Mismatch" -> read_results (matches, fails + 1) true
@@ -242,16 +242,16 @@ let try_synth () =
   let rec read_results success = 
     try
       let line = input_line ic in
-      (*let _ = if not (match_regex line "^Input vars: .*$")
+      let _ = if not (match_regex line "^Input vars: .*$")
               then printf " %s\n%!" line 
-              else () in*)
+              else () in
       match line with 
       | "All tests succeeded!" -> read_results true
       | _ when (match_regex line "^Input vars: .*$") && success ->
           (* use regular expressions to pull out values for the adaptor fields
              and return the adaptor *)
           let specified_vals = ref [] in
-          (*printf "  %s\n%!" line;*)
+          printf "  %s\n%!" line;
           List.iter 
             (fun v ->
                if (match_regex v "^.*=0x[0-9a-f]+$")
