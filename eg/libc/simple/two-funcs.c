@@ -138,6 +138,16 @@
 #undef RETURN
 #undef ERROR
 
+/* Equivalent with 0,00000000,0,00000000,0,00000001,1,00000001 */
+int _f1(int x, unsigned y){//, int z) {
+    return (x << 1) + (y % 2);// + (z << 1);
+}
+
+int _f2(int a, int b, int c, int d,int e){//, int f) {
+    return c + d + (a & b) + e;// + f;
+    //return a + b + (c & d);
+}
+
 int arch_prctl(int, unsigned long);
 caddr_t create_module(const char *, size_t);
 int delete_module(const char *, int);
@@ -1526,8 +1536,11 @@ struct func_info funcs[] = {
     /* 1313 */ {"setusershell", (func*)&setusershell, 0, 0},
     /* 1314 */ {"getpass", (func*)&getpass, 1, 0},
     /* 1315 */ {"ttyslot", (func*)&ttyslot, 0, 0},
+    /* 1316 */ {"_f1", (func*)&_f1, 2, 0},
+    /* 1317 */ {"_f2", (func*)&_f2, 5, 0},
 
 };
+
 
 int f1num, f2num;
 
@@ -1536,7 +1549,9 @@ long f1(long a, long b, long c, long d, long e, long f) {
 }
 
 long f2(long a, long b, long c, long d, long e, long f) {
-    return (funcs[f2num].fptr)(a, b, c, d, e, f);
+  printf("Starting f2\n");
+  fflush(stdout);
+  return (funcs[f2num].fptr)(a, b, c, d, e, f);
 }
 
 long wrap_f2(long a, long b, long c, long d, long e, long f) {
