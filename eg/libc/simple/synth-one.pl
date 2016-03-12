@@ -7,6 +7,8 @@ die "Usage: synth-one.pl <f1num> <f2num> <seed>"
 my($f1num, $f2num, $rand_seed) = @ARGV;
 
 srand($rand_seed);
+my $path_depth_limit = 300;
+
 
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
@@ -142,6 +144,8 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
 		@synth_opt, @conc_adapt,
+		"-return-zero-missing-x64-syscalls",
+		"-path-depth-limit", $path_depth_limit,
 		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
@@ -198,6 +202,7 @@ sub try_synth {
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, "-fuzz-start-addr", $main_addr,
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
+		"-return-zero-missing-x64-syscalls",
 		@synth_opt,
 		"-branch-preference", "$match_jne_addr:1",
 		#"-trace-conditions", "-trace-temps", "-omit-pf-af",
