@@ -61,7 +61,9 @@ my @trace_args = ("-trace-stopping",
 		  "-tracepoint", "0xc0000000:R_RAX:reg64_t");
 my @solver_args = ("-solver-path", $solver,
 		   "-solver", "smtlib",
-		   "-solver-timeout", 10);
+		   "-solver-timeout", 10,
+		   "-ite-ivc",
+		  );
 my @limit_args = ("-num-paths", $iters_limit,
 		  "-iteration-limit", 1000);
 #my @syscall_args = ("-linux-syscalls",
@@ -108,6 +110,7 @@ my @got_locs =
    [0x3bf870, 0x3bf400], #_IO_2_1_stdout_
    [0x3bded0, 0x3be720], # __memalign_hook
    [0x3bdee0, 0x3be740], # __malloc_hook
+   [0x3bdea8, 0x3c14a0], # environ
 
    # Relocations
    [0x3be720, 0x083bf0], # memalign_hook_ini
@@ -162,7 +165,7 @@ for my $func (@funcs) {
     my $start_time = time();
     my $timed_out = 0;
     my %seen;
-    my($iters_started, $iters_finished) = (0, 0);
+    my($iters_started, $iters_returned, $iters_finished) = (0, 0, 0);
     eval {
 	local $SIG{ALRM} = sub { die "alarm\n" };
 	alarm $hard_timeout;
@@ -180,6 +183,7 @@ for my $func (@funcs) {
 	    } elsif (/^At c0000000, R_RAX:reg64_t is /) {
 		s/initial_rax//g;
 		# Ignore the "use" of %rax in the final %rax value
+		$iters_returned++;
 		next;
 	    }
 	    #print $_;
@@ -220,7 +224,8 @@ for my $func (@funcs) {
     } else {
 	$iters = $iters_started;
     }
-    printf "(%8.3f%s%3d) ", $time, ($timed_out ? "T" : " "), $iters;
+    printf "(%8.3f%s%3d/%3d) ", $time, ($timed_out ? "T" : " "),
+      $iters_returned, $iters;
     my $std_args = join(" ",
 			($seen{"rdi"} ? "rdi" : "   "),
 			($seen{"rsi"} ? "rsi" : "   "),

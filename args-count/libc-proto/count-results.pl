@@ -64,6 +64,7 @@ sub format_regs {
 my $strange_terms = 0;
 my $solver_touts = 0;
 my $div_zeros = 0;
+my $bad_insns = 0;
 my $hard_touts = 0;
 my $pathouts = 0;
 my $completes = 0;
@@ -95,15 +96,17 @@ while (<>) {
 	    $solver_touts++;
 	} elsif ($f =~ /Division_by_zero/) {
 	    $div_zeros++;
+	} elsif ($f =~ /unhandled unknown Unrecognized binary op in cfold_with_type/) {
+	    $bad_insns++;
 	} else {
-	    die;
+	    die "Unexpected fatal error $f";
 	}
 	$fail = 1;
 	$line = $pre . scalar(<>);
     }
-    $line =~ /^\s*\w+: \(\s*(\d+\.\d+)([T ])\s*(\d+)\)([a-z0-9 ]+)/
+    $line =~ m{^\s*\w+: \(\s*(\d+\.\d+)([T ])(?:\s*(\d+)/)?\s*(\d+)\)([a-z0-9 ]+)}
 	or die "parse failure on <$line>";
-    my($time, $tout, $paths, $regs) = ($1, $2, $3, $4);
+    my($time, $tout, $rets, $paths, $regs) = ($1, $2, $3, $4, $5);
     $total_time += $time;
     my @regs = split(" ", $regs);
     $args_seen += @regs;
@@ -150,14 +153,14 @@ while (<>) {
 	    die "$name $r";
 	}
     }
-    printf "%30s: (%8.3f%s%s%3d) %s\n", $name, $time, $tout,
-      ($fail ? "F" : " "), $paths, format_regs(@regs);
-    print " " x 48, format_regs(@expected_regs), "\n";
+    printf "%30s: (%8.3f%s%s%3d/%3d) %s\n", $name, $time, $tout,
+      ($fail ? "F" : " "), $rets, $paths, format_regs(@regs);
+    print " " x 52, format_regs(@expected_regs), "\n";
 }
 
-print  "StrTerm SolvTO Div0 HardTO PathO Compl\n";
-printf "   %4d   %4d %4d   %4d  %4d  %4d\n",
-    $strange_terms, $solver_touts, $div_zeros, $hard_touts,
+print  "StrTerm SolvTO Div0 BadInsn HardTO PathO Compl\n";
+printf "   %4d   %4d %4d    %4d   %4d  %4d  %4d\n",
+    $strange_terms, $solver_touts, $div_zeros, $bad_insns, $hard_touts,
     $pathouts, $completes;
 print "\n";
 print  "Arguments:   seen    expected\n";
