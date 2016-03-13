@@ -69,6 +69,25 @@ my @limit_args = ("-num-paths", $iters_limit,
 #		    "-symbolic-syscall-error", 38); # ENOSYS
 my @syscall_args = ("-noop-syscalls", "-trace-syscalls");
 
+# Thread-local-data storage locations
+# objdump -x libc-2.19.so | fgrep libc_tsd
+my @tsd_locs =
+  ([0x00, -176], # __libc_tsd_LOCALE, observed
+   [0x40, -112], # __libc_tsd_CTYPE_B, observed
+   [0x70, -64], # __libc_tsd_MALLOC, observed
+   [0x20, -400], # __libc_tsd_CTYPE_TOUPPER, made up
+   [0x30, -600], # __libc_tsd_CTYPE_TOLOWER, made up
+   [0xa0, -800], # __libc_tsd_RPC_VARS?, made up
+   [0x1c0, -1000], # __libc_tsd_RPC_VARS, made up
+   [0x230, -1200], # __libc_resp, made up
+  );
+my $tsd_got_base = 0x3bddc0; # .got + 0x30
+for my $l (@tsd_locs) {
+    my $addr = $load_base + $tsd_got_base + $l->[0];
+    my $val = $l->[1];
+    push @state_args, "-store-long", sprintf("0x%08Lx=%d", $addr, $val);
+}
+
 my %sym2addr;
 open(NM, "nm -n $libc |") or die;
 while (<NM>) {
