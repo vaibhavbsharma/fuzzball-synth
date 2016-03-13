@@ -72,18 +72,21 @@ my @limit_args = ("-num-paths", $iters_limit,
 my @syscall_args = ("-noop-syscalls", "-trace-syscalls");
 
 # Thread-local-data storage locations
-# objdump -x libc-2.19.so | fgrep libc_tsd
+# objdump -R libc-2.19.so| fgrep TPOFF
+# then read the actual values with GDB
 my @tsd_locs =
-  ([0x00, -176], # __libc_tsd_LOCALE, observed
-   [0x40, -112], # __libc_tsd_CTYPE_B, observed
-   [0x70, -64], # __libc_tsd_MALLOC, observed
-   [0x20, -400], # __libc_tsd_CTYPE_TOUPPER, made up
-   [0x30, -600], # __libc_tsd_CTYPE_TOLOWER, made up
-   [0xa0, -800], # __libc_tsd_RPC_VARS?, made up
-   [0x1c0, -1000], # __libc_tsd_RPC_VARS, made up
-   [0x230, -1200], # __libc_resp, made up
+  ([0x000,  -64],
+   [0x008,   -8],
+   [0x030, -176], # __libc_tsd_LOCALE
+   [0x080, -112], # __libc_tsd_CTYPE_B
+   [0x0d8,  -20],
+   [0x0e8, -160],
+   [0x158, -144],
+   [0x1a0, -128],
+   [0x200,  -16],
+   [0x270, -168],
   );
-my $tsd_got_base = 0x3bddc0; # .got + 0x30
+my $tsd_got_base = 0x3bdd80; # .got
 for my $l (@tsd_locs) {
     my $addr = $load_base + $tsd_got_base + $l->[0];
     my $val = $l->[1];
