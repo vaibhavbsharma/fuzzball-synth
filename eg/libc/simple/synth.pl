@@ -2,10 +2,10 @@ use strict;
 use Time::HiRes qw(time alarm);
 $| = 1;
 
-my $hard_timeout = 60; #seconds
+my $hard_timeout = 120; #seconds
 for (my $f1_num=0; $f1_num <= 1314; $f1_num++) {
     my $f2_num = $f1_num + 1;
-    print "$f1_num\n";
+    print "Startin synthesis for $f1_num and $f2_num\n";
     #my @cmd = ("ls ",sprintf("-ltr"));
     #my @cmd = ("perl","sleep-parent.pl");
     #my @cmd = ("perl synth-one.pl 0 ",sprintf("1 0"));
