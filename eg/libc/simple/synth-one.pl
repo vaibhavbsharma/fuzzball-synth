@@ -156,10 +156,15 @@ sub check_adaptor {
     my($matches, $fails) = (0, 0);
     my(@ce, $this_ce);
     $this_ce = 0;
+    my $f1_completed = 0;
     while (<LOG>) {
 	if ($_ eq "Match\n") {
 	    $matches++;
-	} elsif ($_ eq "Mismatch\n") {
+	} elsif ($_ eq "Completed f1\n") {
+	    $f1_completed = 1;
+	} elsif (($_ eq "Mismatch\n") or 
+		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
+		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1)) {
 	    $fails++;
 	    $this_ce = 1;
 	} elsif (/^Input vars: (.*)$/ and $this_ce) {
@@ -175,6 +180,7 @@ sub check_adaptor {
 	    last;
 	}
 	print "  $_";
+	#print "$fails $this_ce $f1_completed   $_";
     }
     close LOG;
     if ($matches == 0 and $fails == 0) {
