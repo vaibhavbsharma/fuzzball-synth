@@ -61,6 +61,32 @@ sub format_regs {
     return join(" ", $std_args, sort keys %seen);
 }
 
+sub format_reg_color {
+    my($r, $seen_r, $wanted_r) = @_;
+    if ($seen_r->{$r} and $wanted_r->{$r}) {
+	return $r; # True positive: plain
+    } elsif (!$seen_r->{$r} and !$wanted_r->{$r}) {
+	return " " x length($r); # True negative: blank
+    } elsif ($seen_r->{$r} and !$wanted_r->{$r}) {
+	return "\e[01;31m$r\e[0m"; # False positive: bold red
+    } elsif (!$seen_r->{$r} and $wanted_r->{$r}) {
+	return "\e[01;36m$r\e[0m"; # False negative: bold cyan
+    }
+}
+
+sub format_regs_color {
+    my($seen_r, $wanted_r) = @_;
+    my %seen = %$seen_r;
+    my %wanted = %$wanted_r;
+    my @std_args = ("rdi", "rsi", "rdx", "rcx", "r8", "r9");
+    my $std_args = join(" ", map(format_reg_color($_, $seen_r, $wanted_r),
+				 @std_args));
+    my %both = (%seen, %wanted);
+    delete @both{@std_args};
+    return join(" ", $std_args, map(format_reg_color($_, $seen_r, $wanted_r),
+				    sort keys %both));
+}
+
 my $strange_terms = 0;
 my $solver_touts = 0;
 my $div_zeros = 0;
@@ -153,9 +179,15 @@ while (<>) {
 	    die "$name $r";
 	}
     }
-    printf "%30s: (%8.3f%s%s%3d/%3d) %s\n", $name, $time, $tout,
-      ($fail ? "F" : " "), $rets, $paths, format_regs(@regs);
-    print " " x 52, format_regs(@expected_regs), "\n";
+    if (0) {
+	printf "%30s: (%8.3f%s%s%3d/%3d) %s\n", $name, $time, $tout,
+	  ($fail ? "F" : " "), $rets, $paths, format_regs(@regs);
+	print " " x 52, format_regs(@expected_regs), "\n";
+    } else {
+	printf "%30s: (%8.3f%s%s%3d/%3d) %s\n", $name, $time, $tout,
+	  ($fail ? "F" : " "), $rets, $paths,
+	    format_regs_color(\%seen_set, \%expected_set);
+    }
 }
 
 print  "StrTerm SolvTO Div0 BadInsn HardTO PathO Compl\n";
