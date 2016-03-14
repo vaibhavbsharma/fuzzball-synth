@@ -127,7 +127,7 @@ for my $l (@got_locs) {
 }
 
 my %sym2addr;
-open(NM, "nm -n $libc |") or die;
+open(NM, "nm -nD $libc |") or die;
 while (<NM>) {
     next unless /^([0-9a-f]{16}) (.) (.*)$/;
     my($addr, $type, $name) = (hex($1), $2, $3);
@@ -155,6 +155,7 @@ if (not @funcs) {
 }
 
 for my $func (@funcs) {
+    die "Unrecognized function $func" unless exists $sym2addr{$func};
     my $addr = $sym2addr{$func};
     my $start_addr = $load_base + $addr;
     my @cmd = ($fuzzball, @base_args, @state_args, @trace_args,
