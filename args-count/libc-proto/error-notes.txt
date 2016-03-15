@@ -1,0 +1,116 @@
+False positives:
+
+fscanf:rax
+scanf:rax
+sscanf:rax
+swscanf:rax
+wscanf:rax
+fwscanf:rax
+
+va_start code check of %al for vector arg count is not optimized away
+when the va_list is passed to another function
+
+semtimedop:r8
+
+Syscall argument counting weirdness
+
+backtrace_symbols:r14
+
+Giant stack-allocated array leads to seeming switch off stack
+
+ether_aton:rbx
+ether_aton_r:rbx
+ether_line:r12
+
+Partial register use:
+
+  110cbe:       0f 96 c3                setbe  %bl
+  110cce:       84 db                   test   %bl,%bl
+
+getipv4sourcefilter:r12
+getipv4sourcefilter:r13
+getipv4sourcefilter:r14
+getipv4sourcefilter:r15
+getipv4sourcefilter:rbp
+getipv4sourcefilter:rbx
+
+Out-of-control memcpy (rep-movsq) copies whole stack frame
+
+0049181b: rep movsq %ds:(%rsi),%es:(%rdi)
+
+getnetname:rbx
+
+00488b0c: pminub 0x60(%rax),%xmm8
+
+Unterminated strlen over the stack
+
+posix_spawnp:r12
+
+00493a23: movdqu (%rdi),%xmm0
+
+Unterminated strchrnul over the stack?
+
+frexp:rsi
+
+Partial register use:
+
+00436325: setp   %sil
+00436329: cmove  %esi,%edx
+0043632c: test   %dl,%dl
+
+fmtmsg:r10
+
+Partial register use:
+
+00449073: setne  %r10b
+004490c8: test   %r10b,%r10b
+
+freopen:r14
+freopen64:r14
+
+Partial register use:
+
+00471653: sete   %r14b
+00479df6: push   %r14
+
+malloc:r11
+malloc_get_state:r11
+calloc:r11
+
+Partial register use:
+
+004800f9: sete   %r11b
+00480102: or     %cl,%r11b
+   80813:       44 89 5c 24 30          mov    %r11d,0x30(%rsp)
+
+wcscmp:rcx
+wcscoll:rcx
+wcscoll_l:rcx
+
+Partial register use
+
+004a1f78: mov    %al,%ch
+004a1f7a: mov    %dl,%cl
+
+ftime:r11
+
+Partial register use
+
+004800f9: sete   %r11b
+00480102: or     %cl,%r11b
+
+sleep:rsi
+
+Strange shouldn't happen call to abort related to threading?
+
+glob:rax
+
+Partial register use:
+
+004c3e6a: sete   %al
+004c3e6d: or     %al,%dl
+
+reboot:r10
+
+The modern syscall takes a special extra argument that libc does not
+know about or support.
