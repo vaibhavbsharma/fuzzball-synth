@@ -39,10 +39,13 @@ Out-of-control memcpy (rep-movsq) copies whole stack frame
 0049181b: rep movsq %ds:(%rsi),%es:(%rdi)
 
 getnetname:rbx
+getdomainname:r12
+getdomainname:rbx
+getdomainname:rbp
 
 00488b0c: pminub 0x60(%rax),%xmm8
 
-Unterminated strlen over the stack
+Unterminated? strlen over the stack
 
 posix_spawnp:r12
 
@@ -101,7 +104,7 @@ Partial register use
 
 sleep:rsi
 
-Strange shouldn't happen call to abort related to threading?
+Strange shouldn't happen call to abort, related to threading?
 
 glob:rax
 
