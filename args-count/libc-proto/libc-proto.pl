@@ -127,12 +127,14 @@ for my $l (@got_locs) {
 }
 
 my %sym2addr;
+my %sym2type;
 open(NM, "nm -nD $libc |") or die;
 while (<NM>) {
     next unless /^([0-9a-f]{16}) (.) (.*)$/;
     my($addr, $type, $name) = (hex($1), $2, $3);
     if ($addr != 0) {
 	$sym2addr{$name} = $addr;
+	$sym2type{$name} = $type;
     }
 }
 close NM;
@@ -157,6 +159,7 @@ if (not @funcs) {
 for my $func (@funcs) {
     die "Unrecognized function $func" unless exists $sym2addr{$func};
     my $addr = $sym2addr{$func};
+    next if $sym2type{$func} eq "i"; # Not supported yet
     my $start_addr = $load_base + $addr;
     my @cmd = ($fuzzball, @base_args, @state_args, @trace_args,
 	       @solver_args, @limit_args, @syscall_args,

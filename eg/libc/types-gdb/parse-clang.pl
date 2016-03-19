@@ -1,5 +1,9 @@
 #!/usr/bin/perl
 
+# Usage:
+# First, follow the directions in nm-to-c.pl. Then,
+# % clang -Wno-deprecated-declarations -Xclang -ast-dump ptrs.c | perl parse-clang.pl >clang-types.out
+
 use strict;
 
 my @names;
@@ -38,5 +42,5 @@ for my $i (0 .. $#names) {
     } else {
 	$num_args = $commas + 1;
     }
-    printf "%4d %-2s %s %s %s\n", $i, $num_args, $name, $type;
+    printf "%4d %-2s %s %s\n", $i, $num_args, $name, $type;
 }

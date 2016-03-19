@@ -33,6 +33,9 @@ while (<F>) {
 	for my $a (@args) {
 	    if ($a eq "float" or $a eq "double") {
 		$fp_args++;
+	    } elsif ($a eq "ENTRY") {
+		# Two-pointer struct, passed like two arguments
+		$int_args += 2;
 	    } else {
 		$int_args++;
 	    }
@@ -45,6 +48,70 @@ while (<F>) {
     push @known_funcs, $name;
 }
 close F;
+
+# The information in a C prototype for a varargs function isn't
+# specific enough to match up with what our analysis reports. The
+# explicit arguments are guaranteed to be there, but it doesn't
+# predict how many variable arguments might be passed, or whether any
+# of the variable arguments will be in vector registers (e.g.,
+# floating point). Also, only if there might be vector registers will
+# %al be checked for their count. So here we record for each function
+# the maximum total number of integer-register arguments and the
+# maximum total number of vector-register arguments. -1 means unlimited.
+my %varargs_info =
+  (
+   # Execl-family functions can have a lot of integer args
+   "execl"  => [-1, 0],
+   "execlp" => [-1, 0],
+   "execle" => [-1, 0],
+   # Printf family functions can take lots of args of both kinds
+   # Printf-subfamily: error reporting
+   "syslog"        => [-1, -1],
+   "warn"          => [-1, -1],
+   "warnx"         => [-1, -1],
+   "err"           => [-1, -1],
+   "errx"          => [-1, -1],
+   "error"         => [-1, -1],
+   "error_at_line" => [-1, -1],
+   "argp_failure"  => [-1, -1],
+   "argp_error"    => [-1, -1],
+   # Printf-like functions with "printf" but no "v" in the name:
+   "fprintf"        => [-1, -1],
+   "printf"         => [-1, -1],
+   "snprintf"       => [-1, -1],
+   "sprintf"        => [-1, -1],
+   "asprintf"       => [-1, -1],
+   "dprintf"        => [-1, -1],
+   "obstack_printf" => [-1, -1],
+   "swprintf"       => [-1, -1],
+   "fwprintf"       => [-1, -1],
+   "wprintf"        => [-1, -1],
+   # Printf-like family: strfmon, takes doubles only
+   "strfmon"       => [3, -1],
+   "strfmon_l"     => [4, -1],
+   # Scanf family functions are a special case: they don't actually
+   # take any float variable arguments, but because the glibc wrapper
+   # implementation is a separate function, GCC is unable to optimize
+   # the SSE register saving away.
+   "fscanf" =>  [-1, 0],
+   "scanf" =>   [-1, 0],
+   "sscanf" =>  [-1, 0],
+   "swscanf" => [-1, 0],
+   "wscanf" =>  [-1, 0],
+   "fwscanf" => [-1, 0],
+   # System-call-related varargs functions
+   "syscall" => [7, 0],
+   "clone"   => [7, 0],
+   "mremap"  => [5, 0],
+   "prctl"   => [5, 0],
+   "semctl"  => [4, 0],
+   "open"    => [3, 0],
+   "openat"  => [4, 0],
+   "fcntl"   => [3, 0],
+   "ulimit"  => [2, 0],
+   "ioctl"   => [3, 0],
+   "ptrace"  => [4, 0],
+  );
 
 sub format_regs {
     my(@regs) = @_;
@@ -104,6 +171,9 @@ my $args_fp = 0;
 my $num_funcs = 0;
 my $total_time = 0;
 
+my @preserved_regs = qw(r12 r13 r14 r15 rbp rbx);
+my @int_args_regs = qw(rdi rsi rdx rcx r8 r9);
+
 while (<>) {
     if (/^(\s*(\w+): )$/) {
 	print "Incomplete at $2\n";
@@ -146,7 +216,33 @@ while (<>) {
     my $info = $func_info{$name};
     die unless $info;
     my($int_args, $fp_args, $is_varargs) = @$info[4, 5, 6];
+    my($va_int_max, $va_fp_max);
+    my $is_fp_va = 0;
     my @expected_regs = ();
+    if ($name =~ /^_?setjmp/) {
+	@expected_regs = ("rdi", @preserved_regs);
+    } elsif ($name =~ /^(get|swap)context$/) {
+	@expected_regs = (@int_args_regs, @preserved_regs);
+    } elsif ($name eq "makecontext") {
+	@expected_regs = @int_args_regs;
+    } elsif ($name eq "mcount") {
+	@expected_regs = ("rbp");
+    } elsif ($is_varargs) {
+	if (exists $varargs_info{$name}) {
+	    ($va_int_max, $va_fp_max) = @{$varargs_info{$name}};
+	    if ($va_int_max == -1) {
+		$va_int_max = 6;
+	    }
+	    $int_args = $va_int_max;
+	    if ($va_fp_max == -1) {
+		$va_fp_max = 8;
+	    }
+	    $is_fp_va = 1 if $va_fp_max > $fp_args;
+	    $fp_args = $va_fp_max;
+	} else {
+	    die "Missing varargs_info for $name\n";
+	}
+    }
     push @expected_regs, "rdi" if $int_args >= 1;
     push @expected_regs, "rsi" if $int_args >= 2;
     push @expected_regs, "rdx" if $int_args >= 3;
@@ -159,7 +255,9 @@ while (<>) {
     push @expected_regs, "xmm3" if $fp_args >= 4;
     push @expected_regs, "xmm4" if $fp_args >= 5;
     push @expected_regs, "xmm5" if $fp_args >= 6;
-    push @expected_regs, "rax" if $is_varargs;
+    push @expected_regs, "xmm6" if $fp_args >= 7;
+    push @expected_regs, "xmm7" if $fp_args >= 8;
+    push @expected_regs, "rax" if $is_fp_va;
     $args_expected += @expected_regs;
     my %seen_set;
     @seen_set{@regs} = (1) x @regs;
