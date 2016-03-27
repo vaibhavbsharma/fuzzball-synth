@@ -72,6 +72,9 @@ my $wrap_f2_addr = "0x" . substr(`nm $bin | fgrep " T wrap_f2"`, 0, 16);
 my $f2_call_addr =
   "0x" . substr(`objdump -dr $bin | grep 'call.*<wrap_f2>'`, 2, 6);
 
+my $post_f1_call = sprintf("0x%x",hex($f1_call_addr)+0x5);
+my $post_f2_call = sprintf("0x%x",hex($f2_call_addr)+0x5);
+
 my @arg_addr;
 for my $i (0 .. 5) {
     $arg_addr[$i] =
@@ -143,6 +146,9 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
+		#"-trace-syscalls",
+		"-match-syscalls-in-addr-range",
+		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt,
 		"-return-zero-missing-x64-syscalls",
 		"-path-depth-limit", $path_depth_limit,
@@ -158,13 +164,14 @@ sub check_adaptor {
     $this_ce = 0;
     my $f1_completed = 0;
     while (<LOG>) {
-	if ($_ eq "Match\n") {
+	if ($_ eq "Match\n" ) {
 	    $matches++;
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
 	} elsif (($_ eq "Mismatch\n") or 
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
-		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1)) {
+		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
+		 (/^Stopping on disqualified path at (0x[0-9a-f]+)$/ and $f1_completed == 1)) {
 	    $fails++;
 	    $this_ce = 1;
 	} elsif (/^Input vars: (.*)$/ and $this_ce) {
@@ -178,9 +185,8 @@ sub check_adaptor {
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
-	}
+	} 
 	print "  $_";
-	#print "$fails $this_ce $f1_completed   $_";
     }
     close LOG;
     if ($matches == 0 and $fails == 0) {
@@ -210,8 +216,11 @@ sub try_synth {
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-return-zero-missing-x64-syscalls",
 		@synth_opt,
+		"-match-syscalls-in-addr-range",
+		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:1",
 		#"-trace-conditions", "-trace-temps", "-omit-pf-af",
+		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, $f1num, $f2num, "f", "tests");
     print "@args\n";

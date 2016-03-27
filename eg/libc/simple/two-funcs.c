@@ -1549,8 +1549,6 @@ long f1(long a, long b, long c, long d, long e, long f) {
 }
 
 long f2(long a, long b, long c, long d, long e, long f) {
-  printf("Starting f2\n");
-  fflush(stdout);
   return (funcs[f2num].fptr)(a, b, c, d, e, f);
 }
 
@@ -1560,18 +1558,26 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
 
 int compare(long *r1p, long *r2p,
 	    long a0, long a1, long a2, long a3, long a4, long a5) {
-    long r1 = f1(a0, a1, a2, a3, a4, a5);
-    long r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
-    if (r1 == r2) {
-	printf("Match\n");
-    } else {
-	printf("Mismatch\n");
-    }
-    if (r1p)
-	*r1p = r1;
-    if (r2p)
-	*r2p = r2;
-    return r1 == r2;
+  printf("Starting f1\n");  
+  fflush(stdout);
+  long r1 = f1(a0, a1, a2, a3, a4, a5);
+  printf("Completed f1\n");
+  fflush(stdout);
+  printf("Starting f2\n");
+  fflush(stdout);
+  long r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
+  printf("Completed f2\n");
+  fflush(stdout);
+  if (r1 == r2) {
+    printf("Match\n");
+  } else {
+    printf("Mismatch\n");
+  }
+  if (r1p)
+    *r1p = r1;
+  if (r2p)
+    *r2p = r2;
+  return r1 == r2;
 }
 
 long global_arg0, global_arg1, global_arg2,
