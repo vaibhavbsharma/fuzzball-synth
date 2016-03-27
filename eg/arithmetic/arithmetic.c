@@ -51,33 +51,37 @@ int f2(int x) {
 }*/
 
 int f1(int a) {
-    return islower(a);
+    if ((a < 0) | (a  > 127)) {
+        return 0;
+    }
+    if (islower(a)) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 int f2(int x) {
-    return isupper(x);
+    if ((x < 0) | (x  > 127)) {
+        return 0;
+    }
+    if (isupper(x)) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 /*
 // returns 1 if (x,y) is in the square with corners at (0,0), (1,1)
 int f1(int x, int y) {
-    return 0 <= x && x <= 1 && 0 <= y && y <= 1;
+    return 0 <= x & x <= 1 & 0 <= y & y <= 1;
 }
 
 // returns 1 if (x,y) is in the square with corners at (2,1), (4,4)
 int f2(int x, int y) {
-    return 2 <= x && x <= 4 && 1 <= y && y <= 4;
+    return 2 <= x & x <= 4 & 1 <= y & y <= 4;
 }*/
 
-/*
-// returns 1 if (x,y) is in the square with corners at (3,4), (5,7)
-int f2(int x, int y) {
-    return 3 <= x && x <= 5 && 4 <= y && y <= 7;
-}
-
-int poly(x,y,a1,a2) {
-    return x*a1 + y*a2;
-}
-*/
 /* Compare the results of the two functions; note that the second call to f1()
    will be replaced by a call to f2() by FuzzBALL */
 #ifdef A1
@@ -151,7 +155,7 @@ int main(int argc, char **argv) {
         #elif defined(A2)
         while (fscanf(fh, "%x %x", &a, &b) != EOF) {
             compare(a, b);
-            //printf("(%d,%d) -> %d\n", a, b, f1(a,b) == f2(b, 2));
+            //printf("(%d,%d) -> %d\n", a, b, f1(a,b) == f2(3-a, 2-b));
         }
         #elif defined(A3)
         while (fscanf(fh, "%x %x %x", &a, &b, &c) != EOF) {

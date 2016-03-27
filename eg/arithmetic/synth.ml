@@ -28,7 +28,7 @@ let _ =
 
 (*** current adaptor and test set ***)
 
-let tree_depth = 3 (* hardcoded for now *)
+let tree_depth = 2 (* hardcoded for now *)
 
 (* default adaptor has all values set to 0 *)
 let create_adapt num_args =
