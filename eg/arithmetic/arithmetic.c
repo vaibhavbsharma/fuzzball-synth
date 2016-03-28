@@ -24,7 +24,7 @@ int f2(int x) {
 */
 
 // turn off the rightmost 1 bit: equivalent with x = a & (a-1)
-/*int f1(int a) {
+int f1(int a) {
     int i;
     
     if (a == 0) {
@@ -40,16 +40,10 @@ int f2(int x) {
 }
 int f2(int x) {
     return x;
-}*/
+}
+
 
 /*
-int f1(int a, int b) {
-    return a + b;
-}
-int f2(int x) {
-    return x;
-}*/
-
 int f1(int a) {
     if ((a < 0) | (a  > 127)) {
         return 0;
@@ -70,7 +64,7 @@ int f2(int x) {
     } else {
         return 0;
     }
-}
+}*/
 /*
 // returns 1 if (x,y) is in the square with corners at (0,0), (1,1)
 int f1(int x, int y) {
@@ -150,7 +144,10 @@ int main(int argc, char **argv) {
         }
         #ifdef A1
         while (fscanf(fh, "%x", &a) != EOF) {
-            compare(a);
+            //compare(a);
+            int r1 = f1(a);
+            int r2 = f2((0xfffff + a) & (a * 0xa4400001));
+            printf("%x\t->\t%d (%x / %x)\n", a, r1 == r2, r1, r2);
         }
         #elif defined(A2)
         while (fscanf(fh, "%x %x", &a, &b) != EOF) {

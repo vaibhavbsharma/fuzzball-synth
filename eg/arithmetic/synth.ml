@@ -28,7 +28,7 @@ let _ =
 
 (*** current adaptor and test set ***)
 
-let tree_depth = 2 (* hardcoded for now *)
+let tree_depth = 3 (* hardcoded for now *)
 
 (* default adaptor has all values set to 0 *)
 let create_adapt num_args =
@@ -48,13 +48,6 @@ let create_adapt num_args =
 let adapt = ref (create_adapt inner_nargs)
 
 let tests = ref [] (* will be a list of lists *)
-
-
-(*** (optional) restrict the generated counterexamples ***)
-
-(* may be useful for ignoring edge cases on which f1 and f2 should diverge *)
-let restrict_counterexamples = [(*"-extra-condition \"a:reg32_t<2147483646:reg32_t\"";
-                                "-extra-condition \"b:reg32_t<1431655764:reg32_t\""*)]
 
 
 (*** utility functions ***)
@@ -132,7 +125,7 @@ let match_jne_addr =
   | [str] -> "0x" ^ String.sub str 2 6
   | _ -> failwith "Unexpected jne address format"
 
-let solver_opts = ["-solver"; "smtlib-batch"; "-solver-path"; stp]
+let solver_opts = ["-solver"; "smtlib-batch"; "-save-solver-files"; "-solver-path"; stp]
 
 let fields = 
   let rec create_tree d base var_name =
@@ -164,7 +157,6 @@ let check_adaptor () =
                "arithmetic_int:" ^
                outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^
                inner_func_addr ^ ":" ^ (string_of_int inner_nargs)]
-            @ restrict_counterexamples
             @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
             @ ["-zero-memory";
                "-random-seed"; string_of_int (Random.int 10000000); 
