@@ -54,7 +54,7 @@ my @state_args = ("-symbolic-regs",
 		  "-fuzz-end-addr", "0xc0000001");
 my @trace_args = ("-trace-stopping",
 		  "-trace-iterations", "-trace-completed-iterations",
-		  "-trace-loads", "-trace-stores",
+		  #"-trace-loads", "-trace-stores",
 		  "-track-sym-usage",
 		  "-tracepoint", "0xc0000000:R_RAX:reg64_t");
 my @solver_args = ("-solver-path", $solver,
@@ -181,11 +181,13 @@ for my $func (@funcs) {
 	    } elsif (/^Iteration (\d+) completed/) {
 		$iters_finished = $1;
 	    }
-	    if (/^(Store to|Load from) conc\. mem bff..... = initial_\w+_\d+:reg64_t/) {
-		# Ignore saves and restores of unmodified registers
-		# on the stack
-		next;
-	    } elsif (/^At c0000000, R_RAX:reg64_t is /) {
+ 	    if (/^(Store to|Load from) /) {
+		# Ignore the output of -trace-loads and -trace-stores.
+		# Register usage in the loaded/stored value is now tracked
+		# with -track-sym-usage, but it's nice to still be able
+		# to turn the options on for debugging.
+ 		next;
+ 	    } elsif (/^At c0000000, R_RAX:reg64_t is /) {
 		s/initial_rax//g;
 		# Ignore the "use" of %rax in the final %rax value
 		$iters_returned++;
@@ -213,6 +215,8 @@ for my $func (@funcs) {
 	    $seen{"xmm3"}++ if /initial_ymm3_0/;
 	    $seen{"xmm4"}++ if /initial_ymm4_0/;
 	    $seen{"xmm5"}++ if /initial_ymm5_0/;
+	    $seen{"xmm6"}++ if /initial_ymm6_0/;
+	    $seen{"xmm7"}++ if /initial_ymm7_0/;
 	}
 	close LOG;
 	alarm 0;
