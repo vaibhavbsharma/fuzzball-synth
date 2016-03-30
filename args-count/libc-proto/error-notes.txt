@@ -61,6 +61,17 @@ Partial register use:
 00436329: cmove  %esi,%edx
 0043632c: test   %dl,%dl
 
+initial_rsi is non-trivially irrelevant in:
+
+t5 =  cast( initial_ymm0_0_282:reg64_t ==.e 0:reg64_t  ? 0x40:reg32_t :
+ ( initial_ymm0_0_282:reg64_t <.e 0:reg64_t  ? 1:reg32_t :
+ ( 0:reg64_t <.e initial_ymm0_0_282:reg64_t  ? 0:reg32_t : 0x45:reg32_t)))U:
+ reg64_t & 0x45:reg64_t
+t6 = cast(cast( t5_436:reg64_t >> 6:reg32_t )L:reg1_t ?
+  cast(initial_rsi_266:reg64_t)L:reg32_t & 0xffffff00:reg32_t  : 1:reg32_t)U:
+ reg64_t
+Symbolic branch condition (0x0043632e)  cast(cast(t6_462:reg64_t)L:reg8_t)U:reg64_t == 0:reg64_t
+
 fmtmsg:r10
 
 Partial register use:
