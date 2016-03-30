@@ -175,9 +175,11 @@ for my $func (@funcs) {
 	local $SIG{ALRM} = sub { die "alarm\n" };
 	alarm $hard_timeout;
 	open(LOG, "-|", @cmd) or die;
+	my $ignoring_rax = 0;
 	while (<LOG>) {
 	    if (/^Iteration (\d+):/) {
 		$iters_started = $1;
+		$ignoring_rax = 0;
 	    } elsif (/^Iteration (\d+) completed/) {
 		$iters_finished = $1;
 	    }
@@ -195,6 +197,7 @@ for my $func (@funcs) {
  	    } elsif (/^At c0000000, R_RAX:reg64_t is /) {
 		s/initial_rax//g;
 		# Ignore the "use" of %rax in the final %rax value
+		$ignoring_rax = 1;
 		$iters_returned++;
 		next;
 	    }
@@ -205,7 +208,7 @@ for my $func (@funcs) {
 	    $seen{"rcx"}++ if /initial_rcx/;
 	    $seen{"r8"}++ if /initial_r8/;
 	    $seen{"r9"}++ if /initial_r9/;
-	    $seen{"rax"}++ if /initial_rax/;
+	    $seen{"rax"}++ if /initial_rax/ and not $ignoring_rax;
 	    $seen{"rbx"}++ if /initial_rbx/;
 	    $seen{"rbp"}++ if /initial_rbp/;
 	    $seen{"r10"}++ if /initial_r10/;
