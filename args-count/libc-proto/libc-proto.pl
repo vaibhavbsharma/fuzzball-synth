@@ -187,6 +187,11 @@ for my $func (@funcs) {
 		# with -track-sym-usage, but it's nice to still be able
 		# to turn the options on for debugging.
  		next;
+	    } elsif (/^Occurrence of /) {
+		# This message represents a syntactic occurence, but
+		# later FuzzBALL will check whether it's semantically
+		# relevant.
+		next;
  	    } elsif (/^At c0000000, R_RAX:reg64_t is /) {
 		s/initial_rax//g;
 		# Ignore the "use" of %rax in the final %rax value
