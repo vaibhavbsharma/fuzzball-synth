@@ -155,6 +155,7 @@ sub format_regs_color {
 }
 
 my $strange_terms = 0;
+my $not_concs = 0;
 my $solver_touts = 0;
 my $div_zeros = 0;
 my $bad_insns = 0;
@@ -194,6 +195,8 @@ while (<>) {
 	    $div_zeros++;
 	} elsif ($f =~ /unhandled unknown Unrecognized binary op in cfold_with_type/) {
 	    $bad_insns++;
+	} elsif ($f =~ /NotConcrete\(_\)/) {
+	    $not_concs++;
 	} else {
 	    die "Unexpected fatal error $f";
 	}
@@ -288,10 +291,10 @@ while (<>) {
     }
 }
 
-print  "StrTerm SolvTO Div0 BadInsn HardTO PathO Compl\n";
-printf "   %4d   %4d %4d    %4d   %4d  %4d  %4d\n",
-    $strange_terms, $solver_touts, $div_zeros, $bad_insns, $hard_touts,
-    $pathouts, $completes;
+print  "StrTerm SolvTO Div0 BadInsn NotConc HardTO PathO Compl\n";
+printf "   %4d   %4d %4d    %4d    %4d   %4d  %4d  %4d\n",
+    $strange_terms, $solver_touts, $div_zeros, $bad_insns, $not_concs,
+  $hard_touts, $pathouts, $completes;
 print "\n";
 print  "Arguments:   seen    expected\n";
 printf "            %5d       %5d\n", $args_seen, $args_expected;

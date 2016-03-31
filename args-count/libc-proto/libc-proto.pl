@@ -54,10 +54,8 @@ my @state_args = ("-symbolic-regs",
 		  "-fuzz-end-addr", "0xc0000001");
 my @trace_args = ("-trace-stopping",
 		  "-trace-iterations", "-trace-completed-iterations",
-		  "-trace-loads", "-trace-stores",
-		  "-trace-temps", "-omit-pf-af",
-		  "-trace-conditions",
-		  "-trace-sym-addrs",
+		  #"-trace-loads", "-trace-stores",
+		  "-track-sym-usage",
 		  "-tracepoint", "0xc0000000:R_RAX:reg64_t");
 my @solver_args = ("-solver-path", $solver,
 		   "-solver", "smtlib",
@@ -177,19 +175,29 @@ for my $func (@funcs) {
 	local $SIG{ALRM} = sub { die "alarm\n" };
 	alarm $hard_timeout;
 	open(LOG, "-|", @cmd) or die;
+	my $ignoring_rax = 0;
 	while (<LOG>) {
 	    if (/^Iteration (\d+):/) {
 		$iters_started = $1;
+		$ignoring_rax = 0;
 	    } elsif (/^Iteration (\d+) completed/) {
 		$iters_finished = $1;
 	    }
-	    if (/^(Store to|Load from) conc\. mem bff..... = initial_\w+_\d+:reg64_t/) {
-		# Ignore saves and restores of unmodified registers
-		# on the stack
+ 	    if (/^(Store to|Load from) /) {
+		# Ignore the output of -trace-loads and -trace-stores.
+		# Register usage in the loaded/stored value is now tracked
+		# with -track-sym-usage, but it's nice to still be able
+		# to turn the options on for debugging.
+ 		next;
+	    } elsif (/^Occurrence of /) {
+		# This message represents a syntactic occurence, but
+		# later FuzzBALL will check whether it's semantically
+		# relevant.
 		next;
-	    } elsif (/^At c0000000, R_RAX:reg64_t is /) {
+ 	    } elsif (/^At c0000000, R_RAX:reg64_t is /) {
 		s/initial_rax//g;
 		# Ignore the "use" of %rax in the final %rax value
+		$ignoring_rax = 1;
 		$iters_returned++;
 		next;
 	    }
@@ -200,7 +208,7 @@ for my $func (@funcs) {
 	    $seen{"rcx"}++ if /initial_rcx/;
 	    $seen{"r8"}++ if /initial_r8/;
 	    $seen{"r9"}++ if /initial_r9/;
-	    $seen{"rax"}++ if /initial_rax/;
+	    $seen{"rax"}++ if /initial_rax/ and not $ignoring_rax;
 	    $seen{"rbx"}++ if /initial_rbx/;
 	    $seen{"rbp"}++ if /initial_rbp/;
 	    $seen{"r10"}++ if /initial_r10/;
@@ -215,6 +223,8 @@ for my $func (@funcs) {
 	    $seen{"xmm3"}++ if /initial_ymm3_0/;
 	    $seen{"xmm4"}++ if /initial_ymm4_0/;
 	    $seen{"xmm5"}++ if /initial_ymm5_0/;
+	    $seen{"xmm6"}++ if /initial_ymm6_0/;
+	    $seen{"xmm7"}++ if /initial_ymm7_0/;
 	}
 	close LOG;
 	alarm 0;
