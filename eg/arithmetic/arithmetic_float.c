@@ -1,4 +1,4 @@
-/* Examples of functions (with double input and outputs) that can be made 
+/* Examples of functions (with float input and outputs) that can be made 
    equivalent by adaptors that allow trees of arithmetic operations */
 
 #include <assert.h>
@@ -8,44 +8,44 @@
 #include <string.h>
 
 // define AN for N arguments to f1, currently only account for 1-3 arguments
-#define A3
+#define A2
 
 // this allows us to read input as hex values using strtoul
 union Data {
-    unsigned long int ul;
-    double d;
+    int i;
+    float f;
 };
 
 union Data a, b, c;
 
 // distributive law: equivalent with x=(a*b) and y=(a*c)
-double f1(double a, double b, double c) {
+/*float f1(float a, float b, float c) {
     return a * (b + c);
 }
-double f2(double x, double y) {
+float f2(float x, float y) {
     return x + y;
-}
+}*/
 
-//double f1(double x, double y) { return x + y; }
-//double f1(double x, double y) { return x - y; }
-//double f1(double x, double y) { return x * y; }
-//double f2(double x) { return x; }
+float f1(float x, float y) { return x + y; }
+//float f1(float x, float y) { return x - y; }
+//float f1(float x, float y) { return x * y; }
+float f2(float x) { return x; }
 
 /* Compare the results of the two functions; note that the second call to f1()
    will be replaced by a call to f2() by FuzzBALL */
 #ifdef A1
-void compare(double a) {
-    double r1, r2;
+void compare(float a) {
+    float r1, r2;
     r1 = f1(a);
     r2 = f1(a);
 #elif defined(A2)
-void compare(double a, double b) {
-    double r1, r2;
+void compare(float a, float b) {
+    float r1, r2;
     r1 = f1(a, b);
     r2 = f1(a, b);
 #else
-void compare(double a, double b, double c) {
-    double r1, r2;
+void compare(float a, float b, float c) {
+    float r1, r2;
     r1 = f1(a, b, c);
     r2 = f1(a, b, c);
 #endif
@@ -88,27 +88,27 @@ int main(int argc, char **argv) {
             return 1;
         }
         #ifdef A1
-        while (fscanf(fh, "%lx", &a.ul) != EOF) {
-            compare(a.d);
+        while (fscanf(fh, "%x", &a.i) != EOF) {
+            compare(a.f);
         }
         #elif defined(A2)
-        while (fscanf(fh, "%lx %lx", &a.ul, &b.ul) != EOF) {
-            compare(a.d, b.d);
+        while (fscanf(fh, "%x %x", &a.i, &b.i) != EOF) {
+            compare(a.f, b.f);
         }
         #else
-        while (fscanf(fh, "%lx %lx %lx", &a.ul, &b.ul, &c.ul) != EOF) {
-            compare(a.d, b.d, c.d);
+        while (fscanf(fh, "%x %x %x", &a.i, &b.i, &c.i) != EOF) {
+            compare(a.f, b.f, c.f);
         }
         #endif
         printf("All tests succeeded!\n");
     } else if (argc == 1) {
         // here FuzzBALL should be running with a, b, c symbolic
         #ifdef A1
-        compare(a.d);  
+        compare(a.f);  
         #elif defined(A2)
-        compare(a.d, b.d);  
+        compare(a.f, b.f);  
         #else
-        compare(a.d, b.d, c.d);  
+        compare(a.f, b.f, c.f);  
         #endif
     } else {
         /* Compare the adapted and target implementations on one
@@ -116,17 +116,17 @@ int main(int argc, char **argv) {
            and y symbolic, you can check whether the adaptor works for
            all inputs. */
         #ifdef A1
-        a.ul = strtoul(argv[1], 0, 0);
-        compare(a.d);  
+        a.i = strtoul(argv[1], 0, 0);
+        compare(a.f);  
         #elif defined(A2)
-        a.ul = strtoul(argv[1], 0, 0);
-        b.ul = strtoul(argv[2], 0, 0);
-        compare(a.d, b.d);  
+        a.i = strtoul(argv[1], 0, 0);
+        b.i = strtoul(argv[2], 0, 0);
+        compare(a.f, b.f);  
         #else
-        a.ul = strtoul(argv[1], 0, 0);
-        b.ul = strtoul(argv[2], 0, 0);
-        c.ul = strtoul(argv[3], 0, 0);
-        compare(a.d, b.d, c.d);  
+        a.i = strtoul(argv[1], 0, 0);
+        b.i = strtoul(argv[2], 0, 0);
+        c.i = strtoul(argv[3], 0, 0);
+        compare(a.f, b.f, c.f);  
         #endif
     }
     return 0;

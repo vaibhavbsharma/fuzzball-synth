@@ -144,10 +144,10 @@ int main(int argc, char **argv) {
         }
         #ifdef A1
         while (fscanf(fh, "%x", &a) != EOF) {
-            //compare(a);
-            int r1 = f1(a);
-            int r2 = f2((0xfffff + a) & (a * 0xa4400001));
-            printf("%x\t->\t%d (%x / %x)\n", a, r1 == r2, r1, r2);
+            compare(a);
+            //int r1 = f1(a);
+            //int r2 = f2((a * 1) & (a - 1));
+            //printf("%x\t->\t%d (%x / %x)\n", a, r1 == r2, r1, r2);
         }
         #elif defined(A2)
         while (fscanf(fh, "%x %x", &a, &b) != EOF) {
