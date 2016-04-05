@@ -8,7 +8,7 @@ my($f1num, $f2num, $rand_seed) = @ARGV;
 
 srand($rand_seed);
 my $path_depth_limit = 300;
-
+my $iteration_limit = 4000;
 
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
@@ -151,7 +151,8 @@ sub check_adaptor {
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt,
 		"-return-zero-missing-x64-syscalls",
-		"-path-depth-limit", $path_depth_limit,
+		#"-path-depth-limit", $path_depth_limit,
+		"-iteration-limit", $iteration_limit,
 		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
@@ -171,7 +172,8 @@ sub check_adaptor {
 	} elsif (($_ eq "Mismatch\n") or 
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
 		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
-		 (/^Stopping on disqualified path at (0x[0-9a-f]+)$/ and $f1_completed == 1)) {
+		 (/^Stopping on disqualified path at (0x[0-9a-f]+)$/ and $f1_completed == 1) or 
+		 (/^Disqualified path at (0x[0-9a-f]+)$/ and $f1_completed == 1)) {
 	    $fails++;
 	    $this_ce = 1;
 	} elsif (/^Input vars: (.*)$/ and $this_ce) {
@@ -230,6 +232,8 @@ sub try_synth {
     while (<LOG>) {
 	if ($_ eq "All tests succeeded!\n") {
 	    $success = 1;
+	} elsf (/^Disqualified path at (0x[0-9a-f]+)$/) {
+	    $success = 0;
 	} elsif (/^Input vars: (.*)$/ and $success) {
 	    my $vars = $1;
 	    %fields = ();
