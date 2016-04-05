@@ -232,7 +232,7 @@ sub try_synth {
     while (<LOG>) {
 	if ($_ eq "All tests succeeded!\n") {
 	    $success = 1;
-	} elsf (/^Disqualified path at (0x[0-9a-f]+)$/) {
+	} elsif (/^Disqualified path at (0x[0-9a-f]+)$/) {
 	    $success = 0;
 	} elsif (/^Input vars: (.*)$/ and $success) {
 	    my $vars = $1;
