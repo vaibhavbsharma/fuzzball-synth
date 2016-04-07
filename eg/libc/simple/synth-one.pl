@@ -2,9 +2,9 @@
 
 use strict;
 
-die "Usage: synth-one.pl <f1num> <f2num> <seed>"
-  unless @ARGV == 3;
-my($f1num, $f2num, $rand_seed) = @ARGV;
+die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity)"
+  unless @ARGV == 4;
+my($f1num, $f2num, $rand_seed, $default_adaptor_pref) = @ARGV;
 
 srand($rand_seed);
 my $path_depth_limit = 300;
@@ -146,7 +146,7 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		#"-trace-syscalls",
+		"-trace-syscalls",
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt,
@@ -263,6 +263,18 @@ sub try_synth {
 # Main loop: starting with a stupid adaptor and no tests, alternate
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
+
+# Setting up the default adaptor to be the identity adaptor
+if ($default_adaptor_pref == 1) {
+    for my $i (0 .. $#$adapt) {
+	if ($i%2 == 1) {
+	    $adapt->[$i] = ($i-1)/2;
+	}
+    }
+}
+
+print "default adaptor = @$adapt\n";
+
 my @tests = ();
 my $done = 0;
 while (!$done) {
