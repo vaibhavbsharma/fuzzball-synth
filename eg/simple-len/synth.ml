@@ -48,15 +48,16 @@ let rec get_const_bounds_ec n =
   match n with
   | 0 -> []
   | _ -> let x = String.make 1 (Char.chr ((Char.code 'a') + (n-1))) in 
-          [ "-extra-condition " ^ x ^ "_val:reg64_t\>=\$" ^ const_lb ^ ":reg64_t ";
-	  "-extra-condition " ^ x ^ "_val:reg64_t\<=\$" ^ const_ub ^ ":reg64_t "]
+          ["-extra-condition " ^ x ^ "_type:reg8_t==0:reg8_t\|" ^ 
+	      x ^ "_val:reg64_t\>=\$" ^ const_lb ^ ":reg64_t ";
+	   "-extra-condition " ^ x ^ "_type:reg8_t==0:reg8_t\|" ^ 
+	     x ^ "_val:reg64_t\<=\$" ^ const_ub ^ ":reg64_t "]
           @ get_const_bounds_ec (n-1)
 let const_bounds_ec = 
   if const_lb <> const_ub then
     ref (get_const_bounds_ec inner_nargs)
   else ref []
  
-
 let tests = ref []
 
 (*** utility functions ***)
