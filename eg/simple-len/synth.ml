@@ -13,7 +13,7 @@ open Printf
 (* 'outer function' = the 'black box' function (f1)
    'inner function' = the function whose arguments we want to adapt (f2) *)
 let print_usage () = 
-  (printf "usage: synth.ml <bin> <# outer args> <# inner args> <string length> <rand. seed>\n%!";
+  (printf "usage: synth.ml <bin> <# outer args> <# inner args> <string length> <rand. seed> [<lower bound for constant> <upper bound for constant>]\n%!";
    exit 1)
 let bin = 
   try Sys.argv.(1)
@@ -30,6 +30,9 @@ let string_length =
 let _ = 
   try Random.init (int_of_string Sys.argv.(5))
   with Invalid_argument _ -> print_usage ()
+let (const_lb, const_ub) =
+  try (Sys.argv.(6), Sys.argv.(7))
+  with Invalid_argument _ -> ("-1","-1")
 
 (*** default adaptor ***)
 let rec create_adapt n =
@@ -40,6 +43,19 @@ let rec create_adapt n =
            "-extra-condition " ^ x ^ "_val:reg64_t==0:reg64_t "]
           @ create_adapt (n-1)
 let adapt = ref (create_adapt inner_nargs)
+
+let rec get_const_bounds_ec n = 
+  match n with
+  | 0 -> []
+  | _ -> let x = String.make 1 (Char.chr ((Char.code 'a') + (n-1))) in 
+          [ "-extra-condition " ^ x ^ "_val:reg64_t\>=\$" ^ const_lb ^ ":reg64_t ";
+	  "-extra-condition " ^ x ^ "_val:reg64_t\<=\$" ^ const_ub ^ ":reg64_t "]
+          @ get_const_bounds_ec (n-1)
+let const_bounds_ec = 
+  if const_lb <> const_ub then
+    ref (get_const_bounds_ec inner_nargs)
+  else ref []
+ 
 
 let tests = ref []
 
@@ -160,6 +176,7 @@ let check_adaptor () =
 		 inner_func_addr ^ ":" ^ (string_of_int inner_nargs) ^ ":" ^
 		 (string_of_int string_length)]
             @ !adapt (* contains adaptor as -extra-condition's *)
+    @ !const_bounds_ec
             @ ["-random-seed"; string_of_int (Random.int 10000000); 
                "--"; bin; "s"] in
   Printf.printf "%s\n%!" (String.concat " " cmd);
@@ -260,7 +277,9 @@ let try_synth () =
 	       "-trace-binary-paths-bracketed";
 	       "-trace-conditions";
 	       "-omit-pf-af";
-	       "-zero-memory";
+	       "-zero-memory"; ]
+	      @ !const_bounds_ec
+	      @[
 	       (*"-trace-insns";*)
 	       "-trace-stopping";
 	       (*"-trace-temps";*)
