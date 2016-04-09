@@ -266,9 +266,13 @@ my $adapt = [(0) x @fields];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {
+    my $f1_narg_counter=0;
     for my $i (0 .. $#$adapt) {
 	if ($i%2 == 1) {
-	    $adapt->[$i] = ($i-1)/2;
+	    $adapt->[$i] = $f1_narg_counter;
+	    if ($f1_narg_counter < $f1nargs-1) {
+		$f1_narg_counter= $f1_narg_counter + 1;
+	    }
 	}
     }
 }

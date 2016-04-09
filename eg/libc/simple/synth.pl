@@ -11,9 +11,9 @@ for (my $f1_num=0; $f1_num <= 1314; $f1_num++) {
 	#my @cmd = ("perl","sleep-parent.pl");
 	#my @cmd = ("perl synth-one.pl 0 ",sprintf("1 0"));
 	#run with zero default adaptor
-	my @cmd = ("perl synth-one.pl",sprintf("%d %d 0 0",$f1_num,$f2_num),"2>&1");
+	#my @cmd = ("perl synth-one.pl",sprintf("%d %d 0 0",$f1_num,$f2_num),"2>&1");
 	#run with identity default adaptor
-	#my @cmd = ("perl synth-one.pl",sprintf("%d %d 0 1",$f1_num,$f2_num),"2>&1");
+	my @cmd = ("perl synth-one.pl",sprintf("%d %d 0 1",$f1_num,$f2_num),"2>&1");
 	my $pid=0;
 	eval {
 	    local $SIG{ALRM} = sub { die "alarm\n" };
