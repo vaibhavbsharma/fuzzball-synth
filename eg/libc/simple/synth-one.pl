@@ -2,6 +2,7 @@
 
 use strict;
 
+
 die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
   unless @ARGV == 6;
 my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
@@ -228,7 +229,8 @@ sub try_synth {
     }
     close TESTS;
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
-		@solver_opts, "-fuzz-start-addr", $main_addr,
+		@solver_opts, 
+		"-fuzz-start-addr", $main_addr,
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-return-zero-missing-x64-syscalls",
 		@synth_opt, @const_bounds_ec,
@@ -291,8 +293,16 @@ if ($default_adaptor_pref == 1) {
     }
 }
 
-print "default adaptor = @$adapt\n";
+# If outer function takes no arguments, then the inner function can only use constants
+if ($f1nargs==0) {
+    for my $i (0 .. $#$adapt) {
+	if ($i%2 == 0) { # X_is_const field
+	    $adapt->[$i] = 1;
+	}
+    }
+}
 
+print "default adaptor = @$adapt\n";
 my @tests = ();
 my $done = 0;
 while (!$done) {
