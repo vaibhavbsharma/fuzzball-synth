@@ -13,7 +13,7 @@ open Printf
 (* 'outer function' = the 'black box' function (f1)
    'inner function' = the function whose arguments we want to adapt (f2) *)
 let print_usage () = 
-  (printf "usage: synth.ml <bin> <# outer args> <# inner args> <rand. seed>\n%!";
+  (printf "usage: synth.ml <bin> <# outer args> <# inner args> <rand. seed> [<lower bound for constant> <upper bound for constant>]\n%!";
    exit 1)
 let bin = 
   try Sys.argv.(1)
@@ -27,6 +27,9 @@ let inner_nargs =
 let _ = 
   try Random.init (int_of_string Sys.argv.(4))
   with Invalid_argument _ -> print_usage ()
+let (const_lb, const_ub) =
+  try (Sys.argv.(5), Sys.argv.(6))
+  with Invalid_argument _ -> ("-1","-1")
 
 
 (*** default adaptor ***)
@@ -35,10 +38,25 @@ let rec create_adapt n =
    | 0 -> []
    | _ -> let x = String.make 1 (Char.chr ((Char.code 'a') + (n-1))) in 
           [ "-extra-condition " ^ x ^ "_is_const:reg1_t==0:reg1_t ";
-           "-extra-condition " ^ x ^ "_val:reg64_t==0:reg64_t "]
+           "-extra-condition " ^ x ^ "_val:reg64_t==0:reg64_t ";
+	  ]
           @ create_adapt (n-1)
 let adapt = ref (create_adapt inner_nargs)
 
+let rec get_const_bounds_ec n = 
+  match n with
+  | 0 -> []
+  | _ -> let x = String.make 1 (Char.chr ((Char.code 'a') + (n-1))) in 
+          ["-extra-condition " ^ x ^ "_is_const:reg1_t==0:reg1_t\|" ^ 
+	      x ^ "_val:reg64_t\>=\$" ^ const_lb ^ ":reg64_t ";
+	   "-extra-condition " ^ x ^ "_is_const:reg1_t==0:reg1_t\|" ^ 
+	     x ^ "_val:reg64_t\<=\$" ^ const_ub ^ ":reg64_t "]
+          @ get_const_bounds_ec (n-1)
+let const_bounds_ec = 
+  if const_lb <> const_ub then
+    ref (get_const_bounds_ec inner_nargs)
+  else ref []
+    
 let tests = ref []
 
 (*** utility functions ***)
@@ -145,11 +163,12 @@ let check_adaptor () =
                "simple:" ^ 
                outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^
                inner_func_addr ^ ":" ^ (string_of_int inner_nargs)]
-            @ !adapt (* contains adaptor as -extra-condition's *)
+    @ !adapt (* contains adaptor as -extra-condition's *)
+    @ !const_bounds_ec
             @ ["-zero-memory";
                "-random-seed"; string_of_int (Random.int 10000000); 
                "--"; bin; initial_ce] in
-  (*Printf.printf "%s\n" (String.concat " " cmd); *)
+  Printf.printf "%s\n" (String.concat " " cmd); 
   let log = syscall (String.concat " " cmd) in
   let ce = ref (Array.make outer_nargs 0L) in
   (* read_results : string list -> (int * int) -> bool -> (bool * (int * int))
@@ -203,8 +222,9 @@ let try_synth () =
                "-synthesize-adaptor";
                "simple:" ^ 
                outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^ 
-               inner_func_addr ^ ":"^(string_of_int inner_nargs);
-               "-branch-preference"; match_jne_addr ^ ":1";
+               inner_func_addr ^ ":"^(string_of_int inner_nargs);]
+	      @ !const_bounds_ec
+              @ ["-branch-preference"; match_jne_addr ^ ":1";
                "-zero-memory";
                "-random-seed"; string_of_int (Random.int 10000000);
                "--"; bin; "tests"] in

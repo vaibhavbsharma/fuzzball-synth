@@ -2,13 +2,13 @@
 
 use strict;
 
-die "Usage: synth-one.pl <f1num> <f2num> <seed>"
-  unless @ARGV == 3;
-my($f1num, $f2num, $rand_seed) = @ARGV;
+die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
+  unless @ARGV == 6;
+my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
 srand($rand_seed);
 my $path_depth_limit = 300;
-
+my $iteration_limit = 4000;
 
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
@@ -126,6 +126,20 @@ my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-tim
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
 
+my @const_bounds_ec = ();
+if($const_lb != $const_ub) {
+    for (my $i=0; $i<$f2nargs; $i++) {
+	my $n = chr(97 + $i);
+	my $s1 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg64_t>=0x%d:reg64_t",$n,$n,$const_lb);
+	my $s2 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg64_t<=0x%d:reg64_t",$n,$n,$const_ub);
+	push @const_bounds_ec, ("-extra-condition", $s1);
+	push @const_bounds_ec, ("-extra-condition", $s2);
+	#push @const_bounds_ec, ('-extra-condition '.$n.'_val:reg64_t<=$'.$const_ub.':reg64_t ');
+    }
+}
+
+print "const_bounds_ec = @const_bounds_ec\n";
+
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
@@ -146,12 +160,13 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		#"-trace-syscalls",
+		"-trace-syscalls",
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
-		@synth_opt, @conc_adapt,
+		@synth_opt, @conc_adapt, @const_bounds_ec,
 		"-return-zero-missing-x64-syscalls",
-		"-path-depth-limit", $path_depth_limit,
+		#"-path-depth-limit", $path_depth_limit,
+		"-iteration-limit", $iteration_limit,
 		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
@@ -171,7 +186,8 @@ sub check_adaptor {
 	} elsif (($_ eq "Mismatch\n") or 
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
 		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
-		 (/^Stopping on disqualified path at (0x[0-9a-f]+)$/ and $f1_completed == 1)) {
+		 (/^Stopping on disqualified path at (0x[0-9a-f]+)$/ and $f1_completed == 1) or 
+		 (/^Disqualified path at (0x[0-9a-f]+)$/ and $f1_completed == 1)) {
 	    $fails++;
 	    $this_ce = 1;
 	} elsif (/^Input vars: (.*)$/ and $this_ce) {
@@ -215,7 +231,7 @@ sub try_synth {
 		@solver_opts, "-fuzz-start-addr", $main_addr,
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-return-zero-missing-x64-syscalls",
-		@synth_opt,
+		@synth_opt, @const_bounds_ec,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:1",
@@ -230,6 +246,8 @@ sub try_synth {
     while (<LOG>) {
 	if ($_ eq "All tests succeeded!\n") {
 	    $success = 1;
+	} elsif (/^Disqualified path at (0x[0-9a-f]+)$/) {
+	    $success = 0;
 	} elsif (/^Input vars: (.*)$/ and $success) {
 	    my $vars = $1;
 	    %fields = ();
@@ -259,6 +277,22 @@ sub try_synth {
 # Main loop: starting with a stupid adaptor and no tests, alternate
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
+
+# Setting up the default adaptor to be the identity adaptor
+if ($default_adaptor_pref == 1) {
+    my $f1_narg_counter=0;
+    for my $i (0 .. $#$adapt) {
+	if ($i%2 == 1) {
+	    $adapt->[$i] = $f1_narg_counter;
+	    if ($f1_narg_counter < $f1nargs-1) {
+		$f1_narg_counter= $f1_narg_counter + 1;
+	    }
+	}
+    }
+}
+
+print "default adaptor = @$adapt\n";
+
 my @tests = ();
 my $done = 0;
 while (!$done) {
