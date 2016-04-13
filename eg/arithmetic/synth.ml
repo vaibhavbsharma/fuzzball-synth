@@ -1,4 +1,4 @@
-(* usage: synth.ml <bin> <adaptor type> <# outer args> <# inner args> <rand. seed> *)
+(* usage: synth.ml <bin> <type> <tree depth> <# outer args> <# inner args> <rand. seed> *)
 
 open Printf
 #load "str.cma"  (* used for regular expressions *)
@@ -10,8 +10,10 @@ open Printf
 (* 'outer function' = the 'black box' function (f1)
    'inner function' = the function whose arguments we want to adapt (f2) *)
 let print_usage () = 
-  (printf "usage: synth.ml <bin> <adaptor type> <# outer args> <# inner args> <rand. seed>\n%!";
-   printf "notes: <adaptor type> must be 'int' or 'float'\n%!";
+  (printf "usage: synth.ml <bin> <type> <tree depth> <# outer args> <# inner args> <rand. seed>\n%!";
+   printf "notes: <type> must be 'int' or 'float'\n%!";
+   printf "       'outer' refers to the oracle function (f1)\n%!";
+   printf "       'inner' refers to the function you're adapting (f2)\n%!";
    exit 1)
 let bin = 
   try Sys.argv.(1)
@@ -21,20 +23,21 @@ let adaptor_type =
       if (s = "int") || (s = "float") then s
       else print_usage ()
   with Invalid_argument _ -> print_usage ()
-let outer_nargs = 
+let tree_depth = 
   try int_of_string Sys.argv.(3)
   with Invalid_argument _ -> print_usage ()
-let inner_nargs =
+let outer_nargs = 
   try int_of_string Sys.argv.(4)
   with Invalid_argument _ -> print_usage ()
+let inner_nargs =
+  try int_of_string Sys.argv.(5)
+  with Invalid_argument _ -> print_usage ()
 let _ = 
-  try Random.init (int_of_string Sys.argv.(5))
+  try Random.init (int_of_string Sys.argv.(6))
   with Invalid_argument _ -> print_usage ()
 
 
 (*** current adaptor and test set ***)
-
-let tree_depth = 2 (* hardcoded for now *)
 
 (* default adaptor has all values set to 0 *)
 let create_adapt num_args =
@@ -57,20 +60,6 @@ let tests = ref [] (* will be a list of lists *)
 
 (*** utility functions ***)
 
-(* print_tests : () -> () 
-   print out the current set of tests *)
-let print_tests () = 
-  List.iter 
-    (fun test -> List.iter (fun el -> printf "%x %!" el) test; printf "\n%!") 
-    !tests
-  
-(* print_adaptor : () -> ()
-   print out the current adaptor in a readable format *)
-let print_adaptor () =
-  List.iter (fun el -> let l = Str.split (Str.regexp " \\|:\\|=") el in
-                       printf "%s = %s%!\n" (List.nth l 1) (List.nth l 4))
-            !adapt
-
 (* match_regex : string -> string -> bool 
    check that a string matches the provided regex *)
 let match_regex str regex =
@@ -89,6 +78,33 @@ let syscall cmd =
    with End_of_file -> ());
   let _ = Unix.close_process_in ic in
   List.rev !lines
+
+(* print_tests : () -> () 
+   print out the current set of tests *)
+let print_tests () = 
+  List.iter 
+    (fun test -> List.iter (fun el -> printf "%x %!" el) test; printf "\n%!") 
+    !tests
+  
+(* print_adaptor : () -> ()
+   print out the current adaptor in a readable format; note that the list of 
+   operators here needs to match the list of operators in the adaptor_synthesis
+   file in order for the printout to make sense; sorry for the trouble *)
+let ops = ["+"; "&"; "|"; "^"; "<<"; ">>(u)"; ">>(s)"; "-"; "~"] 
+let print_adaptor () =
+  let slightly_better_print name v = 
+        if (match_regex name ".*_type_.*")
+        then if v = "0x0" 
+             then "constant"
+             else if v = "0x1" 
+                  then "variable"
+                  else "operator" 
+        else v in
+  List.iter (fun el -> let l = Str.split (Str.regexp " \\|:\\|=") el in
+                       let name = List.nth l 1 in
+                       let valu = List.nth l 4 in
+                       printf "%s = %s%!\n" name (slightly_better_print name valu))
+            !adapt
 
 
 (*** FUZZBall command line arguments ***)
@@ -152,7 +168,7 @@ let match_jne_addr =
       then failwith "Unexpected jne address format"
       else "" (* again, not great error handling here *)
 
-let solver_opts = ["-solver"; "smtlib-batch"; "-solver-path"; solver]
+let solver_opts = ["-solver"; "smtlib-batch"; "-save-solver-files"; "-solver-path"; solver]
 
 let fields = 
   let rec create_tree d base var_name =
@@ -180,6 +196,7 @@ let check_adaptor () =
             @ (if adaptor_type = "int" 
                then ["-branch-preference"; match_jne_addr ^ ":0"]
                else [])
+            (*@ ["-table-limit 7"]*)
             @ ["-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
                "-synthesize-adaptor"; 
                (if adaptor_type = "int" 
@@ -246,6 +263,7 @@ let try_synth () =
   let cmd = [fuzzball; "-linux-syscalls"; bin] 
             @ solver_opts  @ ["-arch"; "x64"]
             @ ["-fuzz-start-addr"; main_addr]
+            (*@ ["-table-limit 7"]*)
             @ ["-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
                "-synthesize-adaptor"; 
                (if adaptor_type = "int" 

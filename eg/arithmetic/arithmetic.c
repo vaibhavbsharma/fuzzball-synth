@@ -10,7 +10,7 @@
 // define AN for N arguments to f1, currently only account for 1-4 arguments
 #define A1
 
-/*
+
 // absolute value: equivalent with x = (a ^ (a >> 31)) - (a >> 31)
 // - but the synthesized adaptor might look more like: x = (a / (a >> (-1 & 31))),
 //   which is the same as (a / 1) when a is positive and (a / -1) when a is negative
@@ -21,10 +21,10 @@ int f1(int a) {
 int f2(int x) {
     return x;
 }
-*/
+
 
 // turn off the rightmost 1 bit: equivalent with x = a & (a-1)
-int f1(int a) {
+/*int f1(int a) {
     int i;
     
     if (a == 0) {
@@ -40,8 +40,7 @@ int f1(int a) {
 }
 int f2(int x) {
     return x;
-}
-
+}*/
 
 /*
 int f1(int a) {
@@ -64,7 +63,8 @@ int f2(int x) {
     } else {
         return 0;
     }
-}*/
+}
+*/
 /*
 // returns 1 if (x,y) is in the square with corners at (0,0), (1,1)
 int f1(int x, int y) {
@@ -74,8 +74,8 @@ int f1(int x, int y) {
 // returns 1 if (x,y) is in the square with corners at (2,1), (4,4)
 int f2(int x, int y) {
     return 2 <= x & x <= 4 & 1 <= y & y <= 4;
-}*/
-
+}
+*/
 /* Compare the results of the two functions; note that the second call to f1()
    will be replaced by a call to f2() by FuzzBALL */
 #ifdef A1
