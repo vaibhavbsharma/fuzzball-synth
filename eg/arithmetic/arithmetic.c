@@ -8,19 +8,16 @@
 #include <string.h>
 
 // define AN for N arguments to f1, currently only account for 1-4 arguments
-#define A1
+#define A2
 
 
 // absolute value: equivalent with x = (a ^ (a >> 31)) - (a >> 31)
-// - but the synthesized adaptor might look more like: x = (a / (a >> (-1 & 31))),
-//   which is the same as (a / 1) when a is positive and (a / -1) when a is negative
-//   because of how division is implemented in the arithmetic adaptor
-int f1(int a) {
+/*int f1(int a) {
     return abs(a);
 }
 int f2(int x) {
     return x;
-}
+}*/
 
 
 // turn off the rightmost 1 bit: equivalent with x = a & (a-1)
@@ -65,17 +62,19 @@ int f2(int x) {
     }
 }
 */
-/*
+
 // returns 1 if (x,y) is in the square with corners at (0,0), (1,1)
 int f1(int x, int y) {
-    return 0 <= x & x <= 1 & 0 <= y & y <= 1;
+    //return 0 <= x & x <= 1 & 0 <= y & y <= 1;
+    return 1 <= x & x <= 2 & 1 <= y & y <= 2;
 }
 
 // returns 1 if (x,y) is in the square with corners at (2,1), (4,4)
 int f2(int x, int y) {
-    return 2 <= x & x <= 4 & 1 <= y & y <= 4;
+    //return 2 <= x & x <= 4 & 1 <= y & y <= 4;
+    return 4 <= x & x <= 6 & 4 <= y & y <= 7;
 }
-*/
+
 /* Compare the results of the two functions; note that the second call to f1()
    will be replaced by a call to f2() by FuzzBALL */
 #ifdef A1

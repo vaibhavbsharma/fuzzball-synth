@@ -112,13 +112,12 @@ let print_adaptor () =
 (* hardcoded path for the fevis repository *)
 let fuzzball = "../../../../tools/fuzzball/exec_utils/fuzzball"
 
-(* STP is the default for the integer adaptor; Z3 or MathSAT are required 
-   for floating point operations (specify the path via the SOLVER environment
-   variable) *)
-let solver = 
+(* STP is the default for the integer adaptor; Z3 is required for floating 
+   point operations (specify the path via the SOLVER environment variable) *)
+let solver, solver_type, wrapper = 
   if adaptor_type = "int"
-  then "../../../../tools/fuzzball/stp/stp"
-  else try Sys.getenv "SOLVER" 
+  then "../../../../tools/fuzzball/stp/stp", "stp", "./stp-wrapper"
+  else try Sys.getenv "SOLVER", "z3", "./z3-wrapper"
        with Not_found -> 
          failwith "Set the location of the solver with 'export SOLVER=...'"
 
@@ -168,7 +167,8 @@ let match_jne_addr =
       then failwith "Unexpected jne address format"
       else "" (* again, not great error handling here *)
 
-let solver_opts = ["-solver"; "smtlib-batch"; "-save-solver-files"; "-solver-path"; solver]
+let solver_opts = 
+  "-solver smtlib-batch -save-solver-files -smtlib-solver-type " ^ solver_type
 
 let fields = 
   let rec create_tree d base var_name =
@@ -190,7 +190,7 @@ let fields =
      inputs to either check it, or produce a counterexample ***)
 let check_adaptor () = 
   let cmd = [fuzzball; "-linux-syscalls"; bin]
-            @ solver_opts @ ["-arch";"x64"]
+            @ [solver_opts;"-solver-path"; solver] @ ["-arch";"x64"]
             @ ["-fuzz-start-addr"; main_addr]
             @ input_addr
             @ (if adaptor_type = "int" 
@@ -211,7 +211,7 @@ let check_adaptor () =
             @ (if adaptor_type = "int"
                then Array.to_list (Array.make outer_nargs "0")
                else []) in
-  let _ = printf "%s\n%!" (String.concat " " cmd) in
+  (*let _ = printf "%s\n%!" (String.concat " " cmd) in*)
   let ic = Unix.open_process_in (String.concat " " cmd) in
   let ce = ref (Array.make outer_nargs 0) in
   (* read_results : string list -> (int * int) -> bool -> (bool * (int * int))
@@ -221,7 +221,7 @@ let check_adaptor () =
   let rec read_results (matches, fails) record_ce = 
     try
       let line = input_line ic in
-      let _ = printf " %s\n%!" line in
+      (*let _ = printf " %s\n%!" line in*)
       match line with
       | "Match" -> read_results (matches + 1, fails) record_ce
       | "Mismatch" -> read_results (matches, fails + 1) true
@@ -261,7 +261,7 @@ let try_synth () =
   let _ = output_string testc test_str in
   let _ = close_out testc in
   let cmd = [fuzzball; "-linux-syscalls"; bin] 
-            @ solver_opts  @ ["-arch"; "x64"]
+            @ [solver_opts; "-solver-path"; wrapper]  @ ["-arch"; "x64"]
             @ ["-fuzz-start-addr"; main_addr]
             (*@ ["-table-limit 7"]*)
             @ ["-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
@@ -277,7 +277,7 @@ let try_synth () =
             @ ["-zero-memory";
                "-random-seed"; string_of_int (Random.int 10000000);
                "--"; bin; "-f tests"] in
-  let _ = printf "%s\n%!" (String.concat " " cmd) in
+  (*let _ = printf "%s\n%!" (String.concat " " cmd) in*)
   let ic = Unix.open_process_in (String.concat " " cmd) in
   (* read_results : string list -> bool -> string
      read through the results of the call to FuzzBALL looking for a case
@@ -285,16 +285,16 @@ let try_synth () =
   let rec read_results success = 
     try
       let line = input_line ic in
-      let _ = if not (match_regex line "^Input vars: .*$")
+      (*let _ = if not (match_regex line "^Input vars: .*$")
               then printf " %s\n%!" line
-              else () in
+              else () in*)
       match line with 
       | "All tests succeeded!" -> read_results true
       | _ when (match_regex line "^Input vars: .*$") && success ->
           (* use regular expressions to pull out values for the adaptor fields
              and return the adaptor *)
           let specified_vals = ref [] in
-          printf "  %s\n%!" line;
+          (*printf "  %s\n%!" line;*)
           List.iter 
             (fun v ->
                if (match_regex v "^.*=0x[0-9a-f]+$")
