@@ -2,18 +2,30 @@ use strict;
 use Time::HiRes qw(time alarm);
 $| = 1;
 
+my $const_lb = 0;
+my $const_ub = 3;
 my $hard_timeout = 120; #seconds
-for (my $f1_num=0; $f1_num <= 1314; $f1_num++) {
-    for (my $f2_limit=1; $f2_limit <= 2; $f2_limit++) {
-	my $f2_num = $f1_num + $f2_limit;
-	print "Startin synthesis for $f1_num and $f2_num\n";
-	#my @cmd = ("ls ",sprintf("-ltr"));
-	#my @cmd = ("perl","sleep-parent.pl");
-	#my @cmd = ("perl synth-one.pl 0 ",sprintf("1 0"));
-	#run with zero default adaptor
-	#my @cmd = ("perl synth-one.pl",sprintf("%d %d 0 0",$f1_num,$f2_num),"2>&1");
-	#run with identity default adaptor
-	my @cmd = ("perl synth-one.pl",sprintf("%d %d 0 1",$f1_num,$f2_num),"2>&1");
+my $rand_seed = 0;
+my $default_adaptor = 1;
+
+#die "Usage: synth.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
+#  unless @ARGV == 6;
+#my($f1num, $f2num, $rand_seed, $default_adaptor, $const_lb, $const_ub) = @ARGV;
+
+for (my $f1num=0; $f1num <= 1315; $f1num++) {
+    for (my $f2_limit=1; $f2_limit <= 5; $f2_limit++) {
+	my $f2num = $f1num + $f2_limit;
+	if ($f2num >1315) {
+	    next;
+	}
+	print "Startin synthesis for $f1num and $f2num\n";
+	
+	my @cmd = ("perl synth-one.pl",
+		   sprintf("%d %d %d %d %d %d",
+			   $f1num,$f2num,$rand_seed,
+			   $default_adaptor,
+			   $const_lb,$const_ub),"2>&1");
+	
 	my $pid=0;
 	eval {
 	    local $SIG{ALRM} = sub { die "alarm\n" };

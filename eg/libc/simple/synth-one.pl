@@ -131,8 +131,16 @@ my @const_bounds_ec = ();
 if($const_lb != $const_ub) {
     for (my $i=0; $i<$f2nargs; $i++) {
 	my $n = chr(97 + $i);
-	my $s1 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg64_t>=0x%d:reg64_t",$n,$n,$const_lb);
-	my $s2 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg64_t<=0x%d:reg64_t",$n,$n,$const_ub);
+	my $s1='';
+	my $s2='';
+	if($f1nargs != 0) {
+	    $s1 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg64_t>=\$0x%Lx:reg64_t",$n,$n,$const_lb);
+	    $s2 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg64_t<=\$0x%Lx:reg64_t",$n,$n,$const_ub);
+	}
+	else {
+	    $s1 = sprintf("%s_val:reg64_t>=\$0x%016x:reg64_t",$n,$const_lb);
+	    $s2 = sprintf("%s_val:reg64_t<=\$0x%016x:reg64_t",$n,$const_ub);
+	}
 	push @const_bounds_ec, ("-extra-condition", $s1);
 	push @const_bounds_ec, ("-extra-condition", $s2);
 	#push @const_bounds_ec, ('-extra-condition '.$n.'_val:reg64_t<=$'.$const_ub.':reg64_t ');
@@ -161,7 +169,8 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		"-trace-syscalls",
+		"-trace-syscalls", 
+		#"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
@@ -298,6 +307,7 @@ if ($f1nargs==0) {
     for my $i (0 .. $#$adapt) {
 	if ($i%2 == 0) { # X_is_const field
 	    $adapt->[$i] = 1;
+	    $adapt->[$i+1] = 1;
 	}
     }
 }
