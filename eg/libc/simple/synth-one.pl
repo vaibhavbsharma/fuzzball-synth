@@ -242,6 +242,9 @@ sub try_synth {
 		@solver_opts, 
 		"-fuzz-start-addr", $main_addr,
 		#"-trace-temps",
+		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
+		#counter example search mode otherwise
+		"-adaptor-search-mode",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-return-zero-missing-x64-syscalls",
 		@synth_opt, @const_bounds_ec,
