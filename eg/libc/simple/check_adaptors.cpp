@@ -5,10 +5,35 @@
 #include <sstream>
 using namespace std;
 
+string pretty_adaptor(string s) {
+  int pos=-1;
+  int prev_pos=0;
+  stringstream ret;
+  while((pos=s.find_first_of(',',prev_pos))!=string::npos) {
+    //cout<<prev_pos<<" "<<pos<<"_";
+    stringstream ss(s.substr(prev_pos,pos));
+    int a;
+    if(pos==prev_pos) a=0;
+    else if(pos-prev_pos==20) a=-1;
+    else {
+      ss>>a;
+    }
+    prev_pos=pos+1;
+    pos=pos+1;
+    ret<<a<<",";
+    //cout<<prev_pos<<" "<<pos<<endl;
+  }
+  if(prev_pos==s.length()) ret<<"0";
+  else ret<<s.substr(prev_pos,string::npos);
+  return ret.str();
+}
+
 int main(int argc, char * argv[]) {
   int ignored_adaptor_count=0;
   int total_adaptor_count=0;
   vector<string> blacklisted_fns;
+  
+  //Functions that return -1 because of unimplemented syscalls
   blacklisted_fns.push_back(" = afs_syscall");
   blacklisted_fns.push_back(" = break");
   blacklisted_fns.push_back(" = fattach");
@@ -31,6 +56,7 @@ int main(int argc, char * argv[]) {
   blacklisted_fns.push_back(" = ulimit");
   blacklisted_fns.push_back(" = vserver");
  
+  //Functions that return void
   blacklisted_fns.push_back(" = syslog");
   blacklisted_fns.push_back(" = vsyslog");
   blacklisted_fns.push_back(" = openlog");
@@ -180,9 +206,10 @@ int main(int argc, char * argv[]) {
     filename=filename+'/';
     filename=filename+(char)('1'+i);
     if(argc>1) {
-      if(argv[1][1]=='0') filename=filename+"-zero.txt";
-      else if(argv[1][1]=='1') filename=filename+"-identity.txt";
+      if(argv[1][1]=='0') filename=filename+"-zero";
+      else if(argv[1][1]=='1') filename=filename+"-identity";
     } 
+    filename=filename+".txt";
     cout<<filename<<endl;
     ifstream fin(filename.c_str());
     string line;
@@ -216,6 +243,7 @@ int main(int argc, char * argv[]) {
 	  ss1>>f1>>tmpstr>>f1_name;
 	  ss2>>f2>>tmpstr>>f2_name;
 	  ss3>>tmpstr>>tmpstr>>tmpstr>>adaptor;
+	  adaptor=pretty_adaptor(adaptor);
 	  cout<<f1<<" "<<f2<<" "<<adaptor<<" "<<f1_name<<" "<<f2_name<<endl;
 	}
 	//else cout<<"Skipping adaptor because one of the functions was pthread_* or blacklisted"<<endl;

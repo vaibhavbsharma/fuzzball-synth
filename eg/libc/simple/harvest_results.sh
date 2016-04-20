@@ -9,7 +9,7 @@ suffix="";
 echo -e '#\tIneq\t\t#adpt\tTimeout\tf1_crash\ttotal';
 if [ "$1" == "-0" ] ; then
     suffix="-zero";
-else 
+elif [ "$1" == "-1" ] ; then 
     suffix="-identity";
 fi
 for i in {1..8}; do 
