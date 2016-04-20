@@ -2,6 +2,7 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
 
+#include <stdbool.h>
 #include <inttypes.h>
 #include <locale.h>
 #include <math.h>
@@ -1544,6 +1545,7 @@ struct func_info funcs[] = {
 
 
 int f1num, f2num;
+bool void_flag=false;
 
 long f1(long a, long b, long c, long d, long e, long f) {
     return (funcs[f1num].fptr)(a, b, c, d, e, f);
@@ -1569,7 +1571,7 @@ int compare(long *r1p, long *r2p,
   long r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
   printf("Completed f2\n");
   fflush(stdout);
-  if (r1 == r2) {
+  if (((r1==r2) || (void_flag)) == true) {
     printf("Match\n");
   } else {
     printf("Mismatch\n");
@@ -1598,6 +1600,9 @@ int main(int argc, char **argv) {
     f2num = atoi(argv[2]);
     if (f2num < 0 || f2num >= sizeof(funcs)/sizeof(struct func_info)) {
 	fprintf(stderr, "Error: f2num %d out of range\n", f2num);
+    }
+    if((funcs[f1num].is_voidret==1) || (funcs[f2num].is_voidret==1) ) {
+      void_flag=true;
     }
     if (argv[3][0] == 'a') {
 	long args[6] = {0, 0, 0, 0, 0, 0};
