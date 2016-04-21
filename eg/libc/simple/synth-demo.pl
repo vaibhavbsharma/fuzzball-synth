@@ -34,7 +34,7 @@ for (my $_f1num = 0; $_f1num <= 6; $_f1num++) {
 	my $f2num=$fnums[$_f2num];
 	#print "Startin synthesis for $f1num and $f2num\n";
 	
-	my @cmd = ("perl synth-one.pl",
+	my @cmd = ("perl synth-demo-one.pl",
 		   sprintf("%d %d %d %d %d %d",
 			   $f1num,$f2num,$rand_seed,
 			   $default_adaptor,
