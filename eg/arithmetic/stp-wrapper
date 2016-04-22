@@ -32,12 +32,19 @@ file_hash = hash_file(inpt[3])
 fname = os.path.join(cache_name, file_hash)
 if os.path.isfile (fname):
     sys.stdout.write(open(fname).read())
+    #f = open(os.path.join(cache_name, "statistics"), "a")
+    #f.write(inpt[3] + " matched the file " + file_hash + "\n")
+    #f.close()
 else:
     f = open(fname, "w")
     inpt[0] = "../../../../tools/fuzzball/stp/stp"
     res = check_output(inpt)
     f.write(res)
+    #f2 = open(os.path.join(cache_name, "statistics"), "a")
+    #f2.write(inpt[3] + " generated the file " + file_hash + "\n")
+    #f2.close()
     sys.stdout.write(res)
+    f.close()
 
 
  

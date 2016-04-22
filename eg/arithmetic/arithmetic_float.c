@@ -49,7 +49,7 @@ void compare(float a, float b, float c) {
     r1 = f1(a, b, c);
     r2 = f1(a, b, c);
 #endif
-    if ((r1 == r2) || ((r1 != r1) && (r2 != r2))) {
+    if ((r1 == r2) /*|| ((r1 != r1) && (r2 != r2))*/) {
         printf("Match\n");
     } else {
         printf("Mismatch\n");

@@ -8,20 +8,20 @@
 #include <string.h>
 
 // define AN for N arguments to f1, currently only account for 1-4 arguments
-#define A2
+#define A1
 
-
-// absolute value: equivalent with x = (a ^ (a >> 31)) - (a >> 31)
-/*int f1(int a) {
+///// General Synthesis Examples
+// f2 should be the identity function
+/*// absolute value: equivalent with x = (a ^ (a >> 31)) - (a >> 31)
+int f1(int a) {
     return abs(a);
 }
-int f2(int x) {
-    return x;
+// average of unsigned integers: equivalent with  (x & y) + ((x ^ y) >> 1)$ 
+int f1(int a, int b) {
+    return ((unsigned int) a + (unsigned int) b) / 2;
 }*/
-
-
 // turn off the rightmost 1 bit: equivalent with x = a & (a-1)
-/*int f1(int a) {
+int f1(int a) {
     int i;
     
     if (a == 0) {
@@ -37,7 +37,7 @@ int f2(int x) {
 }
 int f2(int x) {
     return x;
-}*/
+}
 
 /*
 int f1(int a) {
@@ -62,7 +62,7 @@ int f2(int x) {
     }
 }
 */
-
+/*
 // returns 1 if (x,y) is in the square with corners at (0,0), (1,1)
 int f1(int x, int y) {
     //return 0 <= x & x <= 1 & 0 <= y & y <= 1;
@@ -74,7 +74,7 @@ int f2(int x, int y) {
     //return 2 <= x & x <= 4 & 1 <= y & y <= 4;
     return 4 <= x & x <= 6 & 4 <= y & y <= 7;
 }
-
+*/
 /* Compare the results of the two functions; note that the second call to f1()
    will be replaced by a call to f2() by FuzzBALL */
 #ifdef A1
