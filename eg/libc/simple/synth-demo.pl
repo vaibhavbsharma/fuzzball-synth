@@ -22,15 +22,19 @@ my $start_lim = $lim0 + 1;
 my $end_lim = $lim4;
 my $direction = 1;
 
-for (my $f1num = $start_lim; $f1num <= $end_lim; $f1num++) {
-    for (my $f2_limit=1; $f2_limit <= 5; $f2_limit++) {
-	my $f2num = $f1num + ($f2_limit * $direction);
-	if ($f2num > 1315 || $f2num < 0) {
+my @fnums=(1055,1056,1057,1058, 678,679, 1061);
+#wait,waitpid,wait3,wait4, labs,llabs, sleep
+
+for (my $_f1num = 0; $_f1num <= 6; $_f1num++) {
+    for (my $_f2num=0; $_f2num<= 6; $_f2num++) {
+	if ($_f1num == $_f2num) {
 	    next;
 	}
-	print "Startin synthesis for $f1num and $f2num\n";
+	my $f1num=$fnums[$_f1num];
+	my $f2num=$fnums[$_f2num];
+	#print "Startin synthesis for $f1num and $f2num\n";
 	
-	my @cmd = ("perl synth-one.pl",
+	my @cmd = ("perl synth-demo-one.pl",
 		   sprintf("%d %d %d %d %d %d",
 			   $f1num,$f2num,$rand_seed,
 			   $default_adaptor,
@@ -40,7 +44,7 @@ for (my $f1num = $start_lim; $f1num <= $end_lim; $f1num++) {
 	eval {
 	    local $SIG{ALRM} = sub { die "alarm\n" };
 	    alarm $hard_timeout;
-	    print "@cmd\n";
+	    #print "@cmd\n";
 	    $pid = open(LOG, "-|", join(" ",@cmd)) or die "Failed to execute command";
 	    while (<LOG>) {
 		print $_;
@@ -49,14 +53,14 @@ for (my $f1num = $start_lim; $f1num <= $end_lim; $f1num++) {
 	    close LOG;
 	    alarm 0;
 	};
-	print "*******Stopped******\n";
+	#print "*******Stopped******\n";
 	print $@;
-	print "*******Stopped******\n";
+	#print "*******Stopped******\n";
 	if ($@ eq "alarm\n") {
-	    print "calling close LOG\n";
+	    #print "calling close LOG\n";
 	    kill 'TERM',$pid;
 	    close LOG or warn $! ? "Error closing pipe: $!":"Exit status $? from close";
-	    print "killed by alarm\n";
+	    #print "killed by alarm\n";
 	}
     }
 }
