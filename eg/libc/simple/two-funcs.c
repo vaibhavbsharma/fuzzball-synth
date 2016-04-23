@@ -2,6 +2,8 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
 
+#include <float.h>
+
 #include <stdbool.h>
 #include <inttypes.h>
 #include <locale.h>
@@ -1540,7 +1542,8 @@ struct func_info funcs[] = {
     /* 1315 */ {"ttyslot", (func*)&ttyslot, 0, 0, 0},
     /* 1316 */ {"_f1", (func*)&_f1, 2, 0, 0},
     /* 1317 */ {"_f2", (func*)&_f2, 5, 0, 0},
-
+    /* 1318 */ {"frexpf", (func*)&frexpf, 2, 0, 0},
+    /* 1319 */ {"frexp", (func*)&frexpf, 2, 0, 0},
 };
 
 

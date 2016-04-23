@@ -1314,3 +1314,7 @@
 1397 0  setusershell void (void) 
 1398 1  getpass char *(const char *) 
 1399 0  ttyslot int (void) 
+1400 2  _f1 int (int, unsigned)
+1401 5  _f2 int (int, int, int, int, int)
+1402 2  frexpf float (float, int *)
+1403 2  frexp  double (double, int *)
