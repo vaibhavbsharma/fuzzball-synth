@@ -134,7 +134,7 @@ my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "typeconv", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
 
 my @synth_ret_opt = ("-synthesize-return-adaptor",
-		 join(":", "return-typeconv", $post_f2_call, $f2nargs));
+		 join(":", "return-typeconv", $f2_call_addr, $post_f2_call, $f2nargs));
 
 my @const_bounds_ec = ();
 if($const_lb != $const_ub) {
@@ -162,7 +162,7 @@ print "const_bounds_ec = @const_bounds_ec\n";
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
     my($adapt,$ret_adapt) = (@_);
-    print "checking arg-adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
+    #print "checking arg-adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
     my @conc_adapt = ();
     for my $i (0 .. $#$adapt) {
 	my($name, $ty, $fmt) = @{$fields[$i]};
@@ -361,7 +361,7 @@ while (!$done) {
 	for my $tr (@tests) {
 	    print " $tr->[0], $tr->[1]\n";
 	}
-	print "Final adaptor is $adapt_s\n";
+	print "Final adaptor is $adapt_s and $ret_adapt_s\n";
 	$done = 1;
 	last;
     } else {
@@ -371,5 +371,6 @@ while (!$done) {
     }
 
     ($adapt,$ret_adapt) = try_synth(\@tests);
-    print "Synthesized adaptor ".join(",",@$adapt)."\n";
+    print "Synthesized arg adaptor ".join(",",@$adapt).
+	" and return adaptor ".join(",",@$ret_adapt)."\n";
 }
