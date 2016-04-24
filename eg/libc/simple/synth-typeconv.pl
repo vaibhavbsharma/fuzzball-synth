@@ -126,6 +126,9 @@ my @ret_fields =
 );
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
+#$f1nargs=6;
+#$f2nargs=6;
+
 splice(@fields, 2 * $f2nargs);
 
 my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
@@ -136,7 +139,7 @@ my @synth_opt = ("-synthesize-adaptor",
 my @synth_ret_opt = ("-synthesize-return-adaptor",
 		 join(":", "return-typeconv", $f2_addr, $post_f2_call, $f2nargs));
 
-#print "synth_ret_opt = @synth_ret_opt\n";
+print "synth_ret_opt = @synth_ret_opt\n";
 
 my @const_bounds_ec = ();
 if($const_lb != $const_ub) {
@@ -195,7 +198,7 @@ sub check_adaptor {
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
-		#@synth_ret_opt, @conc_ret_adapt,
+		@synth_ret_opt, @conc_ret_adapt,
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
@@ -269,7 +272,7 @@ sub try_synth {
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-return-zero-missing-x64-syscalls",
 		@synth_opt, @const_bounds_ec,
-		#@synth_ret_opt,
+		@synth_ret_opt,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:1",
@@ -323,8 +326,6 @@ sub try_synth {
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
-
-$ret_adapt->[0]=2;
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {
