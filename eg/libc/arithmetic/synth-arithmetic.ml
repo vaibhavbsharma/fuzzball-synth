@@ -319,7 +319,7 @@ let try_synth () =
       else []) 
     @ ["-zero-memory";
        "-random-seed"; string_of_int (Random.int 10000000);
-       "--"; bin; "f tests"] in
+       "--"; bin; string_of_int f1num; string_of_int f2num; "f tests"] in
   let _ = printf "%s\n%!" (String.concat " " cmd) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
   (* read_results : string list -> bool -> string
