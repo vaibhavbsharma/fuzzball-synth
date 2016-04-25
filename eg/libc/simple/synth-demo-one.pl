@@ -85,16 +85,16 @@ for my $i (0 .. 5) {
 my $match_jne_addr =
   "0x" . substr(`objdump -dr $bin | grep 'jne.*compare+'`, 2, 6);
 
-print "$fuzzball\n";
-print "$stp\n";
-print "main: $main_addr\n";
-print "f1:   $f1_addr @ $f1_call_addr\n";
-print "f2:   $f2_addr\n";
-print "wrap_f2: $wrap_f2_addr @ $f2_call_addr\n";
-for my $i (0 .. 5) {
-    print "arg$i: $arg_addr[$i]\n";
-}
-print "branch: $match_jne_addr\n";
+#print "$fuzzball\n";
+#print "$stp\n";
+#print "main: $main_addr\n";
+#print "f1:   $f1_addr @ $f1_call_addr\n";
+#print "f2:   $f2_addr\n";
+#print "wrap_f2: $wrap_f2_addr @ $f2_call_addr\n";
+#for my $i (0 .. 5) {
+#    print "arg$i: $arg_addr[$i]\n";
+#}
+#print "branch: $match_jne_addr\n";
 printf "%d = %s(%d)\n", $f1num, $func_info[$f1num][2], $func_info[$f1num][1];
 printf "%d = %s(%d)\n", $f2num, $func_info[$f2num][2], $func_info[$f2num][1];
 
@@ -198,10 +198,20 @@ sub check_adaptor {
     $this_ce = 0;
     my $f1_completed = 0;
     while (<LOG>) {
+	my $skip_print = 0;
 	if ($_ eq "Match\n" ) {
 	    $matches++;
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
+	    $skip_print = 1;
+	} elsif ($_ eq "Completed f2\n") {
+	    $skip_print = 1;
+	} elsif (/^Recording Linux.x86-64 system call/) {
+	    $skip_print = 1;
+	} elsif (/^Starting (f1|f2|simple adaptor)/) {
+	    $skip_print = 1;
+	} elsif (/^f[12]:syscall/) {
+	    $skip_print = 1;
 	} elsif (($_ eq "Mismatch\n") or 
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
 		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
@@ -218,10 +228,12 @@ sub check_adaptor {
 		}
 	    }
 	    $this_ce = 0;
+	    s/0xffffffffffffffff/-1/g;
 	    print "  $_";
 	    last;
-	} 
-	print "  $_";
+	}
+	s/0xffffffffffffffff/-1/g;
+	print "  $_" unless $skip_print;
     }
     close LOG;
     if ($matches == 0 and $fails == 0) {
@@ -268,10 +280,19 @@ sub try_synth {
     my($success, %fields);
     $success = 0;
     while (<LOG>) {
+	my $skip_print = 0;
 	if ($_ eq "All tests succeeded!\n") {
 	    $success = 1;
 	} elsif (/^Disqualified path at (0x[0-9a-f]+)$/) {
 	    $success = 0;
+	} elsif (/^Recording Linux.x86-64 system call/) {
+	    $skip_print = 1;
+	} elsif (/^Starting (f1|f2|simple adaptor)/) {
+	    $skip_print = 1;
+	} elsif (/^f[12]:syscall/) {
+	    $skip_print = 1;
+	} elsif (/^Completed f[12]$/) {
+	    $skip_print = 1;
 	} elsif (/^Input vars: (.*)$/ and $success) {
 	    my $vars = $1;
 	    %fields = ();
@@ -280,19 +301,26 @@ sub try_synth {
 		  or die "Parse failure on variable assignment <$v>";
 		$fields{$1} = hex $2;
 	    }
+	    s/0xffffffffffffffff/-1/g;
 	    print "  $_";
 	    last;
 	}
-	print "  $_" unless /^Input vars:/;
+	print "  $_" unless /^Input vars:/ or $skip_print;
     }
     close LOG;
     if (!$success) {
 	print "Synthesis failure: seems the functions are not equivalent.\n";
+	printf "Summary: %s <- %s no adaptor\n", $func_info[$f1num][2],
+	  $func_info[$f2num][2];
 	exit 2;
     }
     my @afields;
     for my $fr (@fields) {
-	push @afields, $fields{$fr->[0]};
+        if (exists $fields{$fr->[0]}) {
+            push @afields, $fields{$fr->[0]};
+        } else {
+            push @afields, 0;
+        }
     }
     return [@afields];
 }
@@ -325,18 +353,26 @@ if ($f1nargs==0) {
     }
 }
 
+sub pretty_adapt {
+    my(@a) = @_;
+    for my $a (@a) {
+	$a = "-1" if $a == 18446744073709551615;
+    }
+    return join(",", @a);
+}
+
 #print "default adaptor = @$adapt\n";
 my @tests = ();
 my $done = 0;
 while (!$done) {
-    my $adapt_s = join(",", @$adapt);
+    my $adapt_s = pretty_adapt(@$adapt);
     print "Checking $adapt_s:\n";
     my($res, $cer) = check_adaptor($adapt);
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
 	for my $tr (@tests) {
-	    print " $tr->[0], $tr->[1]\n";
+	    print " ", join(", ", @$tr), "\n";
 	}
 	print "Final adaptor is $adapt_s\n";
 	$done = 1;
@@ -348,5 +384,8 @@ while (!$done) {
     }
 
     $adapt = try_synth(\@tests);
-    print "Synthesized adaptor ".join(",",@$adapt)."\n";
+    print "Synthesized adaptor ".pretty_adapt(@$adapt)."\n";
 }
+
+printf "Summary: %s <- %s adaptor %s\n",
+  $func_info[$f1num][2], $func_info[$f2num][2], pretty_adapt(@$adapt);
