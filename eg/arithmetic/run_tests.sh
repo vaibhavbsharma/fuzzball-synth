@@ -15,9 +15,10 @@ do
     totalTime=$((end-start))
     echo "Total time: $totalTime" >> ${resultsDir}/${seed}.out
     rm -rf fuzzball-tmp-*
+    rm -rf stp-cache
 done
 
-echo "+ Combining result files in $resultsDir and storing them in All_Results.csv"
-python parse_results.py $resultsDir All_Results.csv
+echo "+ Combining result files in $resultsDir and storing them in all_results.csv"
+python parse_results.py $resultsDir all_results.csv
 
 echo "+ Done!"

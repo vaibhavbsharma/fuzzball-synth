@@ -132,14 +132,14 @@ let print_adaptor () =
 (*** FUZZBall command line arguments ***)
 
 (* hardcoded path for the fevis repository *)
-let fuzzball = "fuzzball"
+let fuzzball = "../../../../../tools/fuzzball/exec_utils/fuzzball" (*"fuzzball"*)
 
 (* STP is the default for the integer adaptor; Z3 is required for floating 
    point operations (specify the path via the SOLVER environment variable) *)
 let solver, solver_type, wrapper = 
   if adaptor_type = "int"
   (*then "stp", "stp", "./stp-wrapper"*)
-  then "stp", "stp", "stp"
+  then "../../../../../tools/fuzzball/stp/stp", "stp", "../../../../../tools/fuzzball/stp/stp" (*"stp", "stp", "stp"*)
   else try Sys.getenv "SOLVER", "z3", "./z3-wrapper"
        with Not_found -> 
          failwith "Set the location of the solver with 'export SOLVER=...'"
@@ -158,7 +158,7 @@ let input_addr =
                then printf "Unexpected number of strtoul calls; something may have gone wrong\n%!" 
                else ()); []
       | (h::t) -> let x = String.make 1 (Char.chr ((Char.code 'a') + n)) in
-                  ("-symbolic-long 0x0" ^ (String.sub h 0 16) ^ "=" ^ x)
+                  ("-symbolic-word 0x0" ^ (String.sub h 0 16) ^ "=" ^ x)
                   (*("-skip-call-ret-symbol-once 0x0" ^ (String.sub h 2 6) ^ "=" ^ x)*)
                   :: (loop t (n+1))
     in loop (syscall ("nm " ^ bin ^ " | fgrep \" B global_arg\" ")) 0
@@ -170,7 +170,7 @@ let input_addr =
       if n = outer_nargs
       then []
       else let x = String.make 1 (Char.chr ((Char.code 'a') + n)) in
-           ("-symbolic-long 0x0" ^ (String.sub (List.hd l) 0 16) ^ "=" ^ x) 
+           ("-symbolic-word 0x0" ^ (String.sub (List.hd l) 0 16) ^ "=" ^ x) 
              :: (loop (List.tl l) (n+1))
     in loop (syscall ("nm " ^ bin ^ " | grep ' B [a-z]$'")) 0
 
@@ -197,7 +197,7 @@ let match_jne_addr =
       else "" (* again, not great error handling here *)
 
 let solver_opts = 
-  "-solver smtlib-batch -smtlib-solver-type " ^ solver_type
+  "-solver smtlib-batch -save-solver-files -smtlib-solver-type " ^ solver_type
   (*"-solver smtlib-batch -save-solver-files -smtlib-solver-type " ^ solver_type*)
 
 let fields = 
