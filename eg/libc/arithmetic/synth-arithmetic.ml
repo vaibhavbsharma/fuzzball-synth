@@ -175,7 +175,7 @@ let input_addr =
     in loop (syscall ("nm " ^ bin ^ " | grep ' B [a-z]$'")) 0
 
 let (outer_call1_addr,outer_call_addr) =
-  match syscall ("objdump -dr " ^ bin ^ " | grep 'call.*f1'") with
+  match syscall ("objdump -dr " ^ bin ^ " | grep 'call.*<f1>'") with
   | [str1; str2] -> (("0x0" ^ String.sub str1 2 6),("0x0" ^ String.sub str2 2 6))
   | _ -> failwith "Unexpected function call address formats"
 
@@ -189,7 +189,7 @@ let inner_func_addr =
   | _ -> failwith "Unexpected inner function format"
 
 let match_jne_addr =
-  match syscall ("objdump -dr " ^ bin ^ " | grep 'jne.*compare+'") with
+  match syscall ("objdump -dr " ^ bin ^ " | grep 'jne.*<compare+'") with
   | [str] -> "0x" ^ String.sub str 2 6
   | _ -> 
       if adaptor_type = "int" 
