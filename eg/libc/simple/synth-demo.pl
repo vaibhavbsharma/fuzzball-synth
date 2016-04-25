@@ -40,6 +40,7 @@ for (my $_f1num = 0; $_f1num <= 6; $_f1num++) {
 			   $default_adaptor,
 			   $const_lb,$const_ub),"2>&1");
 	
+	#print "@cmd\n";
 	my $pid=0;
 	eval {
 	    local $SIG{ALRM} = sub { die "alarm\n" };
@@ -59,8 +60,9 @@ for (my $_f1num = 0; $_f1num <= 6; $_f1num++) {
 	if ($@ eq "alarm\n") {
 	    #print "calling close LOG\n";
 	    kill 'TERM',$pid;
-	    close LOG or warn $! ? "Error closing pipe: $!":"Exit status $? from close";
+	    close LOG or warn ${!} ? "Error closing pipe: $!":"Exit status $? from close";
 	    #print "killed by alarm\n";
 	}
+    #exit;
     }
 }

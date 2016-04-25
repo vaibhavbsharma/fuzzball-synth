@@ -183,7 +183,15 @@ sub check_adaptor {
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, $f1num, $f2num, "g");
-    #print "@args\n";
+    my @printable;
+    for my $a (@args) {
+        if ($a =~ /[\s|<>]/) {
+            push @printable, "'$a'";
+        } else {
+            push @printable, $a;
+        }
+    }
+    #print "@printable\n";
     open(LOG, "-|", @args);
     my($matches, $fails) = (0, 0);
     my(@ce, $this_ce);
