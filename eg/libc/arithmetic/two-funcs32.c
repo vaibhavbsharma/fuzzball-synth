@@ -232,7 +232,7 @@ int stty(int fd, const struct sgttyb *);
 /* Defined only in assembly on x86_64: */
 void mcount(void);
 
-typedef long (func)(long, long, long, long, long, long);
+typedef int (func)(int, int, int, int, int, int);
 
 struct func_info {
     const char *fname;
@@ -1569,28 +1569,28 @@ struct func_info funcs[] = {
 int f1num, f2num;
 bool void_flag=false;
 
-long f1(long a, long b, long c, long d, long e, long f) {
+int f1(int a, int b, int c, int d, int e, int f) {
     return (funcs[f1num].fptr)(a, b, c, d, e, f);
 }
 
-long f2(long a, long b, long c, long d, long e, long f) {
+int f2(int a, int b, int c, int d, int e, int f) {
   return (funcs[f2num].fptr)(a, b, c, d, e, f);
 }
 
-long wrap_f2(long a, long b, long c, long d, long e, long f) {
+int wrap_f2(int a, int b, int c, int d, int e, int f) {
     return f2(a, b, c, d, e, f);
 }
 
-int compare(long *r1p, long *r2p,
-	    long a0, long a1, long a2, long a3, long a4, long a5) {
+int compare(int *r1p, int *r2p,
+	    int a0, int a1, int a2, int a3, int a4, int a5) {
   printf("Starting f1\n");  
   fflush(stdout);
-  long r1 = f1(a0, a1, a2, a3, a4, a5);
+  int r1 = f1(a0, a1, a2, a3, a4, a5);
   printf("Completed f1\n");
   fflush(stdout);
   printf("Starting f2\n");
   fflush(stdout);
-  long r2 = f1(a0, a1, a2, a3, a4, a5);
+  int r2 = f1(a0, a1, a2, a3, a4, a5);
   printf("Completed f2\n");
   fflush(stdout);
   if (((r1==r2) || (void_flag)) == true) {
@@ -1605,7 +1605,7 @@ int compare(long *r1p, long *r2p,
   return r1 == r2;
 }
 
-long global_arg0, global_arg1, global_arg2,
+int global_arg0, global_arg1, global_arg2,
     global_arg3, global_arg4, global_arg5;
 
 int main(int argc, char **argv) {
@@ -1627,8 +1627,8 @@ int main(int argc, char **argv) {
       void_flag=true;
     }
     if (argv[3][0] == 'a') {
-	long args[6] = {0, 0, 0, 0, 0, 0};
-	long r1, r2;
+	int args[6] = {0, 0, 0, 0, 0, 0};
+	int r1, r2;
 	int i;
 	for (i = 0; i < 6 && i + 4 < argc; i++) {
 	    char *s = argv[i + 4];
@@ -1651,7 +1651,7 @@ int main(int argc, char **argv) {
 		global_arg3, global_arg4, global_arg5);
     } else if (argv[3][0] == 'f') {
 	FILE *fh;
-	long a, b, c, d, e, f;
+	int a, b, c, d, e, f;
         if (argv[4][0] == '-' && argv[4][1] == 0) {
             fh = stdin;
         } else {
@@ -1662,7 +1662,7 @@ int main(int argc, char **argv) {
                 return 1;
             }
         }
-	while (fscanf(fh, "%lx %lx %lx %lx %lx %lx",
+	while (fscanf(fh, "%x %x %x %x %x %x",
 		      &a, &b, &c, &d, &e, &f) != EOF) {
 	    int is_eq = compare(0, 0, a, b, c, d, e, f);
 	    if (!is_eq)
