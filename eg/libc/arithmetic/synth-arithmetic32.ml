@@ -357,6 +357,8 @@ let try_synth () =
               else () in
       match line with 
       | "All tests succeeded!" -> read_results true
+      | _ when (match_regex line "Disqualified path at 0x[0-9a-f]+") ->
+	read_results false
       | _ when (match_regex line "^Input vars: .*$") && success ->
           (* use regular expressions to pull out values for the adaptor fields
              and return the adaptor *)
