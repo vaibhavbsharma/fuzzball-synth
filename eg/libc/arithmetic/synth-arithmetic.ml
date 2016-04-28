@@ -194,7 +194,7 @@ let fields =
   let rec create_tree d base var_name =
     if d > 0
     then [(var_name ^ "_type_" ^ base, 8, format_of_string "%01x");
-          (var_name ^ "_val_" ^ base, 64, format_of_string "%08x")]
+          (var_name ^ "_val_" ^ base, 64, format_of_string "%16x")]
          @ (create_tree (d-1) (base ^ "0") var_name)
          @ (create_tree (d-1) (base ^ "1") var_name)
     else [] in

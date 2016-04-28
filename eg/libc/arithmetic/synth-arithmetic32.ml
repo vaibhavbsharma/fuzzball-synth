@@ -105,18 +105,21 @@ let syscall cmd =
    print out the current set of tests *)
 let print_tests () = 
   List.iter 
-    (fun test -> List.iter (fun el -> printf "%x %!" el) test; printf "\n%!") 
+    (fun test -> 
+       List.iteri 
+         (fun i el -> if i < outer_nargs then printf "%x %!" el else ()) 
+         test; 
+       printf "\n%!") 
     !tests
   
 (* print_adaptor : () -> ()
    print out the current adaptor in a readable format; note that the list of 
    operators here needs to match the list of operators in the adaptor_synthesis
    file in order for the printout to make sense; sorry for the trouble *)
-let ops = ["+"; "&"; "|"; "^"; "<<"; ">>(u)"; ">>(s)"; "-"; "~"] 
 let print_adaptor () =
   let slightly_better_print name v = 
         if (match_regex name ".*_type_.*")
-        then if v = "0x0" 
+        then if (v = "0x0") || (v = "0") 
              then "constant"
              else if v = "0x1" 
                   then "variable"
@@ -132,14 +135,14 @@ let print_adaptor () =
 (*** FUZZBall command line arguments ***)
 
 (* hardcoded path for the fevis repository *)
-let fuzzball = "../../../../../tools/fuzzball/exec_utils/fuzzball" (*"fuzzball"*)
+let fuzzball = "../../../../../tools/fuzzball/exec_utils/fuzzball"
 
 (* STP is the default for the integer adaptor; Z3 is required for floating 
    point operations (specify the path via the SOLVER environment variable) *)
 let solver, solver_type, wrapper = 
   if adaptor_type = "int"
   (*then "stp", "stp", "./stp-wrapper"*)
-  then "../../../../../tools/fuzzball/stp/stp", "stp", "../../../../../tools/fuzzball/stp/stp" (*"stp", "stp", "stp"*)
+  then "../../../../../tools/fuzzball/stp/stp", "stp", "../../../../../tools/fuzzball/stp/stp"
   else try Sys.getenv "SOLVER", "z3", "./z3-wrapper"
        with Not_found -> 
          failwith "Set the location of the solver with 'export SOLVER=...'"
@@ -159,10 +162,8 @@ let input_addr =
                else ()); []
       | (h::t) -> let x = String.make 1 (Char.chr ((Char.code 'a') + n)) in
                   ("-symbolic-word 0x0" ^ (String.sub h 0 16) ^ "=" ^ x)
-                  (*("-skip-call-ret-symbol-once 0x0" ^ (String.sub h 2 6) ^ "=" ^ x)*)
                   :: (loop t (n+1))
     in loop (syscall ("nm " ^ bin ^ " | fgrep \" B global_arg\" ")) 0
-    (*in loop (syscall ("objdump -dr " ^ bin ^ " | grep 'call.*strtoul'")) 0*)
   else
     (* we assume here that the values we want to make symbolic have single
        character variable names; not great error handling... *)
@@ -198,13 +199,12 @@ let match_jne_addr =
 
 let solver_opts = 
   "-solver smtlib-batch -save-solver-files -smtlib-solver-type " ^ solver_type
-  (*"-solver smtlib-batch -save-solver-files -smtlib-solver-type " ^ solver_type*)
 
 let fields = 
   let rec create_tree d base var_name =
     if d > 0
     then [(var_name ^ "_type_" ^ base, 8, format_of_string "%01x");
-          (var_name ^ "_val_" ^ base, 32, format_of_string "%04x")]
+          (var_name ^ "_val_" ^ base, 32, format_of_string "%08x")]
          @ (create_tree (d-1) (base ^ "0") var_name)
          @ (create_tree (d-1) (base ^ "1") var_name)
     else [] in
@@ -213,55 +213,77 @@ let fields =
     else let x = String.make 1 (Char.chr ((Char.code 'a') + (n-1))) in
          (create_tree tree_depth "R" x) @ (create_fields (n-1)) in
   create_fields inner_nargs
+
+let synth_opt = 
+  "-synthesize-adaptor " ^ 
+  (if adaptor_type = "int" 
+   then " arithmetic_int:" 
+   else " arithmetic_float:") ^
+   outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^
+   inner_func_addr ^ ":" ^ (string_of_int inner_nargs)
  
+let path_depth_limit = 300
+let iteration_limit = 4000 
 
 (*** check_adaptor : () -> (bool * (int * int))
      given the specification of an adaptor, execute it with symbolic
      inputs to either check it, or produce a counterexample ***)
 let check_adaptor () = 
   let cmd = 
-    [fuzzball; "-linux-syscalls"; bin]
-    @ [solver_opts;"-solver-path"; solver] @ ["-arch";"x64"]
-    @ ["-fuzz-start-addr"; main_addr]
+    [fuzzball; "-linux-syscalls"; "-arch x64"; bin;
+     solver_opts; "-solver-path"; solver;
+     "-fuzz-start-addr"; main_addr]
     @ input_addr
-    @ (if adaptor_type = "int" 
+    @ (if adaptor_type = "int"
       then ["-branch-preference"; match_jne_addr ^ ":0"]
       else [])
-    (*@ ["-table-limit 7"]*)
-    @ ["-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
-       "-synthesize-adaptor"; 
-       (if adaptor_type = "int" 
-        then "arithmetic_int:" 
-        else "arithmetic_float:") ^
-         outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^
-         inner_func_addr ^ ":" ^ (string_of_int inner_nargs)]
+    @ ["-match-syscalls-in-addr-range";
+       outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
+         outer_call_addr ^ ":" ^ post_outer_call_addr;
+       "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
+       synth_opt]
     @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
-    (*@ [ "-match-syscalls-in-addr-range";
-	outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
-          outer_call_addr ^ ":" ^ post_outer_call_addr;
-      ]*)
-    @ ["-zero-memory";
-       "-random-seed"; string_of_int (Random.int 10000000); 
-       "--"; bin; string_of_int f1num; 
+    @ [(*"-table-limit 8";*)
+       "-zero-memory";
+       "-random-seed"; string_of_int (Random.int 10000000);
+       "-trace-stopping";
+       "--"; bin; string_of_int f1num;
        string_of_int f2num; "g"]
-  (*@ (if adaptor_type = "int"
-    then Array.to_list (Array.make outer_nargs "0")
-    else [])*) 
   in
-  let _ = printf "%s\n%!" (String.concat " " cmd) in
+  (*let _ = printf "%s\n%!" (String.concat " " cmd) in*)
   let ic = Unix.open_process_in (String.concat " " cmd) in
-  let ce = ref (Array.make outer_nargs 0) in
+  let ce = ref (Array.make 6 (*outer_nargs*) 0) in
   (* read_results : string list -> (int * int) -> bool -> (bool * (int * int))
      read through the results of the call to FuzzBALL keeping track of
      the number of matches and mismatches, and record a counterexample
      for the first mismatch *)
-  let rec read_results (matches, fails) record_ce = 
+      let rec read_results (matches, fails) record_ce f1_completed =
     try
       let line = input_line ic in
-      (*let _ = printf " %s\n%!" line in*)
+      let no_print = ["Completed f1"; "Completed f2";
+                      "Recording Linux.x86-64 system call.*";
+                      "Starting f1"; "Starting f2";
+                      "f1:syscall.*"; "f2:syscall.*"] in
+      let _ = if not (List.fold_left (||)
+                        false
+                        (List.map (fun s -> match_regex line s) no_print))
+              then printf " %s\n%!" line
+              else () in
       match line with
-      | "Match" -> read_results (matches + 1, fails) record_ce
-      | "Mismatch" -> read_results (matches, fails + 1) true
+      | "Match" -> read_results (matches + 1, fails) record_ce f1_completed
+      | "Completed f1" -> read_results (matches, fails) record_ce true
+      | "Mismatch" -> read_results (matches, fails + 1) true f1_completed
+      | _ when (match_regex line "Stopping at null deref at 0x[0-9a-f]+") && f1_completed ->
+            read_results (matches, fails + 1) true f1_completed
+      | _ when (match_regex line "Stopping at access to unsupported address at 0x[0-9a-f]+")
+                  && f1_completed ->
+            read_results (matches, fails + 1) true f1_completed
+      | _ when (match_regex line "Stopping on disqualified path at 0x[0-9a-f]+")
+                  && f1_completed ->
+            read_results (matches, fails + 1) true f1_completed
+      | _ when (match_regex line "Disqualified path at 0x[0-9a-f]+")
+                  && f1_completed ->
+            read_results (matches, fails + 1) true f1_completed
       | _ when (match_regex line "^Input vars: .*$") && record_ce ->
           (* use regular expressions to pull out values for a, b and c;
              if no values for x and y are specified, assume that they are 0 *)
@@ -276,13 +298,13 @@ let check_adaptor () =
             (* after updating ce once, we are done *)
             let _ = Unix.close_process_in ic in
             (false, Array.to_list !ce)
-      | _ -> read_results (matches, fails) record_ce
+      | _ -> read_results (matches, fails) record_ce f1_completed
     with End_of_file -> 
       let _ = Unix.close_process_in ic in
       if matches = 0 && fails = 0 
       then failwith "Missing results from check run"
       else (true, Array.to_list !ce) in
-  read_results (0, 0) false
+  read_results (0, 0) false false
 
 
 (*** try_synth : () -> string
@@ -299,28 +321,23 @@ let try_synth () =
   let _ = output_string testc test_str in
   let _ = close_out testc in
   let cmd = 
-    [fuzzball; "-linux-syscalls"; bin] 
-    @ [solver_opts; "-solver-path"; wrapper]  @ ["-arch"; "x64"]
-    @ ["-fuzz-start-addr"; main_addr]
-    (*@ ["-table-limit 7"]*)
-    @ ["-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
-       "-synthesize-adaptor"; 
-       (if adaptor_type = "int" 
-        then "arithmetic_int:" 
-        else "arithmetic_float:") ^
-         outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^ 
-         inner_func_addr ^ ":" ^ (string_of_int inner_nargs)]
-    (*@ [ "-match-syscalls-in-addr-range";
-	outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
-          outer_call_addr ^ ":" ^ post_outer_call_addr;
-      ]*)
-    @ (if adaptor_type = "int" 
+    [fuzzball; "-linux-syscalls"; "-arch x64"; bin;
+     solver_opts; "-solver-path"; wrapper;
+     "-fuzz-start-addr"; main_addr]
+    @ (if adaptor_type = "int"
       then ["-branch-preference"; match_jne_addr ^ ":1"]
-      else []) 
-    @ ["-zero-memory";
-       "-random-seed"; string_of_int (Random.int 10000000);
-       "--"; bin; string_of_int f1num; string_of_int f2num; "f tests"] in
-  let _ = printf "%s\n%!" (String.concat " " cmd) in
+      else [])
+    @ ["-match-syscalls-in-addr-range";
+       outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
+         outer_call_addr ^ ":" ^ post_outer_call_addr;
+      "-return-zero-missing-x64-syscalls";
+      "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
+      synth_opt;
+      (*"-table-limit 8";*)
+      "-zero-memory";
+      "-random-seed"; string_of_int (Random.int 10000000);
+      "--"; bin; string_of_int f1num; string_of_int f2num; "f tests"] in
+  (*let _ = printf "%s\n%!" (String.concat " " cmd) in*)
   let ic = Unix.open_process_in (String.concat " " cmd) in
   (* read_results : string list -> bool -> string
      read through the results of the call to FuzzBALL looking for a case
@@ -328,9 +345,16 @@ let try_synth () =
   let rec read_results success = 
     try
       let line = input_line ic in
-      (*let _ = if not (match_regex line "^Input vars: .*$")
+      let no_print = ["Completed f1"; "Completed f2";
+                      "Recording Linux.x86-64 system call.*";
+                      "Starting f1"; "Starting f2";
+                      "f1:syscall.*"; "f2:syscall.*";
+                      "^Input vars: .*$"] in
+      let _ = if not (List.fold_left (||)
+                        false
+                        (List.map (fun s -> match_regex line s) no_print))
               then printf " %s\n%!" line
-              else () in*)
+              else () in
       match line with 
       | "All tests succeeded!" -> read_results true
       | _ when (match_regex line "^Input vars: .*$") && success ->
@@ -394,7 +418,9 @@ let rec main () =
       let end_ver = Unix.gettimeofday () in
       printf "Time for verification: %fs\n" (end_ver -. start_ver);
       printf "Adding test: %!";
-      List.iter (Printf.printf "%d %!") test;
+      List.iteri 
+        (fun i el -> if i < outer_nargs then Printf.printf "%d %!" el else ()) 
+        test;
       printf "\n";
       tests := !tests @ [test];
       let start_syn = Unix.gettimeofday () in
