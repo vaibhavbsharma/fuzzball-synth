@@ -241,6 +241,8 @@ let check_adaptor () =
        outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
          outer_call_addr ^ ":" ^ post_outer_call_addr;
        "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
+       "-no-fail-on-huer"; (* not the right way to make strange term failures go away
+			      but it works for now, TODO: fix this in the near future *)
        synth_opt]
     @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
     @ [(*"-table-limit 8";*)
@@ -332,6 +334,8 @@ let try_synth () =
          outer_call_addr ^ ":" ^ post_outer_call_addr;
       "-return-zero-missing-x64-syscalls";
       "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
+       "-no-fail-on-huer"; (* not the right way to make strange term failures go away
+			      but it works for now, TODO: fix this in the near future *)
       synth_opt;
       (*"-table-limit 8";*)
       "-zero-memory";
@@ -397,7 +401,8 @@ let try_synth () =
     with End_of_file -> 
       let _ = Unix.close_process_in ic in
       if not success
-      then (printf "Synthesis failure: seems the functions are not equivalent.\n%!";
+      then (printf "Synthesis failure between %d and %d: seems the functions are not equivalent.\n%!"
+	      f1num f2num;
             exit 2)
       else [] in
   read_results false
@@ -414,7 +419,7 @@ let rec main () =
       printf "Time for verification: %fs\n" (end_ver -. start_ver);
       printf "Success!\nFinal test set:\n%!";
       print_tests ();
-      printf "Final adaptor:\n%!";
+      printf "Final adaptor between %d and %d:\n%!" f1num f2num;
       print_adaptor ();
   | (_, test) -> (* we need to synthesize a new adaptor *)
       let end_ver = Unix.gettimeofday () in

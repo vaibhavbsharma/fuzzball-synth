@@ -231,6 +231,8 @@ let check_adaptor () =
        outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
          outer_call_addr ^ ":" ^ post_outer_call_addr;
        "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
+       "-no-fail-on-huer"; (* not the right way to make strange term failures go away
+			      but it works for now, TODO: fix this in the near future *)
        synth_opt]
     @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
     @ [(*"-table-limit 8";*)
@@ -322,6 +324,8 @@ let try_synth () =
          outer_call_addr ^ ":" ^ post_outer_call_addr;
       "-return-zero-missing-x64-syscalls";
       "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
+      "-no-fail-on-huer"; (* not the right way to make strange term failures go away
+			  but it works for now, TODO: fix this in the near future *)
       synth_opt;
       (*"-table-limit 8";*)
       "-zero-memory";
