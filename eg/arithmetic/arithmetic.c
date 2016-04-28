@@ -20,6 +20,7 @@ int f1(int a) {
 int f1(int a, int b) {
     return ((unsigned int) a + (unsigned int) b) / 2;
 }*/
+/*
 // turn off the rightmost 1 bit: equivalent with x = a & (a-1)
 int f1(int a) {
     int i;
@@ -37,8 +38,18 @@ int f1(int a) {
 }
 int f2(int x) {
     return x;
-}
+}*/
 
+int f1(int x) {
+    int i;
+    for (i = 0; i < 8 * sizeof(x); i++) {
+        if (!(x & (1 << i))) {
+            break;
+        }
+    }
+    return (1 << i);
+}
+int f2(int x) { return x; }
 /*
 int f1(int a) {
     if ((a < 0) | (a  > 127)) {
@@ -170,6 +181,7 @@ int main(int argc, char **argv) {
            all inputs. */
         #ifdef A1
         a = strtoul(argv[1], 0, 0);
+        //printf("%x -> %x\n", a, f1(a));
         compare(a);  
         #elif defined(A2)
         a = strtoul(argv[1], 0, 0);
