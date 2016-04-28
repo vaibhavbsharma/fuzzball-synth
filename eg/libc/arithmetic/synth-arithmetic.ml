@@ -240,9 +240,9 @@ let check_adaptor () =
        "--"; bin; string_of_int f1num; 
        string_of_int f2num; "g"]
   in
-  (*let _ = printf "%s\n%!" (String.concat " " cmd) in*)
+  let _ = printf "%s\n%!" (String.concat " " cmd) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
-  let ce = ref (Array.make outer_nargs 0L) in
+  let ce = ref (Array.make 6 0L) in
   (* read_results : string list -> (int * int) -> bool -> (bool * (int * int))
      read through the results of the call to FuzzBALL keeping track of
      the number of matches and mismatches, and record a counterexample
@@ -347,6 +347,8 @@ let try_synth () =
               else () in
       match line with 
       | "All tests succeeded!" -> read_results true
+      | _ when (match_regex line "Disqualified path at 0x[0-9a-f]+") ->
+	read_results false
       | _ when (match_regex line "^Input vars: .*$") && success ->
           (* use regular expressions to pull out values for the adaptor fields
              and return the adaptor *)
