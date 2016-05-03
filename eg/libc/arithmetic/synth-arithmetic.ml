@@ -194,7 +194,7 @@ let fields =
   let rec create_tree d base var_name =
     if d > 0
     then [(var_name ^ "_type_" ^ base, 8, format_of_string "%01x");
-          (var_name ^ "_val_" ^ base, 64, format_of_string "%08x")]
+          (var_name ^ "_val_" ^ base, 64, format_of_string "%16x")]
          @ (create_tree (d-1) (base ^ "0") var_name)
          @ (create_tree (d-1) (base ^ "1") var_name)
     else [] in
@@ -231,6 +231,8 @@ let check_adaptor () =
        outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
          outer_call_addr ^ ":" ^ post_outer_call_addr;
        "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
+       "-no-fail-on-huer"; (* not the right way to make strange term failures go away
+			      but it works for now, TODO: fix this in the near future *)
        synth_opt]
     @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
     @ [(*"-table-limit 8";*)
@@ -240,9 +242,9 @@ let check_adaptor () =
        "--"; bin; string_of_int f1num; 
        string_of_int f2num; "g"]
   in
-  (*let _ = printf "%s\n%!" (String.concat " " cmd) in*)
+  let _ = printf "%s\n%!" (String.concat " " cmd) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
-  let ce = ref (Array.make outer_nargs 0L) in
+  let ce = ref (Array.make 6 0L) in
   (* read_results : string list -> (int * int) -> bool -> (bool * (int * int))
      read through the results of the call to FuzzBALL keeping track of
      the number of matches and mismatches, and record a counterexample
@@ -322,6 +324,8 @@ let try_synth () =
          outer_call_addr ^ ":" ^ post_outer_call_addr;
       "-return-zero-missing-x64-syscalls";
       "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
+      "-no-fail-on-huer"; (* not the right way to make strange term failures go away
+			  but it works for now, TODO: fix this in the near future *)
       synth_opt;
       (*"-table-limit 8";*)
       "-zero-memory";
@@ -347,6 +351,8 @@ let try_synth () =
               else () in
       match line with 
       | "All tests succeeded!" -> read_results true
+      | _ when (match_regex line "Disqualified path at 0x[0-9a-f]+") ->
+	read_results false
       | _ when (match_regex line "^Input vars: .*$") && success ->
           (* use regular expressions to pull out values for the adaptor fields
              and return the adaptor *)

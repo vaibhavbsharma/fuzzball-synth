@@ -146,9 +146,33 @@ int _f1(int x, unsigned y){//, int z) {
     return (x << 1) + (y % 2);// + (z << 1);
 }
 
-int _f2(int a, int b, int c, int d,int e){//, int f) {
-    return c + d + (a & b) + e;// + f;
+int _f2(int a, int b, int c, int d) {//,int e){//, int f) {
+  return c + d + (a & b);// + e;// + f;
     //return a + b + (c & d);
+}
+
+int _isalpha(int i) {
+  if( ( i < 0 ) || ( i > 127 ) ) {
+    return 0;
+  }
+  if(isalpha(i)!=0) return 1;
+  else return 0;
+}
+
+int _isdigit(int i) {
+  if( ( i < 0 ) || ( i > 127 ) ) {
+    return 0;
+  }
+  return (isdigit(i)!=0 || isalpha(i)!=0);
+}
+
+int _isalnum(int i) {
+  if( ( i < 0 ) || ( i > 127 ) ) {
+    return 0;
+  }
+  return isalnum(i);
+  //if(isalnum(i)!=0) return 1;
+  //else return 0;
 }
 
 int arch_prctl(int, unsigned long);
@@ -1541,9 +1565,12 @@ struct func_info funcs[] = {
     /* 1314 */ {"getpass", (func*)&getpass, 1, 0, 0},
     /* 1315 */ {"ttyslot", (func*)&ttyslot, 0, 0, 0},
     /* 1316 */ {"_f1", (func*)&_f1, 2, 0, 0},
-    /* 1317 */ {"_f2", (func*)&_f2, 5, 0, 0},
+    /* 1317 */ {"_f2", (func*)&_f2, 4, 0, 0},
     /* 1318 */ {"frexpf", (func*)&frexpf, 2, 0, 0},
     /* 1319 */ {"frexp", (func*)&frexpf, 2, 0, 0},
+    /* 1320 */ {"_isalpha", (func*)&_isalpha, 1, 0, 0},
+    /* 1321 */ {"_isdigit", (func*)&_isdigit, 1, 0, 0},
+    /* 1322 */ {"_isalnum", (func*)&_isalnum, 1, 0, 0},
 };
 
 

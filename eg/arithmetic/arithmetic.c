@@ -19,6 +19,7 @@
 int f1(int a, int b) {
     return ((unsigned int) a + (unsigned int) b) / 2;
 }*/
+
 // turn off the rightmost 1 bit: equivalent with x = a & (a-1)
 int f1(int a) {
     int i;
@@ -193,6 +194,7 @@ int main(int argc, char **argv) {
            all inputs. */
         #ifdef A1
         a = strtoul(argv[1], 0, 0);
+        //printf("%x -> %x\n", a, f1(a));
         compare(a);  
         #elif defined(A2)
         a = strtoul(argv[1], 0, 0);
