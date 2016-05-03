@@ -10,13 +10,12 @@
 // define AN for N arguments to f1, currently only account for 1-4 arguments
 #define A1
 
-///// General Synthesis Examples
-// f2 should be the identity function
-/*// absolute value: equivalent with x = (a ^ (a >> 31)) - (a >> 31)
-int f1(int a) {
+///// General Synthesis Examples (f2 should be the identity)
+// absolute value: equivalent with x = (a ^ (a >> 31)) - (a >> 31)
+/*int f1(int a) {
     return abs(a);
 }
-// average of unsigned integers: equivalent with  (x & y) + ((x ^ y) >> 1)$ 
+// average of unsigned integers: equivalent with  (x & y) + ((x ^ y) >> 1) 
 int f1(int a, int b) {
     return ((unsigned int) a + (unsigned int) b) / 2;
 }*/
@@ -39,42 +38,66 @@ int f2(int x) {
     return x;
 }
 
-/*
-int f1(int a) {
-    if ((a < 0) | (a  > 127)) {
-        return 0;
-    }
+///// libc example
+/*int f1(int a) {
     if (islower(a)) {
         return 1;
     } else {
         return 0;
     }
 }
-
 int f2(int x) {
-    if ((x < 0) | (x  > 127)) {
-        return 0;
-    }
     if (isupper(x)) {
         return 1;
     } else {
         return 0;
     }
-}
-*/
-/*
-// returns 1 if (x,y) is in the square with corners at (0,0), (1,1)
-int f1(int x, int y) {
+}*/
+
+///// boxes example
+// returns 1 if (x,y) is in the square with corners at (1,1), (2,2)
+/*int f1(int x, int y) {
     //return 0 <= x & x <= 1 & 0 <= y & y <= 1;
     return 1 <= x & x <= 2 & 1 <= y & y <= 2;
 }
-
-// returns 1 if (x,y) is in the square with corners at (2,1), (4,4)
+// returns 1 if (x,y) is in the square with corners at (4,4), (6,7)
 int f2(int x, int y) {
     //return 2 <= x & x <= 4 & 1 <= y & y <= 4;
     return 4 <= x & x <= 6 & 4 <= y & y <= 7;
+}*/
+
+///// SKETCH examples
+/*int f1(int x) {
+    int i;
+    if (x == -1) {
+        // no rightmost 0-bit
+        return 0;
+    }
+    for (i = 0; i < 8 * sizeof(x); i++) {
+        if (!(x & (1 << i))) {
+            break;
+        }
+    }
+    return (1 << i);
 }
-*/
+int f2(int x, int q1, int q2) { 
+    return ~(x + q1) & (x + q2); 
+}*/
+/*int poly(int n, int x, int q1, int q2) {
+    if (n == 0) {
+        return q1;
+    } else {
+        return x * poly(n-1, x, q1, q2) + q2;
+    }
+}
+int f1(int x) {
+    // x^4 + 6*x^3 + 11*x^2 + 6*x
+    return x*x*x*x + 6*x*x*x + 11*x*x + 6*x;
+}
+int f2(int x, int q1, int q2) {
+    return (x+1)*(x+2)*poly(2,x,q1,3);
+}*/
+
 /* Compare the results of the two functions; note that the second call to f1()
    will be replaced by a call to f2() by FuzzBALL */
 #ifdef A1
@@ -145,7 +168,7 @@ int main(int argc, char **argv) {
         while (fscanf(fh, "%x", &a) != EOF) {
             compare(a);
             //int r1 = f1(a);
-            //int r2 = f2((a * 1) & (a - 1));
+            //int r2 = f2(a, 0, 1);
             //printf("%x\t->\t%d (%x / %x)\n", a, r1 == r2, r1, r2);
         }
         #elif defined(A2)

@@ -19,7 +19,7 @@ int f1(int a) {
 // average of unsigned integers: equivalent with  (x & y) + ((x ^ y) >> 1)$ 
 int f1(int a, int b) {
     return ((unsigned int) a + (unsigned int) b) / 2;
-}
+}*/
 // turn off the rightmost 1 bit: equivalent with x = a & (a-1)
 long f1(long a) {
     long i;
@@ -37,9 +37,9 @@ long f1(long a) {
 }
 long f2(long x) {
     return x;
-}*/
+}
 
-
+/*
 long f1(long a) {
     if ((a < 0) | (a  > 127)) {
         return 0;
@@ -61,7 +61,7 @@ long f2(long x) {
         return 0;
     }
 }
-
+*/
 /*
 // returns 1 if (x,y) is in the square with corners at (0,0), (1,1)
 long f1(long x, long y) {
