@@ -175,6 +175,17 @@ int _isalnum(int i) {
   //else return 0;
 }
 
+int _seteuid(uid_t uid) {
+  if(uid == (uid_t) ~0) {
+    return 0;
+  }
+  return seteuid(uid);
+}
+
+int _killpg(__pid_t pgrp, int sig) {
+  return killpg(abs(pgrp), sig);
+}
+
 int arch_prctl(int, unsigned long);
 caddr_t create_module(const char *, size_t);
 int delete_module(const char *, int);
@@ -1567,7 +1578,7 @@ struct func_info funcs[] = {
     /* 1316 */ {"_f1", (func*)&_f1, 2, 0, 0},
     /* 1317 */ {"_f2", (func*)&_f2, 4, 0, 0},
     /* 1318 */ {"frexpf", (func*)&frexpf, 2, 0, 0},
-    /* 1319 */ {"frexp", (func*)&frexpf, 2, 0, 0},
+    /* 1319 */ {"frexp", (func*)&frexp, 2, 0, 0},
     /* 1320 */ {"_isalpha", (func*)&_isalpha, 1, 0, 0},
     /* 1321 */ {"_isdigit", (func*)&_isdigit, 1, 0, 0},
     /* 1322 */ {"_isalnum", (func*)&_isalnum, 1, 0, 0},

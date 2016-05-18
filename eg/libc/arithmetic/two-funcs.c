@@ -170,6 +170,10 @@ int _f2(int x) {
     return x;
 }
 
+int _killpg(__pid_t pgrp, int sig) {
+  return killpg(abs(pgrp), sig);
+}
+
 int arch_prctl(int, unsigned long);
 caddr_t create_module(const char *, size_t);
 int delete_module(const char *, int);

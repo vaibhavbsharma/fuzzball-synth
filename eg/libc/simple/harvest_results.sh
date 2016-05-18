@@ -7,17 +7,17 @@ g_total=0;
 g_strange_term=0;
 suffix="";
 echo -e '#\tIneq\t\t#adpt\tTimeout\tf1_crash\ttotal';
-if [ "$1" == "-0" ] ; then
-    suffix="-zero";
-elif [ "$1" == "-1" ] ; then 
-    suffix="-identity";
+if [ "$1" == "-arithmetic" ] ; then
+    prefix_dir="arithmetic";
+elif [ "$1" == "-simple" ] ; then 
+    prefix_dir="simple";
 fi
 for i in {1..8}; do 
-    inequivalent=`grep 'not equivalent' ../simple-$i/$i$suffix.txt | wc -l`; 
-    adaptors=`grep 'Final adaptor' ../simple-$i/$i$suffix.txt | wc -l`; 
-    missing=`grep 'Missing results' ../simple-$i/$i$suffix.txt | wc -l`; 
-    killed=`grep 'killed by alarm' ../simple-$i/$i$suffix.txt | wc -l`;
-    strange_term=`grep 'Strange term' ../simple-$i/$i$suffix.txt | wc -l`;
+    inequivalent=`grep 'not equivalent' ../$prefix_dir-$i/$i.txt | wc -l`; 
+    adaptors=`grep 'Final adaptor' ../$prefix_dir-$i/$i.txt | wc -l`; 
+    missing=`grep 'Missing results' ../$prefix_dir-$i/$i.txt | wc -l`; 
+    killed=`grep 'killed by alarm' ../$prefix_dir-$i/$i.txt | wc -l`;
+    strange_term=`grep 'Strange term' ../$prefix_dir-$i/$i.txt | wc -l`;
     total=$((inequivalent+adaptors+killed+missing));
     echo -e $i '\t' $inequivalent '(' $strange_term ')\t' $adaptors '\t' $killed '\t' $missing '\t\t' $total; 
     g_inequivalent=$((g_inequivalent+inequivalent));

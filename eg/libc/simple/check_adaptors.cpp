@@ -24,6 +24,7 @@ string pretty_adaptor(string s) {
     //cout<<prev_pos<<" "<<pos<<endl;
   }
   if(prev_pos==s.length()) ret<<"0";
+  else if (s.length()-prev_pos==20) ret<<"-1";
   else ret<<s.substr(prev_pos,string::npos);
   return ret.str();
 }
@@ -34,27 +35,27 @@ int main(int argc, char * argv[]) {
   vector<string> blacklisted_fns;
   
   //Functions that return -1 because of unimplemented syscalls
-  blacklisted_fns.push_back(" = afs_syscall");
-  blacklisted_fns.push_back(" = break");
-  blacklisted_fns.push_back(" = fattach");
-  blacklisted_fns.push_back(" = fdetach");
-  blacklisted_fns.push_back(" = ftime");
-  blacklisted_fns.push_back(" = getmsg");
-  blacklisted_fns.push_back(" = getpmsg");
-  blacklisted_fns.push_back(" = gtty");
-  blacklisted_fns.push_back(" = isastream");
-  blacklisted_fns.push_back(" = lock");
-  blacklisted_fns.push_back(" = madvise1");
-  blacklisted_fns.push_back(" = mpx");
-  blacklisted_fns.push_back(" = prof");
-  blacklisted_fns.push_back(" = profil");
-  blacklisted_fns.push_back(" = putmsg");
-  blacklisted_fns.push_back(" = putpmsg");
-  blacklisted_fns.push_back(" = security");
-  blacklisted_fns.push_back(" = stty");
-  blacklisted_fns.push_back(" = tuxcall");
-  blacklisted_fns.push_back(" = ulimit");
-  blacklisted_fns.push_back(" = vserver");
+  // blacklisted_fns.push_back(" = afs_syscall");
+  // blacklisted_fns.push_back(" = break");
+  // blacklisted_fns.push_back(" = fattach");
+  // blacklisted_fns.push_back(" = fdetach");
+  // blacklisted_fns.push_back(" = ftime");
+  // blacklisted_fns.push_back(" = getmsg");
+  // blacklisted_fns.push_back(" = getpmsg");
+  // blacklisted_fns.push_back(" = gtty");
+  // blacklisted_fns.push_back(" = isastream");
+  // blacklisted_fns.push_back(" = lock");
+  // blacklisted_fns.push_back(" = madvise1");
+  // blacklisted_fns.push_back(" = mpx");
+  // blacklisted_fns.push_back(" = prof");
+  // blacklisted_fns.push_back(" = profil");
+  // blacklisted_fns.push_back(" = putmsg");
+  // blacklisted_fns.push_back(" = putpmsg");
+  // blacklisted_fns.push_back(" = security");
+  // blacklisted_fns.push_back(" = stty");
+  // blacklisted_fns.push_back(" = tuxcall");
+  // blacklisted_fns.push_back(" = ulimit");
+  // blacklisted_fns.push_back(" = vserver");
  
   //Functions that return void
   //blacklisted_fns.push_back(" = syslog");
@@ -203,7 +204,7 @@ int main(int argc, char * argv[]) {
   for(int i=0;i<8;i++) {
     string filename("../simple-");
     filename=filename+(char)('1'+i);
-    filename=filename+'/';
+    filename=filename+"/";
     filename=filename+(char)('1'+i);
     if(argc>1) {
       if(argv[1][1]=='0') filename=filename+"-zero";
@@ -223,14 +224,14 @@ int main(int argc, char * argv[]) {
 	ignore_flag=0;
       }
       buf_line.push_back(line);
-      if(line.find("pthread")!=string::npos) {
+      /*if(line.find("pthread")!=string::npos) {
 	ignore_flag=1;
-      }
-      for(int ign_ind=0;ign_ind<blacklisted_fns.size();ign_ind++)
+	}*/
+      /*for(int ign_ind=0;ign_ind<blacklisted_fns.size();ign_ind++)
 	if(line.find(blacklisted_fns[ign_ind])!=string::npos) {
 	  ignore_flag=1;
 	  //cout<<"Found "<<blacklisted_fns[ign_ind]<<" on line : "<<line<<endl;
-	}
+	  }*/
       if(line.find("Final adaptor")!=string::npos) {
 	total_adaptor_count++;
 	if(ignore_flag==0) {
@@ -238,13 +239,14 @@ int main(int argc, char * argv[]) {
 	  //for(int j=0;j<buf_line.size();j++) cout<<"    "<<buf_line[j]<<endl;
 	  //cout<<buf_line[15]<<endl<<buf_line[16]<<endl<<buf_line[buf_line.size()-1]<<endl;
 	  stringstream ss1(buf_line[15]),ss2(buf_line[16]),ss3(buf_line[buf_line.size()-1]);
-	  string f1,f1_name,f2,f2_name,adaptor;
+	  string f1,f1_name,f2,f2_name,adaptor,ret_adaptor;
 	  string tmpstr;
 	  ss1>>f1>>tmpstr>>f1_name;
 	  ss2>>f2>>tmpstr>>f2_name;
-	  ss3>>tmpstr>>tmpstr>>tmpstr>>adaptor;
+	  ss3>>tmpstr>>tmpstr>>tmpstr>>adaptor>>tmpstr>>ret_adaptor;
 	  adaptor=pretty_adaptor(adaptor);
-	  cout<<f1<<" "<<f2<<" "<<adaptor<<" "<<f1_name<<" "<<f2_name<<endl;
+	  ret_adaptor=pretty_adaptor(ret_adaptor);
+	  cout<<f1<<" "<<f2<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<endl;
 	}
 	//else cout<<"Skipping adaptor because one of the functions was pthread_* or blacklisted"<<endl;
 	if(ignore_flag==1) ignored_adaptor_count++;

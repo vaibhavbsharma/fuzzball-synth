@@ -30,7 +30,7 @@ for (my $f1num = $start_lim; $f1num <= $end_lim; $f1num++) {
 	}
 	print "Startin synthesis for $f1num and $f2num\n";
 	
-	my @cmd = ("perl synth-one.pl",
+	my @cmd = ("perl synth-typeconv.pl",
 		   sprintf("%d %d %d %d %d %d",
 			   $f1num,$f2num,$rand_seed,
 			   $default_adaptor,
