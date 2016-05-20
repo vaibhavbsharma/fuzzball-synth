@@ -191,17 +191,24 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		#"-trace-basic",
-		#"-trace-temps",
+		#"-trace-sym-addr-details",
+		#"-trace-sym-addrs",
+		#"-trace-regions",
+		"-trace-tables",
+		"-table-limit","12",
+		"-trace-binary-paths-bracketed",
+#"-narrow-bitwidth-cutoff","1",
+		#"-trace-offset-limit",
+		"-trace-basic",
+		"-trace-temps",
+		"-omit-pf-af",
 		#"-trace-registers",
 		#"-trace-insns",
 		#"-trace-loads",
 		#"-trace-stores",
 		#"-trace-insns",
-		#"-trace-registers", "-trace-insns",
-		#"-trace-temps", 
 		#"-trace-decisions",
-		#"-save-solver-files", 
+		"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
@@ -223,8 +230,11 @@ sub check_adaptor {
     while (<LOG>) {
 	if ($_ eq "Match\n" ) {
 	    $matches++;
+	} elsif (/^Iteration (.*):$/) {
+	    $f1_completed = 0;
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
+	    print "synth-typeconv.pl: f1_completed = 1";
 	} elsif (($_ eq "Mismatch\n") or 
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
 		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
