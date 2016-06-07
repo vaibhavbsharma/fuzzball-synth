@@ -19,12 +19,12 @@ my $lim3 = 984;
 my $lim4 = 1315;
 
 my $start_lim = $lim0 + 1;
-my $end_lim = $lim4;
+my $end_lim = $lim2;
 my $direction = 1;
 
 for (my $f1num = $start_lim; $f1num <= $end_lim; $f1num++) {
-    for (my $f2_limit=1; $f2_limit <= 5; $f2_limit++) {
-	my $f2num = $f1num + ($f2_limit * $direction);
+#    for (my $f2_limit=1; $f2_limit <= 5; $f2_limit++) {
+	my $f2num = $f1num;# + ($f2_limit * $direction);
 	if ($f2num > 1315 || $f2num < 0) {
 	    next;
 	}
@@ -58,5 +58,5 @@ for (my $f1num = $start_lim; $f1num <= $end_lim; $f1num++) {
 	    close LOG or warn $! ? "Error closing pipe: $!":"Exit status $? from close";
 	    print "killed by alarm\n";
 	}
-    }
+#    }
 }
