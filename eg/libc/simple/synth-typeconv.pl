@@ -202,7 +202,6 @@ sub check_adaptor {
 		"-trace-binary-paths-bracketed",
 #"-narrow-bitwidth-cutoff","1",
 		#"-trace-offset-limit",
-		"-trace-syscalls",
 		"-trace-basic",
 		#"-trace-registers",
 		#"-trace-insns",
