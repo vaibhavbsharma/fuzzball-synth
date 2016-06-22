@@ -193,16 +193,18 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[5]=f",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
+		"-trace-syscalls",
 		"-omit-pf-af",
 		"-trace-temps",
 		"-trace-regions",
 		"-trace-memory-snapshots",
 		"-trace-tables",
 		"-table-limit","12",
-		"-trace-binary-paths-bracketed",
+		#"-trace-binary-paths-bracketed",
 #"-narrow-bitwidth-cutoff","1",
 		#"-trace-offset-limit",
 		"-trace-basic",
+		#"-trace-eip",
 		#"-trace-registers",
 		#"-trace-insns",
 		#"-trace-loads",
@@ -222,7 +224,15 @@ sub check_adaptor {
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, $f1num, $f2num, "g");
-    print "@args\n";
+    my @printable;
+    for my $a (@args) {
+	if ($a =~ /[\s|<>]/) {
+	    push @printable, "'$a'";
+	} else {
+	    push @printable, $a;
+	}
+    }
+    print "@printable\n";
     open(LOG, "-|", @args);
     my($matches, $fails) = (0, 0);
     my(@ce, $this_ce);
@@ -301,7 +311,15 @@ sub try_synth {
 		"-region-limit", 64,
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, $f1num, $f2num, "f", "tests");
-    print "@args\n";
+    my @printable;
+    for my $a (@args) {
+	if ($a =~ /[\s|<>]/) {
+	    push @printable, "'$a'";
+	} else {
+	    push @printable, $a;
+	}
+    }
+    print "@printable\n";
     open(LOG, "-|", @args);
     my($success, %fields);
     $success = 0;
