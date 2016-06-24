@@ -424,7 +424,7 @@ struct func_info funcs[] = {
     /*    2 */ {"openlog", (func*)&openlog, 3, 0, 1},
     /*    3 */ {"closelog", (func*)&closelog, 0, 0, 1},
     /*    4 */ {"setlogmask", (func*)&setlogmask, 1, 0, 0},
-    /*    5 */ {"syscall", (func*)&syscall, 1, 1, 0},
+    /*    5 */ {"syscall", (func*)&syscall, 1, 1, 0}, //**NOTE: Maybe this function should be blacklisted
     /*    6 */ {"daemon", (func*)&daemon, 2, 0, 0},
     /*    7 */ {"mmap", (func*)&mmap, 6, 0, 0},
     /*    8 */ {"munmap", (func*)&munmap, 2, 0, 0},
@@ -1126,7 +1126,7 @@ struct func_info funcs[] = {
     /*  704 */ {"srand48_r", (func*)&srand48_r, 2, 0, 0},
     /*  705 */ {"seed48_r", (func*)&seed48_r, 2, 0, 0},
     /*  706 */ {"lcong48_r", (func*)&lcong48_r, 2, 0, 0},
-    /*  707 */ {"mystrtol", (func*)&mystrtol, 3, 0, 0},
+    /*  707 */ {"strtol", (func*)&strtol, 3, 0, 0},
     /*  708 */ {"strtoul", (func*)&strtoul, 3, 0, 0},
     /*  709 */ {"strtol_l", (func*)&strtol_l, 4, 0, 0},
     /*  710 */ {"strtoul_l", (func*)&strtoul_l, 4, 0, 0},

@@ -11,6 +11,8 @@ srand($rand_seed);
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
+my $region_limit = 936;
+
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
 my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
@@ -209,7 +211,10 @@ sub check_adaptor {
 		#"-trace-insns",
 		#"-trace-loads",
 		#"-trace-stores",
+		"-trace-conditions",
 		"-trace-decisions",
+		#"-trace-decision-tree",
+		#"-save-decision-tree-interval", 1,
 		#"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
@@ -218,7 +223,7 @@ sub check_adaptor {
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
-		"-region-limit", 64,
+		"-region-limit", $region_limit,
 		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
@@ -308,7 +313,7 @@ sub try_synth {
 		#"-trace-conditions", "-omit-pf-af",
 		"-trace-stopping",
 		"-trace-memory-snapshots",
-		"-region-limit", 64,
+		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, $f1num, $f2num, "f", "tests");
     my @printable;
