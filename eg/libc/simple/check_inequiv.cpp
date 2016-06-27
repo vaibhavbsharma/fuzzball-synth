@@ -30,8 +30,8 @@ string pretty_adaptor(string s) {
 }
 
 int main(int argc, char * argv[]) {
-  int ignored_adaptor_count=0;
-  int total_adaptor_count=0;
+  int ignored_fp_count=0;
+  int total_fp_count=0;
   vector<string> blacklisted_fns;
   
   //Functions that return -1 because of unimplemented syscalls
@@ -201,15 +201,11 @@ int main(int argc, char * argv[]) {
   //blacklisted_fns.push_back(" = setusershell");
 
  
-  for(int i=0;i<8;i++) {
-    string filename("../simple-");
+  for(int i=0;i<2;i++) {
+    string filename("../identity-");
     filename=filename+(char)('1'+i);
     filename=filename+"/";
     filename=filename+(char)('1'+i);
-    if(argc>1) {
-      if(argv[1][1]=='0') filename=filename+"-zero";
-      else if(argv[1][1]=='1') filename=filename+"-identity";
-    } 
     filename=filename+".txt";
     cout<<filename<<endl;
     ifstream fin(filename.c_str());
@@ -232,30 +228,25 @@ int main(int argc, char * argv[]) {
 	  ignore_flag=1;
 	  //cout<<"Found "<<blacklisted_fns[ign_ind]<<" on line : "<<line<<endl;
 	  }*/
-      if(line.find("Final adaptor")!=string::npos) {
-	total_adaptor_count++;
+      if(line.find("not equivalent")!=string::npos) {
+	total_fp_count++;
 	if(ignore_flag==0) {
 	  //cout<<"Found an adaptor, printing its execution log"<<endl;
-	  //for(int j=0;j<buf_line.size();j++) cout<<"    "<<buf_line[j]<<endl;
-	  //cout<<buf_line[15]<<endl<<buf_line[16]<<endl<<buf_line[buf_line.size()-1]<<endl;
-	  stringstream ss1(buf_line[15]),ss2(buf_line[16]),ss3(buf_line[buf_line.size()-1]);
-	  string f1,f1_name,f2,f2_name,adaptor,ret_adaptor;
+	  stringstream ss1(buf_line[15]),ss2(buf_line[16]);
+	  string f1,f1_name,f2,f2_name;
 	  string tmpstr;
 	  ss1>>f1>>tmpstr>>f1_name;
 	  ss2>>f2>>tmpstr>>f2_name;
-	  ss3>>tmpstr>>tmpstr>>tmpstr>>adaptor>>tmpstr>>ret_adaptor;
-	  adaptor=pretty_adaptor(adaptor);
-	  ret_adaptor=pretty_adaptor(ret_adaptor);
-	  cout<<f1<<" "<<f2<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<endl;
+	  cout<<f1_name<<"("<<f1<<") "<<f2_name<<"("<<f2<<")"<<endl;
 	}
 	//else cout<<"Skipping adaptor because one of the functions was pthread_* or blacklisted"<<endl;
-	if(ignore_flag==1) ignored_adaptor_count++;
+	if(ignore_flag==1) ignored_fp_count++;
 	ignore_flag=0;
       }
     }
     fin.close();
   }
-  cout<<"ignored_adaptor_count = "<<ignored_adaptor_count<<endl;
-  cout<<"total_adaptor_count = "<<total_adaptor_count<<endl;
+  cout<<"ignored_fp_count = "<<ignored_fp_count<<endl;
+  cout<<"total_fp_count = "<<total_fp_count<<endl;
   return 0;
 }
