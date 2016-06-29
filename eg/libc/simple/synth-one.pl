@@ -11,6 +11,8 @@ srand($rand_seed);
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
+my $region_limit = 936;
+
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
 my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
@@ -41,6 +43,9 @@ if (exists $ENV{STP_LOC}) {
 } else {
     $stp = "stp";
 }
+
+my $f1_completed_count = 0;
+my $iteration_count = 0;
 
 my $bin = "./two-funcs";
 
@@ -119,6 +124,13 @@ my @fields =
    ["f_val",      "reg64_t", "%016x"],
 );
 
+my @ret_fields = 
+(
+   ["ret_type",  "reg8_t", "%01x"],
+   ["ret_val",   "reg64_t", "%016x"],
+);
+
+
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 splice(@fields, 2 * $f2nargs);
 
@@ -126,6 +138,10 @@ my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-tim
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
+
+my @synth_ret_opt = ("-synthesize-return-adaptor",
+		 join(":", "return-typeconv", $f2_addr, $post_f2_call, $f2nargs));
+print "synth_ret_opt = @synth_ret_opt\n";
 
 my @const_bounds_ec = ();
 if($const_lb != $const_ub) {
@@ -152,13 +168,20 @@ if($const_lb != $const_ub) {
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
-    my($adapt) = @_;
+    my($adapt,$ret_adapt) = (@_);
     my @conc_adapt = ();
     for my $i (0 .. $#$adapt) {
 	my($name, $ty, $fmt) = @{$fields[$i]};
 	my $val = $adapt->[$i];
 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
 	push @conc_adapt, ("-extra-condition", $s);
+    }
+    my @conc_ret_adapt = ();
+    for my $i (0 .. $#$ret_adapt) {
+	my($name, $ty, $fmt) = @{$ret_fields[$i]};
+	my $val = $ret_adapt->[$i];
+	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+	push @conc_ret_adapt, ("-extra-condition", $s);
     }
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
@@ -169,31 +192,70 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		#"-trace-temps", 
-		#"-trace-decisions",
+		"-trace-sym-addr-details",
+		"-trace-sym-addrs",
+		"-trace-syscalls",
+		"-omit-pf-af",
+		"-trace-temps",
+		"-trace-regions",
+		"-trace-memory-snapshots",
+		"-trace-tables",
+		"-table-limit","12",
+		#"-save-decision-tree-interval", 1,
+		#"-trace-decision-tree",
+		"-trace-binary-paths-bracketed",
+#"-narrow-bitwidth-cutoff","1",
+		#"-trace-offset-limit",
+		"-trace-basic",
+		#"-trace-eip",
+		#"-trace-registers",
+		#"-trace-stmts",
+		#"-trace-insns",
+		#"-trace-loads",
+		#"-trace-stores",
+		"-trace-conditions",
+		"-trace-decisions",
 		#"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
+		@synth_ret_opt, @conc_ret_adapt,
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
+		"-region-limit", $region_limit,
 		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, $f1num, $f2num, "g");
     #print "@args\n";
+    my @printable;
+    for my $a (@args) {
+	if ($a =~ /[\s|<>]/) {
+	    push @printable, "'$a'";
+	} else {
+	    push @printable, $a;
+	}
+    }
+    print "@printable\n";
     open(LOG, "-|", @args);
     my($matches, $fails) = (0, 0);
     my(@ce, $this_ce);
     $this_ce = 0;
     my $f1_completed = 0;
+    $f1_completed_count = 0;
+    $iteration_count = 0;
     while (<LOG>) {
 	if ($_ eq "Match\n" ) {
 	    $matches++;
+	} elsif (/^Iteration (.*):$/) {
+	    $f1_completed = 0;
+	    $iteration_count++;
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
+	    $f1_completed_count++;
+	    print "synth-typeconv.pl: f1_completed = 1\n";
 	} elsif (($_ eq "Mismatch\n") or 
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
 		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
@@ -246,16 +308,29 @@ sub try_synth {
 		#counter example search mode otherwise
 		"-adaptor-search-mode",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
+		"-table-limit","12",
 		"-return-zero-missing-x64-syscalls",
 		@synth_opt, @const_bounds_ec,
+		@synth_ret_opt,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:1",
 		#"-trace-conditions", "-trace-temps", "-omit-pf-af",
 		"-trace-stopping",
+		"-trace-memory-snapshots",
+		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, $f1num, $f2num, "f", "tests");
     #print "@args\n";
+    my @printable;
+    for my $a (@args) {
+	if ($a =~ /[\s|<>]/) {
+	    push @printable, "'$a'";
+	} else {
+	    push @printable, $a;
+	}
+    }
+    print "@printable\n";
     open(LOG, "-|", @args);
     my($success, %fields);
     $success = 0;
@@ -283,16 +358,22 @@ sub try_synth {
 	exit 2;
     }
     my @afields;
+    my @bfields;
     for my $fr (@fields) {
 	push @afields, $fields{$fr->[0]};
     }
-    return [@afields];
+    for my $fr (@ret_fields) {
+	push @bfields, $fields{$fr->[0]};
+	#print "try_synth: pushing $fr->[0] = $fields{$fr->[0]}\n";
+    }
+    return ([@afields],[@bfields]);
 }
 
 
 # Main loop: starting with a stupid adaptor and no tests, alternate
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
+my $ret_adapt = [(0) x @ret_fields];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {
@@ -317,20 +398,25 @@ if ($f1nargs==0) {
     }
 }
 
-#print "default adaptor = @$adapt\n";
+print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();
 my $done = 0;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
-    print "Checking $adapt_s:\n";
-    my($res, $cer) = check_adaptor($adapt);
+    my $ret_adapt_s = join(",", @$ret_adapt);
+    print "Checking $adapt_s and $ret_adapt_s:\n";
+    my($res, $cer) = check_adaptor($adapt,$ret_adapt);
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
 	for my $tr (@tests) {
 	    print " $tr->[0], $tr->[1]\n";
 	}
-	print "Final adaptor is $adapt_s\n";
+	my $verified="partial";
+	if ($f1_completed_count == $iteration_count) {
+	    $verified="complete";
+	}
+	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
 	$done = 1;
 	last;
     } else {
@@ -339,6 +425,7 @@ while (!$done) {
 	push @tests, [@$cer];
     }
 
-    $adapt = try_synth(\@tests);
-    print "Synthesized adaptor ".join(",",@$adapt)."\n";
+    ($adapt,$ret_adapt) = try_synth(\@tests);
+    print "Synthesized arg adaptor ".join(",",@$adapt).
+	" and return adaptor ".join(",",@$ret_adapt)."\n";
 }
