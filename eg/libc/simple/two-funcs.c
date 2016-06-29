@@ -148,14 +148,18 @@
 # define STRTOL_LONG_MAX LONG_MAX
 # define L_(Ch) Ch
 
-/* Equivalent with 0,00000000,0,00000000,0,00000001,1,00000001 */
+/* Equivalent with 0,00000000,0,00000000,0,00000001,1,00000001 
 int _f1(int x, unsigned y){//, int z) {
     return (x << 1) + (y % 2);// + (z << 1);
-}
+}*/
 
 int _f2(int a, int b, int c, int d) {//,int e){//, int f) {
   return c + d + (a & b);// + e;// + f;
     //return a + b + (c & d);
+}
+
+int _f1(char *s) {
+  return s[0]=='\0';
 }
 
 int _isalpha(int i) {
@@ -193,17 +197,14 @@ int _killpg(__pid_t pgrp, int sig) {
   return killpg(abs(pgrp), sig);
 }
 
-
-long int mystrtol(char *nptr, char **endptr, int base) 
+long int mystrtol_1(char *nptr, char **endptr, int base) 
 {
   int negative;
   unsigned long int cutoff;
-  unsigned int cutlim;
   unsigned long int i;
   const char *s;
   unsigned char c;
   const char *save, *end;
-  int overflow;
 
   if (base < 0 || base == 1 || base > 36)
     {
@@ -226,7 +227,109 @@ long int mystrtol(char *nptr, char **endptr, int base)
       ++s;
     }
   else if (*s == L_('+'))
+  ++s;
+
+  /* Recognize number prefix and if BASE is zero, figure it out ourselves.  */
+  if (*s == L_('0'))
+    {
+      if ((base == 0 || base == 16) && toupper (s[1]) == L_('X'))
+	{
+	  s += 2;
+	  base = 16;
+	}
+      else if (base == 0)
+	base = 8;
+    }
+  else if (base == 0)
+    base = 10;
+
+  /* Save the pointer so we can check later if anything happened.  */
+  save = s;
+
+    end = NULL;
+
+  i = 0;
+  c = *s;
+  for (;c != L_('\0'); c = *++s)
+    {
+      if (s == end)
+	break;
+      if (c >= L_('0') && c <= L_('9'))
+	c -= L_('0');
+      else if (isalpha (c))
+	c = toupper (c) - L_('A') + 10;
+	else
+	  break;
+      if ((int) c >= base)
+	break;
+      i *= (unsigned long int) base;
+      i += c;
+    }
+
+  /* Check if anything actually happened.  */
+  if (s == save)
+    goto noconv;
+
+  /* Store in ENDPTR the address of one character
+     past the last character we converted.  */
+  if (endptr != NULL)
+    *endptr = (char *) s;
+
+  /* Return the result of the appropriate sign.  */
+  return negative ? -i : i;
+
+noconv:
+  /* We must handle a special case here: the base is 0 or 16 and the
+     first two characters are '0' and 'x', but the rest are no
+     hexadecimal digits.  This is no error case.  We return 0 and
+     ENDPTR points to the `x`.  */
+  if (endptr != NULL)
+    {
+      if (save - nptr >= 2 && toupper (save[-1]) == L_('X')
+	  && save[-2] == L_('0'))
+	*endptr = (char *) &save[-1];
+      else
+	/*  There was no number to convert.  */
+	*endptr = (char *) nptr;
+    }
+
+  return 0L;
+}
+
+
+long int mystrtol(char *nptr, char **endptr, int base) 
+{
+  int negative;
+  unsigned long int cutoff;
+  //unsigned int cutlim;
+  unsigned long int i;
+  const char *s;
+  unsigned char c;
+  const char *save, *end;
+  //int overflow;
+
+  if (base < 0 || base == 1 || base > 36)
+    {
+      return 0;
+    }
+
+  save = s = nptr;
+
+  /* Skip white space.  */
+  while (isspace (*s))
     ++s;
+  if (__builtin_expect (*s == L_('\0'), 0))
+    goto noconv;
+
+  /* Check for a sign.  */
+  negative = 0;
+  if (*s == L_('-'))
+    {
+      negative = 1;
+      ++s;
+    }
+  else if (*s == L_('+'))
+  ++s;
 
   /* Recognize number prefix and if BASE is zero, figure it out ourselves.  */
   if (*s == L_('0'))
@@ -251,13 +354,13 @@ long int mystrtol(char *nptr, char **endptr, int base)
   /*cutoff = cutoff_tab[base - 2];
     cutlim = cutlim_tab[base - 2];*/
 
-  overflow = 0;
+  //overflow = 0;
   i = 0;
   c = *s;
-  if (sizeof (long int) != sizeof (long int))
+  /*if (sizeof (long int) != sizeof (long int))
     {
       unsigned long int j = 0;
-      /*unsigned long int jmax = jmax_tab[base - 2];*/
+      //unsigned long int jmax = jmax_tab[base - 2];
 
       for (;c != L_('\0'); c = *++s)
 	{
@@ -271,42 +374,40 @@ long int mystrtol(char *nptr, char **endptr, int base)
 	    break;
 	  if ((int) c >= base)
 	    break;
-	  /* Note that we never can have an overflow.  */
-	      /* We have an overflow.  Now use the long representation.  */
-	  /*else if (j >= jmax)
-	    {
-	      i = (unsigned long int) j;
-	      goto use_long;
-	    }*/
+	  //else if (j >= jmax)
+	  //  {
+	  //    i = (unsigned long int) j;
+	  //    goto use_long;
+	  //  }
 	  else
 	    j = j * (unsigned long int) base + c;
 	}
 
       i = (unsigned long int) j;
     }
-  else
-    for (;c != L_('\0'); c = *++s)
-      {
-	if (s == end)
-	  break;
-	if (c >= L_('0') && c <= L_('9'))
-	  c -= L_('0');
-	else if (isalpha (c))
-	  c = toupper (c) - L_('A') + 10;
+    else*/
+  for (;c != L_('\0'); c = *++s)
+    {
+      if (s == end)
+	break;
+      if (c >= L_('0') && c <= L_('9'))
+	c -= L_('0');
+      else if (isalpha (c))
+	c = toupper (c) - L_('A') + 10;
 	else
 	  break;
-	if ((int) c >= base)
-	  break;
-	/* Check for overflow.  */
-	/*if (i > cutoff || (i == cutoff && c > cutlim))
-	  overflow = 1;
-	else
-	{*/
-	  use_long:
-	    i *= (unsigned long int) base;
-	    i += c;
-	    //}
-      }
+      if ((int) c >= base)
+	break;
+      /* Check for overflow.  */
+      //if (i > cutoff || (i == cutoff && c > cutlim))
+      //	overflow = 1;
+      //	else
+      //	{
+      //    use_long:
+      i *= (unsigned long int) base;
+      i += c;
+      //}
+    }
 
   /* Check if anything actually happened.  */
   if (s == save)
@@ -318,11 +419,11 @@ long int mystrtol(char *nptr, char **endptr, int base)
     *endptr = (char *) s;
 
 
-  if (__builtin_expect (overflow, 0))
-    {
-      //__set_errno (ERANGE);
-      return negative ? STRTOL_LONG_MIN : STRTOL_LONG_MAX;
-    }
+  //if (__builtin_expect (overflow, 0))
+  //  {
+  //    //__set_errno (ERANGE);
+  //    return negative ? STRTOL_LONG_MIN : STRTOL_LONG_MAX;
+  //  }
 
   /* Return the result of the appropriate sign.  */
   return negative ? -i : i;
@@ -1735,7 +1836,7 @@ struct func_info funcs[] = {
     /* 1313 */ {"setusershell", (func*)&setusershell, 0, 0, 1},
     /* 1314 */ {"getpass", (func*)&getpass, 1, 0, 0},
     /* 1315 */ {"ttyslot", (func*)&ttyslot, 0, 0, 0},
-    /* 1316 */ {"_f1", (func*)&_f1, 2, 0, 0},
+    /* 1316 */ {"_f1", (func*)&_f1, 1, 0, 0},
     /* 1317 */ {"_f2", (func*)&_f2, 4, 0, 0},
     /* 1318 */ {"frexpf", (func*)&frexpf, 2, 0, 0},
     /* 1319 */ {"frexp", (func*)&frexp, 2, 0, 0},
