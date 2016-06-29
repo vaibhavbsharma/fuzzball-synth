@@ -255,7 +255,7 @@ sub check_adaptor {
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
 	    $f1_completed_count++;
-	    print "synth-typeconv.pl: f1_completed = 1\n";
+	    print "synth-one.pl: f1_completed = 1\n";
 	} elsif (($_ eq "Mismatch\n") or 
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
 		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
