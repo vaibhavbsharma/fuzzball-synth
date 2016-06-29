@@ -44,6 +44,10 @@ if (exists $ENV{STP_LOC}) {
     $stp = "stp";
 }
 
+
+my $f1_completed_count = 0;
+my $iteration_count = 0;
+
 my $bin = "./two-funcs";
 
 my @func_info;
@@ -244,13 +248,17 @@ sub check_adaptor {
     my(@ce, $this_ce);
     $this_ce = 0;
     my $f1_completed = 0;
+    $f1_completed_count = 0;
+    $iteration_count = 0;
     while (<LOG>) {
 	if ($_ eq "Match\n" ) {
 	    $matches++;
 	} elsif (/^Iteration (.*):$/) {
 	    $f1_completed = 0;
+	    $iteration_count++;
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
+	    $f1_completed_count++;
 	    print "synth-typeconv.pl: f1_completed = 1";
 	} elsif (($_ eq "Mismatch\n") or 
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
@@ -409,7 +417,11 @@ while (!$done) {
 	for my $tr (@tests) {
 	    print " $tr->[0], $tr->[1]\n";
 	}
-	print "Final adaptor is $adapt_s and $ret_adapt_s\n";
+	my $verified="partial";
+	if ($f1_completed_count == $iteration_count) {
+	    $verified="complete";
+	}
+	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
 	$done = 1;
 	last;
     } else {
