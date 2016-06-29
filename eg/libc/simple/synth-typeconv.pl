@@ -208,6 +208,7 @@ sub check_adaptor {
 		"-trace-basic",
 		#"-trace-eip",
 		#"-trace-registers",
+		#"-trace-stmts",
 		#"-trace-insns",
 		#"-trace-loads",
 		#"-trace-stores",
