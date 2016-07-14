@@ -245,7 +245,7 @@ sub check_adaptor {
     print "@printable\n";
     open(LOG, "-|", @args);
     my($matches, $fails) = (0, 0);
-    my(@ce, $this_ce);
+    my(@ce, $this_ce, @address_exp);
     $this_ce = 0;
     my $f1_completed = 0;
     $f1_completed_count = 0;
@@ -255,6 +255,7 @@ sub check_adaptor {
 	    $matches++;
 	} elsif (/^Iteration (.*):$/) {
 	    $f1_completed = 0;
+	    @address_exp = (0) x $f1nargs;
 	    $iteration_count++;
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
@@ -278,6 +279,19 @@ sub check_adaptor {
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
+	} elsif (/Address [a-f]_([0-9])+:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
+	    my $add_line = $_;
+	    @address_exp = (0) x $f1nargs;
+	    my $add_var = -1;
+	    for my $v (split(/ /, $add_line)) {
+		if ($v =~ /^[a-f]_([0-9]+):reg64_t$/) {
+		    $add_var = ord($v) - ord('a');
+		} elsif ($v =~ /^[0-9]$/) {
+		    if ($add_var < $f1nargs and $add_var >= 0) {
+			$address_exp[$add_var] = $v-'0';
+		    }
+		}
+	    }
 	} 
 	print "  $_";
     }
@@ -288,14 +302,18 @@ sub check_adaptor {
     if ($fails == 0) {
 	return 1;
     } else {
-	return (0, [@ce]);
+	return (0, [@ce], [@address_exp]);
     }
 }
 
 # Given a set of tests, run with the adaptor symbolic to see if we can
 # synthesize an adaptor that works for those tests.
 sub try_synth {
-    my($testsr) = @_;
+    my($testsr, $_address_exp) = @_;
+    my @address_exp = @{ $_address_exp };
+    foreach my $i (0 .. $#address_exp) {
+	print "address_exp: address_exp[$i]= $address_exp[$i]\n";
+    }
     open(TESTS, ">tests");
     for my $t (@$testsr) {
 	my @vals = (@$t, (0) x 6);
@@ -307,7 +325,7 @@ sub try_synth {
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, 
 		"-fuzz-start-addr", $main_addr,
-		#"-trace-temps",
+		"-trace-temps",
 		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 		#counter example search mode otherwise
 		"-adaptor-search-mode",
@@ -410,7 +428,8 @@ while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
-    my($res, $cer) = check_adaptor($adapt,$ret_adapt);
+    my($res, $cer, $_address_exp) = check_adaptor($adapt,$ret_adapt);
+    my @address_exp = @{ $_address_exp };
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
@@ -430,7 +449,7 @@ while (!$done) {
 	push @tests, [@$cer];
     }
 
-    ($adapt,$ret_adapt) = try_synth(\@tests);
+    ($adapt,$ret_adapt) = try_synth(\@tests, \@address_exp);
     print "Synthesized arg adaptor ".join(",",@$adapt).
 	" and return adaptor ".join(",",@$ret_adapt)."\n";
 }
