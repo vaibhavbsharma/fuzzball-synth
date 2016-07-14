@@ -291,7 +291,7 @@ sub check_adaptor {
 		    print "region assignment $1 $2 $3 for arg $regnum_to_arg[$1]\n";
 		    # push @fuzzball_extra_args, "-store-byte $regnum_to_saneaddr[$1]=$3";
 		    push @fuzzball_extra_args, "-store-byte";
-		    push @fuzzball_extra_args, sprintf("0x%x=%s",$regnum_to_saneaddr[$1],$3);
+		    push @fuzzball_extra_args, sprintf("0x%x=%s",$regnum_to_saneaddr[$1]+$2,$3);
 		}
 	    }
 	    $this_ce = 0;
