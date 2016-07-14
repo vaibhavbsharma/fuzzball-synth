@@ -15,6 +15,8 @@ my $region_limit = 936;
 
 my $sane_addr = 0x42420000;
 
+my @fuzzball_extra_args_arr;
+
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
 my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
@@ -451,7 +453,7 @@ while (!$done) {
     my $ret_adapt_s = join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
     my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt,$ret_adapt);
-    my @fuzzball_extra_args = @{ $_fuzzball_extra_args };
+    push @fuzzball_extra_args_arr, @{ $_fuzzball_extra_args };
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
@@ -471,7 +473,7 @@ while (!$done) {
 	push @tests, [@$cer];
     }
 
-    ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args);
+    ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
     print "Synthesized arg adaptor ".join(",",@$adapt).
 	" and return adaptor ".join(",",@$ret_adapt)."\n";
 }
