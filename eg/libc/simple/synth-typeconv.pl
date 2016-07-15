@@ -13,6 +13,10 @@ my $iteration_limit = 4000;
 
 my $region_limit = 936;
 
+my $sane_addr = 0x42420000;
+
+my @fuzzball_extra_args_arr;
+
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
 my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
@@ -245,7 +249,7 @@ sub check_adaptor {
     print "@printable\n";
     open(LOG, "-|", @args);
     my($matches, $fails) = (0, 0);
-    my(@ce, $this_ce);
+    my(@ce, $this_ce, @arg_to_regnum, @regnum_to_arg, @fuzzball_extra_args, @regnum_to_saneaddr);
     $this_ce = 0;
     my $f1_completed = 0;
     $f1_completed_count = 0;
@@ -255,11 +259,14 @@ sub check_adaptor {
 	    $matches++;
 	} elsif (/^Iteration (.*):$/) {
 	    $f1_completed = 0;
+	    @arg_to_regnum = (0) x $f1nargs;
+	    @regnum_to_arg = (0) x $f1nargs;
+	    @regnum_to_saneaddr = (0) x 256;
 	    $iteration_count++;
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
 	    $f1_completed_count++;
-	    print "synth-typeconv.pl: f1_completed = 1";
+	    print "synth-typeconv.pl: f1_completed = 1\n";
 	} elsif (($_ eq "Mismatch\n") or 
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
 		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
@@ -272,12 +279,39 @@ sub check_adaptor {
 	    @ce = (0) x $f1nargs;
 	    for my $v (split(/ /, $vars)) {
 		if ($v =~ /^([a-f])=(0x[0-9a-f]+)$/) {
-		    $ce[ord($1) - ord("a")] = hex $2;
+		    my $index = ord($1) - ord("a");
+		    $ce[$index] = hex $2;
+		    if ($arg_to_regnum[$index] != 0) {
+			$ce[$index] = $sane_addr;
+			$regnum_to_saneaddr[$arg_to_regnum[$index]] = $sane_addr;
+			$sane_addr = $sane_addr + $region_limit;
+		    }
+		} 
+	    }
+	    for my $v (split (/ /, $vars)) {
+		if($v =~ /^region_([0-9]+)_byte_0x([0-9]+)=(0x[0-9a-f]+)$/) {
+		    print "region assignment $1 $2 $3 for arg $regnum_to_arg[$1]\n";
+		    # push @fuzzball_extra_args, "-store-byte $regnum_to_saneaddr[$1]=$3";
+		    push @fuzzball_extra_args, "-store-byte";
+		    push @fuzzball_extra_args, sprintf("0x%x=%s",$regnum_to_saneaddr[$1]+$2,$3);
 		}
 	    }
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
+	} elsif (/Address [a-f]_([0-9])+:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
+	    my $add_line = $_;
+	    my $add_var = -1;
+	    for my $v (split(/ /, $add_line)) {
+		if ($v =~ /^[a-f]_([0-9]+):reg64_t$/) { # matches argument name
+		    $add_var = ord($v) - ord('a');
+		} elsif ($v =~ /^[0-9]$/) { # matches region number
+		    if ($add_var < $f1nargs and $add_var >= 0) {
+			$arg_to_regnum[$add_var] = $v-'0';
+			$regnum_to_arg[$v-'0']=$add_var;
+		    }
+		}
+	    }
 	} 
 	print "  $_";
     }
@@ -288,14 +322,21 @@ sub check_adaptor {
     if ($fails == 0) {
 	return 1;
     } else {
-	return (0, [@ce]);
+	return (0, [@ce], [@fuzzball_extra_args]);
     }
 }
 
 # Given a set of tests, run with the adaptor symbolic to see if we can
 # synthesize an adaptor that works for those tests.
 sub try_synth {
-    my($testsr) = @_;
+    my($testsr, $_fuzzball_extra_args) = @_;
+    my @fuzzball_extra_args = @{ $_fuzzball_extra_args };
+    foreach my $i (0 .. $#fuzzball_extra_args) {
+	print "fuzzball_extra_args: fuzzball_extra_args[$i]= $fuzzball_extra_args[$i]\n";
+    }
+    #TODO: translate the value of symbolic address vars to a sane memory value 
+    # and generate FuzzBALL options to set region contents to the 
+    # value from the CE
     open(TESTS, ">tests");
     for my $t (@$testsr) {
 	my @vals = (@$t, (0) x 6);
@@ -307,7 +348,7 @@ sub try_synth {
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, 
 		"-fuzz-start-addr", $main_addr,
-		#"-trace-temps",
+		"-trace-temps",
 		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 		#counter example search mode otherwise
 		"-adaptor-search-mode",
@@ -322,6 +363,7 @@ sub try_synth {
 		#"-trace-conditions", "-omit-pf-af",
 		"-trace-stopping",
 		"-trace-memory-snapshots",
+		@fuzzball_extra_args,
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, $f1num, $f2num, "f", "tests");
@@ -410,7 +452,8 @@ while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
-    my($res, $cer) = check_adaptor($adapt,$ret_adapt);
+    my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt,$ret_adapt);
+    push @fuzzball_extra_args_arr, @{ $_fuzzball_extra_args };
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
@@ -430,7 +473,7 @@ while (!$done) {
 	push @tests, [@$cer];
     }
 
-    ($adapt,$ret_adapt) = try_synth(\@tests);
+    ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
     print "Synthesized arg adaptor ".join(",",@$adapt).
 	" and return adaptor ".join(",",@$ret_adapt)."\n";
 }
