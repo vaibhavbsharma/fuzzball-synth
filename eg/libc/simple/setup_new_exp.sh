@@ -1,6 +1,6 @@
 #!/bin/bash
 
-bkp_num=5;
+bkp_num=6;
 dest_dir=identity;
 synth_suffix=-identity;
 
@@ -13,7 +13,8 @@ do
     rm -rf ../$dest_dir-$i/fuzzball-tmp-*;
     mkdir ../$dest_dir-$i/bkp-$bkp_num;
     touch ../$dest_dir-$i/bkp-$bkp_num/status;
-    echo "With broken symbolic state side-effect equivalence checking and broken query_condition, but with concretely-addressed memory side-effects equivalence checking, state snapshotting, region limit 936" > ../$dest_dir-$i/bkp-$bkp_num/status;
+    echo "With fix added to SRFM#region_expr, but without fixes to SRFM#query_maxval, #decide_wd, #region_for" > ../$dest_dir-$i/bkp-$bkp_num/last-status;
+    echo "With fixes added to SRFM#query_maxval, #decide_wd, #region_for so that the SRFM#query_maxval assertion failure and binary_decision_tree assertion failures, decision tree inconsistencies go away" > ../$dest_dir-$i/current-status;
     cp ../$dest_dir-$i/$i.txt ../$dest_dir-$i/bkp-$bkp_num/;
     cp ../$dest_dir-$i/*.pl ../$dest_dir-$i/bkp-$bkp_num/;
     cp ../$dest_dir-$i/two-funcs ../$dest_dir-$i/bkp-$bkp_num/;
