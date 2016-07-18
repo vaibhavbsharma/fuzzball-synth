@@ -69,7 +69,7 @@ close F;
 # matching the output of "nm" and "objdump". Not the most robust
 # possible approach.
 
-my $main_addr = "0x" . substr(`nm $bin | fgrep " T main"`, 0, 16);
+my $fuzz_start_addr = "0x" . substr(`nm $bin | fgrep " T fuzz_start"`, 0, 16);
 
 my $f1_addr = "0x" . substr(`nm $bin | fgrep " T f1"`, 0, 16);
 
@@ -97,7 +97,7 @@ my $match_jne_addr =
 
 print "$fuzzball\n";
 print "$stp\n";
-print "main: $main_addr\n";
+print "fuzz-start-addr: $fuzz_start_addr\n";
 print "f1:   $f1_addr @ $f1_call_addr\n";
 print "f2:   $f2_addr\n";
 print "wrap_f2: $wrap_f2_addr @ $f2_call_addr\n";
@@ -194,7 +194,7 @@ sub check_adaptor {
     }
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
-		@solver_opts, "-fuzz-start-addr", $main_addr,
+		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
 		"-symbolic-long", "$arg_addr[0]=a",
 		"-symbolic-long", "$arg_addr[1]=b",
 		"-symbolic-long", "$arg_addr[2]=c",
@@ -347,7 +347,7 @@ sub try_synth {
     close TESTS;
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, 
-		"-fuzz-start-addr", $main_addr,
+		"-fuzz-start-addr", $fuzz_start_addr,
 		"-trace-temps",
 		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 		#counter example search mode otherwise
@@ -444,6 +444,14 @@ if ($f1nargs==0) {
 	}
     }
 }
+
+# Set these to test a specific adaptor
+#  $adapt->[0]=0;
+#  $adapt->[1]=0;
+#  $adapt->[2]=1;
+#  $adapt->[3]=0;
+#  $adapt->[4]=1;
+#  $adapt->[5]=10;
 
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();

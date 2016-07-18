@@ -296,6 +296,9 @@ noconv:
   return 0L;
 }
 
+long int myatol(char *nptr) {
+  return mystrtol_1(nptr, (char **) NULL, 10);
+}
 
 long int mystrtol(char *nptr, char **endptr, int base) 
 {
@@ -1888,7 +1891,15 @@ int compare(long *r1p, long *r2p,
 long global_arg0, global_arg1, global_arg2,
     global_arg3, global_arg4, global_arg5;
 
-int main(int argc, char **argv) {
+void fuzz_start() {}
+
+int main(int argc, char **argv) { 
+  FILE *fh;
+  if (argc == 4 && argv[3][0]=='f') {
+    fh = fopen(argv[4], "r");
+  }
+  fuzz_start();
+
     if (argc < 4) {
 	fprintf(stderr, "Usage: two-funcs <f1num> <f2num> a [0-6 args]\n");
 	fprintf(stderr, "    or two-funcs <f1num> <f2num> g\n");
@@ -1930,7 +1941,6 @@ int main(int argc, char **argv) {
 		global_arg0, global_arg1, global_arg2,
 		global_arg3, global_arg4, global_arg5);
     } else if (argv[3][0] == 'f') {
-	FILE *fh;
 	long a, b, c, d, e, f;
         if (argv[4][0] == '-' && argv[4][1] == 0) {
             fh = stdin;
