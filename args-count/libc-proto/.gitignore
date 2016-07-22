@@ -6,3 +6,4 @@ results*.out
 results*.txt
 z3
 .z3-trace
+fuzzball-tmp-*

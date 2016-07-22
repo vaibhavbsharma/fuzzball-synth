@@ -51,7 +51,10 @@ my @state_args = ("-symbolic-regs",
 		  "-store-long", "0xc0000000=0x9090909090909090",
 		  "-store-long", "0xc0000008=0x9090909090909090",
 		  "-store-long", "0xc0000010=0x9090909090909090",
-		  "-fuzz-end-addr", "0xc0000001");
+		  "-fuzz-end-addr", "0xc0000001",
+		  "-extra-condition", "fs_base:reg64_t <> 0:reg64_t",
+		  "-store-long", "0x7bde60=0xd1000000",
+		 );
 my @trace_args = ("-trace-stopping",
 		  "-trace-iterations", "-trace-completed-iterations",
 		  #"-trace-loads", "-trace-stores",
@@ -105,10 +108,20 @@ my @got_locs =
    #[0x3be038, 0x000000], # _dl_find_dso_for_object, ld.so?
    [0x3be040, 0x083180], # calloc
    [0x3be048, 0x082d50], # free
+   [0x3bcc18, 0x07b5a0], # _IO_default_xsputn
+   [0x3bd6d8, 0x079540], # _IO_new_file_xsputn
+   [0x3bd6b8, 0x07a710], # _IO_new_file_overflow
+   [0x3bd718, 0x078f10], # _IO_new_file_write
+   [0x3bd700, 0x078750], # _IO_new_file_sync
 
    # GOT data pointers
+   [0x3bdfb8, 0x3bf878], # stdin
    [0x3bdf40, 0x3bf870], # stdout
+   [0x3bdda0, 0x3bf868], # stderr
+   [0x3bf878, 0x3bf640], #_IO_2_1_stdin_
    [0x3bf870, 0x3bf400], #_IO_2_1_stdout_
+   [0x3bf868, 0x3bf1c0], #_IO_2_1_stderr_
+   [0x3bf298, 0x3bd6a0], # _IO_file_jumps
    [0x3bded0, 0x3be720], # __memalign_hook
    [0x3bdee0, 0x3be740], # __malloc_hook
    [0x3bdea8, 0x3c14a0], # environ
@@ -122,6 +135,31 @@ for my $l (@got_locs) {
     my $addr = $load_base + $l->[0];
     my $val = $load_base + $l->[1];
     push @state_args, "-store-long", sprintf("0x%08Lx=0x%Lx", $addr, $val);
+}
+
+my @init_flags_32 =
+  (
+   [0x3be170, 1], # __libc_malloc_initialized
+  );
+for my $l (@init_flags_32) {
+    my $addr = $load_base + $l->[0];
+    my $val = $l->[1];
+    push @state_args, "-store-word", sprintf("0x%08Lx=0x%Lx", $addr, $val);
+}
+
+# E.g., p/x &((struct rtld_global_ro *)0)->_dl_pagesize
+my @ld_globals =
+  (
+   [0x18, 8, 4096], # _dl_pagesize
+  );
+for my $f (@ld_globals) {
+    my $addr = 0xd1000000 + $f->[0];
+    if ($f->[1] == 8) {
+	push @state_args, "-store-long",
+	  sprintf("0x%08Lx=0x%Lx", $addr, $f->[2]);
+    } else {
+	die "Unsupported size in ld_globals\n";
+    }
 }
 
 my %sym2addr;
@@ -164,7 +202,15 @@ for my $func (@funcs) {
 	       "-start-addr", sprintf("0x%x", $start_addr),
 	       $libc);
     if (@funcs == 1) {
-	print "@cmd\n";
+	my @printable;
+	for my $a (@cmd) {
+	    if ($a =~ /[\s|<>]/) {
+		push @printable, "'$a'";
+	    } else {
+		push @printable, $a;
+	    }
+	}
+	print "@printable\n";
     }
     printf "%20s: ", $func;
     my $start_time = time();

@@ -159,6 +159,7 @@ my $not_concs = 0;
 my $solver_touts = 0;
 my $div_zeros = 0;
 my $bad_insns = 0;
+my $unknowns = 0;
 my $hard_touts = 0;
 my $pathouts = 0;
 my $completes = 0;
@@ -197,6 +198,8 @@ while (<>) {
 	    $bad_insns++;
 	} elsif ($f =~ /NotConcrete\(_\)/) {
 	    $not_concs++;
+	} elsif ($f =~ /Cannot typecheck unknown/) {
+	    $unknowns++;
 	} else {
 	    die "Unexpected fatal error $f";
 	}
@@ -291,9 +294,10 @@ while (<>) {
     }
 }
 
-print  "StrTerm SolvTO Div0 BadInsn NotConc HardTO PathO Compl\n";
-printf "   %4d   %4d %4d    %4d    %4d   %4d  %4d  %4d\n",
+print  "StrTerm SolvTO Div0 BadInsn NotConc Unknow HardTO PathO Compl\n";
+printf "   %4d   %4d %4d    %4d    %4d   %4d   %4d  %4d  %4d\n",
     $strange_terms, $solver_touts, $div_zeros, $bad_insns, $not_concs,
+  $unknowns,
   $hard_touts, $pathouts, $completes;
 print "\n";
 print  "Arguments:   seen    expected\n";
