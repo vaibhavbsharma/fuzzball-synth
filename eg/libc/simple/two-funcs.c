@@ -1895,7 +1895,7 @@ void fuzz_start() {}
 
 int main(int argc, char **argv) { 
   FILE *fh;
-  if (argc == 4 && argv[3][0]=='f') {
+  if (argc == 5 && argv[3][0]=='f') {
     fh = fopen(argv[4], "r");
   }
   fuzz_start();
@@ -1945,7 +1945,7 @@ int main(int argc, char **argv) {
         if (argv[4][0] == '-' && argv[4][1] == 0) {
             fh = stdin;
         } else {
-            fh = fopen(argv[4], "r");
+	  //fh = fopen(argv[4], "r");
             if (!fh) {
                 fprintf(stderr, "Failed to open %s for reading: %s\n",
                         argv[4], strerror(errno));
@@ -1954,7 +1954,9 @@ int main(int argc, char **argv) {
         }
 	while (fscanf(fh, "%lx %lx %lx %lx %lx %lx",
 		      &a, &b, &c, &d, &e, &f) != EOF) {
-	    int is_eq = compare(0, 0, a, b, c, d, e, f);
+	  printf("read a test\n");
+	  fflush(stdout);
+	  int is_eq = compare(0, 0, a, b, c, d, e, f);
 	    if (!is_eq)
 		exit(1);
 	}
