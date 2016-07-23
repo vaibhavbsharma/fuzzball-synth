@@ -468,7 +468,6 @@ while (!$done) {
     my $ret_adapt_s = join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
     my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt,$ret_adapt);
-    push @fuzzball_extra_args_arr, @{ $_fuzzball_extra_args };
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
@@ -483,6 +482,7 @@ while (!$done) {
 	$done = 1;
 	last;
     } else {
+	push @fuzzball_extra_args_arr, @{ $_fuzzball_extra_args };
 	my $ce_s = join(", ", @$cer);
 	print "Mismatch on input $ce_s; adding as test\n";
 	push @tests, [@$cer];
