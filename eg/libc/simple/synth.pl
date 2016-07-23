@@ -5,7 +5,7 @@ $| = 1;
 my $const_lb = -1;
 my $const_ub = 7;
 my $hard_timeout = 120; #seconds
-my $rand_seed = 4;
+my $rand_seed = 1;
 my $default_adaptor = 1;
 
 #die "Usage: synth.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
@@ -19,18 +19,18 @@ my $lim3 = 984;
 my $lim4 = 1315;
 
 my $start_lim = $lim0 + 1;
-my $end_lim = $lim2;
+my $end_lim = $lim1;
 my $direction = 1;
 
 for (my $f1num = $start_lim; $f1num <= $end_lim; $f1num++) {
-#    for (my $f2_limit=1; $f2_limit <= 5; $f2_limit++) {
-	my $f2num = $f1num;# + ($f2_limit * $direction);
+    for (my $f2_limit=1; $f2_limit <= 5; $f2_limit++) {
+	my $f2num = $f1num + ($f2_limit * $direction);
 	if ($f2num > 1315 || $f2num < 0) {
 	    next;
 	}
 	print "Startin synthesis for $f1num and $f2num\n";
 	
-	my @cmd = ("perl synth-typeconv.pl",
+	my @cmd = ("perl synth-one.pl",
 		   sprintf("%d %d %d %d %d %d",
 			   $f1num,$f2num,$rand_seed,
 			   $default_adaptor,
@@ -58,5 +58,5 @@ for (my $f1num = $start_lim; $f1num <= $end_lim; $f1num++) {
 	    close LOG or warn $! ? "Error closing pipe: $!":"Exit status $? from close";
 	    print "killed by alarm\n";
 	}
-#    }
+    }
 }
