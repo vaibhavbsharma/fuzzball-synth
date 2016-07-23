@@ -202,8 +202,8 @@ int main(int argc, char * argv[]) {
   //blacklisted_fns.push_back(" = setusershell");
 
  
-  for(int i=0;i<2;i++) {
-    string filename("../identity-");
+  for(int i=0;i<8;i++) {
+    string filename("../simple-");
     filename=filename+(char)('1'+i);
     filename=filename+"/";
     filename=filename+(char)('1'+i);
@@ -234,7 +234,7 @@ int main(int argc, char * argv[]) {
       if(line.find("Fatal error")!=string::npos) {
 	miscount = 1;
       }
-      if(line.find("Final adaptor")!=string::npos) {
+      if(line.find("Final adaptor")!=string::npos && line.find("complete")!=string::npos) {
 	total_fp_count++;
 	if(ignore_flag==0) {
 	  //cout<<"Found an adaptor, printing its execution log"<<endl;

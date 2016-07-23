@@ -17,6 +17,9 @@ elif [ "$1" == "-simple" ] ; then
 elif [ "$1" == "-identity" ] ; then 
     prefix_dir="identity";
     num_dirs=2;
+elif [ "$1" == "-typeconv" ] ; then 
+    prefix_dir="typeconv";
+    num_dirs=8;
 fi
 
 bkp_dir="";
@@ -27,11 +30,11 @@ if [ $# -eq 3 ]; then
 fi
 
 for ((i=1; i<=num_dirs; i++)); do 
-    inequivalent=`grep 'not equivalent' $prefix_dir-$i/$bkp_dir$i.txt | wc -l`; 
-    adaptors=`grep 'Final adaptor' $prefix_dir-$i/$bkp_dir$i.txt | wc -l`; 
-    missing=`grep 'Missing results' $prefix_dir-$i/$bkp_dir$i.txt | wc -l`; 
-    killed=`grep 'killed by alarm' $prefix_dir-$i/$bkp_dir$i.txt | wc -l`;
-    strange_term=`grep 'Strange term' $prefix_dir-$i/$bkp_dir$i.txt | wc -l`;
+    inequivalent=`grep 'not equivalent' $prefix_dir-$i/$bkp_dir${i}.txt | wc -l`; 
+    adaptors=`grep 'Final adaptor' $prefix_dir-$i/$bkp_dir${i}.txt | wc -l`; 
+    missing=`grep 'Missing results' $prefix_dir-$i/$bkp_dir${i}.txt | wc -l`; 
+    killed=`grep 'killed by alarm' $prefix_dir-$i/$bkp_dir${i}.txt | wc -l`;
+    strange_term=`grep 'Strange term' $prefix_dir-$i/$bkp_dir${i}.txt | wc -l`;
     total=$((inequivalent+adaptors+killed+missing));
     echo -e $i '\t' $inequivalent '(' $strange_term ')\t' $adaptors '\t' $killed '\t' $missing '\t\t' $total; 
     g_inequivalent=$((g_inequivalent+inequivalent));
