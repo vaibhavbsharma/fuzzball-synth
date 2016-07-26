@@ -100,14 +100,17 @@ for my $l (@tsd_locs) {
 # just inside libc, which makes things more complicated.
 my @got_locs =
   (
-   # Dynamically linked functions
-   [0x3be018, 0x082e50], # realloc
-   [0x3be020, 0x0826b0], # malloc
-   #[0x3be028, 0x000000], # __tls_get_addr, ld.so?
-   [0x3be030, 0x083170], # memalign
-   #[0x3be038, 0x000000], # _dl_find_dso_for_object, ld.so?
-   [0x3be040, 0x083180], # calloc
-   [0x3be048, 0x082d50], # free
+   # Dynamically linked functions in the PLT. For some reason these
+   # show up wrong in the objdump disassembly: the correct list is
+   # from objdump -R | fgrep JUMP_SLOT.
+   [0x3be028, 0x082e50], # realloc
+   [0x3be030, 0x0826b0], # malloc
+   #[0x3be038, 0x000000], # __tls_get_addr: ld.so?
+   [0x3be040, 0x083170], # memalign
+   #[0x3be050, 0x000000], # _dl_find_dso_for_object: ld.so?
+   [0x3be058, 0x083180], # calloc
+   [0x3be060, 0x082d50], # free
+   # Internal function relocations
    [0x3bcc18, 0x07b5a0], # _IO_default_xsputn
    [0x3bd6d8, 0x079540], # _IO_new_file_xsputn
    [0x3bd6b8, 0x07a710], # _IO_new_file_overflow
@@ -127,9 +130,8 @@ my @got_locs =
    [0x3bdea8, 0x3c14a0], # environ
 
    # Relocations
-   [0x3be720, 0x083bf0], # memalign_hook_ini
+   #[0x3be720, 0x083bf0], # __memalign_hook = memalign_hook_ini
    #[0x3be740, 0x083b50], # __malloc_hook related
-   [0x3be740, -$load_base], # __malloc_hook related: 0 = no hook?
   );
 for my $l (@got_locs) {
     my $addr = $load_base + $l->[0];
@@ -140,6 +142,8 @@ for my $l (@got_locs) {
 my @init_flags_32 =
   (
    [0x3be170, 1], # __libc_malloc_initialized
+   [0x3be720, 0], # __memalign_hook = 0
+   [0x3be740, 0], # __malloc_hook = 0 (no hook)
   );
 for my $l (@init_flags_32) {
     my $addr = $load_base + $l->[0];
