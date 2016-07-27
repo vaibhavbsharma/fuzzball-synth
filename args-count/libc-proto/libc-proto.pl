@@ -220,11 +220,12 @@ for my $func (@funcs) {
     my $start_time = time();
     my $timed_out = 0;
     my %seen;
+    my @child_pid;
     my($iters_started, $iters_returned, $iters_finished) = (0, 0, 0);
     eval {
 	local $SIG{ALRM} = sub { die "alarm\n" };
 	alarm $hard_timeout;
-	open(LOG, "-|", @cmd) or die;
+	@child_pid = open(LOG, "-|", @cmd) or die;
 	my $ignoring_rax = 0;
 	while (<LOG>) {
 	    if (/^Iteration (\d+):/) {
@@ -280,6 +281,7 @@ for my $func (@funcs) {
 	alarm 0;
     };
     if ($@ eq "alarm\n") {
+	kill "TERM", @child_pid;
 	close LOG;
 	$timed_out = 1;
     }
