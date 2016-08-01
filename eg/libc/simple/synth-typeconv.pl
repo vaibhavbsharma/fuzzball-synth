@@ -335,9 +335,6 @@ sub try_synth {
     foreach my $i (0 .. $#fuzzball_extra_args) {
 	print "fuzzball_extra_args: fuzzball_extra_args[$i]= $fuzzball_extra_args[$i]\n";
     }
-    #TODO: translate the value of symbolic address vars to a sane memory value 
-    # and generate FuzzBALL options to set region contents to the 
-    # value from the CE
     open(TESTS, ">tests");
     for my $t (@$testsr) {
 	my @vals = (@$t, (0) x 6);
