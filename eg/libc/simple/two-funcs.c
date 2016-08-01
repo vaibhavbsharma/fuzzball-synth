@@ -1847,6 +1847,8 @@ struct func_info funcs[] = {
     /* 1321 */ {"_isdigit", (func*)&_isdigit, 1, 0, 0},
     /* 1322 */ {"_isalnum", (func*)&_isalnum, 1, 0, 0},
     /* 1323 */ {"strtoll", (func*)&strtoll, 3, 0, 0},
+    /* 1324 */ {"myatol", (func*)&myatol, 1, 0, 0},
+    /* 1325 */ {"mystrtol_1", (func*)&mystrtol_1, 3, 0, 0},
 };
 
 
