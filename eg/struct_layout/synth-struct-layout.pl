@@ -388,7 +388,6 @@ sub try_synth {
 		$v =~ /^((\w+)([0-9]))=(0x[0-9a-f]+)$/
 		  or die "Parse failure on variable assignment <$v>";
 		$fields{$1} = hex $4;
-		printf "blah v=$v 1=$1 2=$2 3=$3 4=$4 5=$5 blee \n";
 	    }
 	    print "  $_";
 	    last;

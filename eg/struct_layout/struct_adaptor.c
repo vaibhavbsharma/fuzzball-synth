@@ -4,13 +4,13 @@
 #include <errno.h>
 
 typedef struct _s1 {
-  unsigned int a;
-  unsigned int b;
+  int a;
+  int b;
 } struct1;
 
 typedef struct _s2 {
-  unsigned int a;
-  unsigned int b;
+  int a;
+  int b;
 } struct2;
 
 //Assuming this adaptor maps s1's fields to s2
@@ -22,17 +22,21 @@ typedef struct _adaptor {
 adaptor_struct the_adaptor;
 
 int f1(struct1 *s) {
-  // if(s) 
-  //   s->a = 1;
-  // return 0;
-  return s->a - s->b;
+  if(s) {
+    // s->a = 1;
+    //return s->a - s->b;
+    return s->b;
+  }
+  return 0;
 }
 
 int f2(struct2 *s) {
-  // if(s) 
-  //   s->b = 1;
-  // return 0;
-  return s->b - s->a;
+  if(s) {
+    // s->b = 1;
+    // return s->b - s->a;
+    return s->a;
+  }
+  return 0;
 }
 
 int adapted_f1(struct1 *s1p) {
@@ -40,15 +44,23 @@ int adapted_f1(struct1 *s1p) {
   //1. Make an object of struct2
   struct2 *s2p = (struct2 *) malloc(sizeof(struct2));
   
+  if(!s1p) return 0;
+  
   //2. Adapt target object to inner object as per adaptor
   //adapt_s1_to_s2(s1p, s2p, ap);
   if(the_adaptor.field1 == 0) s2p->a = s1p->a;
   else if(the_adaptor.field1 == 1) s2p->a = s1p->b;
-  else s2p->a=0; //Something bad happened
+  else {
+    s2p->a=0; //Something bad happened
+    printf("the_adaptor field1 setup incorrectly\n");
+  }
 
   if(the_adaptor.field2 == 0) s2p->b = s1p->a;
   else if(the_adaptor.field2 == 1) s2p->b = s1p->b;
-  else s2p->b=0; //Something bad happened
+  else {
+    s2p->b=0; //Something bad happened
+    printf("the_adaptor field2 setup incorrectly\n");
+  }
   
   //3. Call adapted inner function
   ret = f2(s2p);
