@@ -290,8 +290,10 @@ sub check_adaptor {
 		if($v =~ /^region_([0-9]+)_byte_0x([0-9]+)=(0x[0-9a-f]+)$/) {
 		    print "region assignment $1 $2 $3 for arg $regnum_to_arg[$1]\n";
 		    # push @fuzzball_extra_args, "-store-byte $regnum_to_saneaddr[$1]=$3";
-		    push @fuzzball_extra_args, "-store-byte";
-		    push @fuzzball_extra_args, sprintf("0x%x=%s",$regnum_to_saneaddr[$1]+$2,$3);
+		    if($regnum_to_saneaddr[$1] != 0) {
+			push @fuzzball_extra_args, "-store-byte";
+			push @fuzzball_extra_args, sprintf("0x%x=%s",$regnum_to_saneaddr[$1]+$2,$3);
+		    }
 		}
 	    }
 
