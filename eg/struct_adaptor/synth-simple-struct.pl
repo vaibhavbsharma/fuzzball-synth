@@ -248,7 +248,9 @@ sub check_adaptor {
     print "@printable\n";
     open(LOG, "-|", @args);
     my($matches, $fails) = (0, 0);
-    my(@ce, $this_ce, @arg_to_regnum, @regnum_to_arg, @fuzzball_extra_args, @regnum_to_saneaddr);
+    my(@ce, $this_ce);
+    my(@arg_to_regnum, @regnum_to_arg, @fuzzball_extra_args, @regnum_to_saneaddr);
+    my(@zero_region);
     $this_ce = 0;
     my $f1_completed = 0;
     $f1_completed_count = 0;
@@ -260,6 +262,7 @@ sub check_adaptor {
 	    $f1_completed = 0;
 	    @arg_to_regnum = (0) x $f1nargs;
 	    @regnum_to_arg = (0) x $f1nargs;
+	    @zero_region = (-1) x $f1nargs;
 	    @regnum_to_saneaddr = (0) x 256;
 	    $iteration_count++;
 	} elsif ($_ eq "Completed f1\n") {
@@ -293,10 +296,19 @@ sub check_adaptor {
 		    if($regnum_to_saneaddr[$1] != 0) {
 			push @fuzzball_extra_args, "-store-byte";
 			push @fuzzball_extra_args, sprintf("0x%x=%s",$regnum_to_saneaddr[$1]+$2,$3);
+			# 0 indicates -store-byte FuzzBALL options were generated for this region number
+			$zero_region[$1] = 0; 
 		    }
 		}
 	    }
-
+	    for my $i (0 .. $#zero_region) {
+		if($zero_region[$i] == 1) {# make this region contain zeros
+		    for my $j (0 .. $region_limit) {
+			push @fuzzball_extra_args, "-store-byte";
+			push @fuzzball_extra_args, sprintf("0x%x=%s",$regnum_to_saneaddr[$i]+$j,0x0000);
+		    }
+		}
+	    }
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
@@ -310,10 +322,12 @@ sub check_adaptor {
 		    if ($add_var < $f1nargs and $add_var >= 0) {
 			$arg_to_regnum[$add_var] = $v-'0';
 			$regnum_to_arg[$v-'0']=$add_var;
+			# 1 indicates symbolic input created a region
+			$zero_region[$v-'0'] = 1;
 		    }
 		}
 	    }
-	} 
+	}  
 	print "  $_";
     }
     close LOG;

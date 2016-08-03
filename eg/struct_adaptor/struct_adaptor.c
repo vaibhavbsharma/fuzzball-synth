@@ -39,6 +39,10 @@ int f2(struct2 *s) {
   return 0;
 }
 
+long wrap_f2(long a) {
+    return f2(a);
+}
+
 int adapted_f1(struct1 *s1p) {
   int ret;
   //1. Make an object of struct2
@@ -99,7 +103,8 @@ int compare(long *r1p, long *r2p,
   printf("Starting adapted_f1\n");
   fflush(stdout);
   
-  long r2 = adapted_f1(a0);
+  //long r2 = adapted_f1(a0); // To be used with synth-struct-adaptor-c.pl
+  long r2 = wrap_f2(a0); // To be used with synth-simple-struct.pl
   
   printf("Completed adapted_f1\n");
   fflush(stdout);
