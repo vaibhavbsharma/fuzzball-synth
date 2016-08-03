@@ -303,7 +303,7 @@ sub check_adaptor {
 	    }
 	    for my $i (0 .. $#zero_region) {
 		if($zero_region[$i] == 1) {# make this region contain zeros
-		    for my $j (0 .. $region_limit) {
+		    for my $j (0 .. $region_limit-1) {
 			push @fuzzball_extra_args, "-store-byte";
 			push @fuzzball_extra_args, sprintf("0x%x=%s",$regnum_to_saneaddr[$i]+$j,0x0000);
 		    }
