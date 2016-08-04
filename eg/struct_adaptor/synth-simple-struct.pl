@@ -250,7 +250,7 @@ sub check_adaptor {
     my($matches, $fails) = (0, 0);
     my(@ce, $this_ce);
     my(@arg_to_regnum, @regnum_to_arg, @fuzzball_extra_args, @regnum_to_saneaddr);
-    my(@zero_region);
+    my(@region_contents);
     $this_ce = 0;
     my $f1_completed = 0;
     $f1_completed_count = 0;
@@ -261,9 +261,11 @@ sub check_adaptor {
 	} elsif (/^Iteration (.*):$/) {
 	    $f1_completed = 0;
 	    @arg_to_regnum = (0) x $f1nargs;
-	    @regnum_to_arg = (0) x $f1nargs;
-	    @zero_region = (-1) x $f1nargs;
-	    @regnum_to_saneaddr = (0) x 256;
+	    @regnum_to_arg = (0) x ($f1nargs+1);
+	    @regnum_to_saneaddr = (0) x ($f1nargs+1);
+	    my @tmp_reg_arr;
+	    for my $i (1 .. $region_limit+1) { push @tmp_reg_arr, 0; }
+	    for my $i (1 .. ($f1nargs+1)) { push @region_contents, [@tmp_reg_arr]; }
 	    $iteration_count++;
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
@@ -292,20 +294,20 @@ sub check_adaptor {
 	    for my $v (split (/ /, $vars)) {
 		if($v =~ /^region_([0-9]+)_byte_0x([0-9]+)=(0x[0-9a-f]+)$/) {
 		    print "region assignment $1 $2 $3 for arg $regnum_to_arg[$1]\n";
-		    # push @fuzzball_extra_args, "-store-byte $regnum_to_saneaddr[$1]=$3";
+		    # $1 -> region number
+		    # $2 -> offset within region
+		    # $3 -> value to be set
 		    if($regnum_to_saneaddr[$1] != 0) {
-			push @fuzzball_extra_args, "-store-byte";
-			push @fuzzball_extra_args, sprintf("0x%x=%s",$regnum_to_saneaddr[$1]+$2,$3);
-			# 0 indicates -store-byte FuzzBALL options were generated for this region number
-			$zero_region[$1] = 0; 
+			$region_contents[$1][$2+1]=$3;
 		    }
 		}
 	    }
-	    for my $i (0 .. $#zero_region) {
-		if($zero_region[$i] == 1) {# make this region contain zeros
-		    for my $j (0 .. $region_limit-1) {
+	    for my $i (1 .. $#region_contents) {
+		for my $j (1 .. $#{$region_contents[$i]}) {
+		    if($region_contents[$i][0] == 1) {
 			push @fuzzball_extra_args, "-store-byte";
-			push @fuzzball_extra_args, sprintf("0x%x=%s",$regnum_to_saneaddr[$i]+$j,0x0000);
+			push @fuzzball_extra_args, 
+			sprintf("0x%x=%s", $regnum_to_saneaddr[$i]+$j-1, $region_contents[$i][$j]);
 		    }
 		}
 	    }
@@ -318,12 +320,13 @@ sub check_adaptor {
 	    for my $v (split(/ /, $add_line)) {
 		if ($v =~ /^[a-f]_([0-9]+):reg64_t$/) { # matches argument name
 		    $add_var = ord($v) - ord('a');
-		} elsif ($v =~ /^[0-9]$/) { # matches region number
+		} elsif ($v =~ /^[0-9]+$/) { # matches region number
 		    if ($add_var < $f1nargs and $add_var >= 0) {
-			$arg_to_regnum[$add_var] = $v-'0';
-			$regnum_to_arg[$v-'0']=$add_var;
+			$arg_to_regnum[$add_var] = int($v);
+			$regnum_to_arg[int($v)]=$add_var;
 			# 1 indicates symbolic input created a region
-			$zero_region[$v-'0'] = 1;
+			$region_contents[$v][0]=1;
+			print "Found region $v";
 		    }
 		}
 	    }
