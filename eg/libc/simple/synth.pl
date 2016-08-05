@@ -8,22 +8,22 @@ my $hard_timeout = 120; #seconds
 my $rand_seed = 1;
 my $default_adaptor = 1;
 
-#die "Usage: synth.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
-#  unless @ARGV == 6;
-#my($f1num, $f2num, $rand_seed, $default_adaptor, $const_lb, $const_ub) = @ARGV;
+die "Usage: synth.pl <bucket number ( 1 - 16 ) <direction ( 1 or -1 )>" unless @ARGV == 2;
+my($bucket_num, $direction) = @ARGV;
 
-my $lim0 = -1;
-my $lim1 = 327;
-my $lim2 = 657;
-my $lim3 = 984;
-my $lim4 = 1315;
+my $total_fns = 1316;
+my @boundaries;
+for my $i (0 .. 16) {
+    push @boundaries, int($i * $total_fns/16);
+}
+$boundaries[0]=-1;
 
-my $start_lim = $lim0 + 1;
-my $end_lim = $lim1;
-my $direction = 1;
+my $start_lim = $boundaries[$bucket_num-1]+1;
+my $end_lim = $boundaries[$bucket_num];
+printf "start_lim = $start_lim end_lim = $end_lim number of functions = %d\n", $end_lim-$start_lim;
 
 for (my $f1num = $start_lim; $f1num <= $end_lim; $f1num++) {
-    for (my $f2_limit=1; $f2_limit <= 5; $f2_limit++) {
+    for (my $f2_limit=1; $f2_limit <= 10; $f2_limit++) {
 	my $f2num = $f1num + ($f2_limit * $direction);
 	if ($f2num > 1315 || $f2num < 0) {
 	    next;
