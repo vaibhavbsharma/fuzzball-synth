@@ -264,6 +264,7 @@ sub check_adaptor {
 	    @regnum_to_arg = (0) x ($f1nargs+1);
 	    @regnum_to_saneaddr = (0) x ($f1nargs+1);
 	    my @tmp_reg_arr;
+	    @region_contents = ();
 	    for my $i (1 .. $region_limit+1) { push @tmp_reg_arr, 0; }
 	    for my $i (1 .. ($f1nargs+1)) { push @region_contents, [@tmp_reg_arr]; }
 	    $iteration_count++;
