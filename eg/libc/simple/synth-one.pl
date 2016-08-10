@@ -397,6 +397,7 @@ sub try_synth {
 		#"-trace-solver",
 		#"-save-solver-files", 
 		@fuzzball_extra_args,
+		"-zero-memory",
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, $f1num, $f2num, "f", "tests");

@@ -399,6 +399,7 @@ sub try_synth {
 		#"-trace-stores",
 		#"-trace-solver",
 		#"-save-solver-files", 
+		"-zero-memory",
 		@fuzzball_extra_args,
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
