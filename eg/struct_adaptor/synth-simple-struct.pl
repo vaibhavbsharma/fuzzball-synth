@@ -12,8 +12,8 @@ my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
 my $region_limit = 8;
-
-my $sane_addr = 0x42420000;
+my $starting_sane_addr = 0x42420000;
+my $sane_addr = $starting_sane_addr;
 
 my @fuzzball_extra_args_arr;
 
@@ -134,6 +134,11 @@ my @ret_fields =
    ["ret_val",   "reg64_t", "%016x"],
 );
 
+my @struct_fields = 
+(
+   ["field1",  "reg8_t", "%01x"],
+   ["field2",  "reg8_t", "%01x"],
+);
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f1nargs=6;
@@ -148,6 +153,29 @@ my @synth_opt = ("-synthesize-adaptor",
 my @synth_ret_opt = ("-synthesize-return-adaptor",
 		 join(":", "return-typeconv", $f2_addr, $post_f2_call, $f2nargs));
 print "synth_ret_opt = @synth_ret_opt\n";
+
+my @synth_struct_opt;
+
+sub reinitialize_synth_struct_opt () {
+    my $steps = ($sane_addr - $starting_sane_addr)/$region_limit;
+    @synth_struct_opt = ();
+    push @synth_struct_opt, "-synthesize-structure-adaptor";
+    my $tmp_str;
+    for (my $s=0; $s < 6; $s++ ) {
+	if ($s < $steps) {
+	    $tmp_str = $tmp_str.sprintf("0x%x", ($starting_sane_addr + ($s * $region_limit)));
+	} else {
+	    $tmp_str = $tmp_str."0";
+	}
+	if($s != 5) { $tmp_str = $tmp_str.":"; }
+    }
+    push @synth_struct_opt, $tmp_str;
+    for my $i (0 ..  $#synth_struct_opt) {
+    	print "synth_struct_opt[$i] = $synth_struct_opt[$i]\n";
+    }
+}
+
+reinitialize_synth_struct_opt(); 
 
 my @const_bounds_ec = ();
 if($const_lb != $const_ub) {
@@ -174,7 +202,7 @@ if($const_lb != $const_ub) {
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
-    my($adapt,$ret_adapt) = (@_);
+    my($adapt,$ret_adapt, $struct_adapt) = (@_);
     #print "checking arg-adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
     my @conc_adapt = ();
     for my $i (0 .. $#$adapt) {
@@ -189,6 +217,13 @@ sub check_adaptor {
 	my $val = $ret_adapt->[$i];
 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
 	push @conc_ret_adapt, ("-extra-condition", $s);
+    }
+    my @conc_struct_adapt = ();
+    for my $i (0 .. $#$struct_adapt) {
+	my($name, $ty, $fmt) = @{$struct_fields[$i]};
+	my $val = $struct_adapt->[$i];
+	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+	push @conc_struct_adapt, ("-extra-condition", $s);
     }
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
@@ -228,6 +263,7 @@ sub check_adaptor {
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
 		@synth_ret_opt, @conc_ret_adapt,
+		@synth_struct_opt, @conc_struct_adapt, 
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
@@ -360,6 +396,7 @@ sub try_synth {
 	print TESTS $test_str, "\n";
     }
     close TESTS;
+    reinitialize_synth_struct_opt();
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, 
 		"-fuzz-start-addr", $fuzz_start_addr,
@@ -372,6 +409,7 @@ sub try_synth {
 		"-return-zero-missing-x64-syscalls",
 		@synth_opt, @const_bounds_ec,
 		@synth_ret_opt,
+		@synth_struct_opt,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:1",
@@ -440,14 +478,17 @@ sub try_synth {
     }
     my @afields;
     my @bfields;
+    my @cfields;
     for my $fr (@fields) {
 	push @afields, $fields{$fr->[0]};
     }
     for my $fr (@ret_fields) {
 	push @bfields, $fields{$fr->[0]};
-	#print "try_synth: pushing $fr->[0] = $fields{$fr->[0]}\n";
     }
-    return ([@afields],[@bfields]);
+    for my $fr (@struct_fields) {
+	push @cfields, $fields{$fr->[0]};
+    }
+    return ([@afields], [@bfields], [@cfields]);
 }
 
 # Set these to test a specific adaptor
@@ -462,6 +503,7 @@ sub try_synth {
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
+my $struct_adapt = [1, 2];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {
@@ -486,14 +528,15 @@ if ($f1nargs==0) {
     }
 }
 
-print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
+print "default adaptor = @$adapt ret-adaptor = @$ret_adapt structure-adaptor = @$struct_adapt\n";
 my @tests = ();
 my $done = 0;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
-    print "Checking $adapt_s and $ret_adapt_s:\n";
-    my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt,$ret_adapt);
+    my $struct_adapt_s = join(",", @$struct_adapt);
+    print "Checking simple adaptor = $adapt_s, ret adaptor = $ret_adapt_s, struct adaptor = $struct_adapt_s :\n";
+    my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt, $ret_adapt, $struct_adapt);
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
@@ -504,7 +547,7 @@ while (!$done) {
 	if ($f1_completed_count == $iteration_count) {
 	    $verified="complete";
 	}
-	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
+	print "Final adaptors: arg=$adapt_s, ret=$ret_adapt_s, struct=$struct_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
 	$done = 1;
 	last;
     } else {
@@ -514,7 +557,8 @@ while (!$done) {
 	push @tests, [@$cer];
     }
 
-    ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
+    ($adapt, $ret_adapt, $struct_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
     print "Synthesized arg adaptor ".join(",",@$adapt).
-	" and return adaptor ".join(",",@$ret_adapt)."\n";
+	" and return adaptor ".join(",",@$ret_adapt).
+	" and struct adaptor ".join(",", @$struct_adapt)."\n";
 }
