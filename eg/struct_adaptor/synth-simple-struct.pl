@@ -136,8 +136,8 @@ my @ret_fields =
 
 my @struct_fields = 
 (
-   ["field1",  "reg8_t", "%01x"],
-   ["field2",  "reg8_t", "%01x"],
+   ["f1_type",  "reg8_t", "%01x"],
+   ["f2_type",  "reg8_t", "%01x"],
 );
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
@@ -503,7 +503,7 @@ sub try_synth {
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
-my $struct_adapt = [1, 2];
+my $struct_adapt = [04, 44];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {

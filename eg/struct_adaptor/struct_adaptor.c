@@ -3,23 +3,73 @@
 #include <string.h>
 #include <errno.h>
 
+
+/* target structure i want to achieve
+
+typedef struct rc4_key_st {
+  unsigned int x, y;
+  unsigned int data[256];
+} RC4_KEY;
+
+*/
+
+/* inner structure i want to achieve
+
+typedef struct
+{
+    int x;                      //!< permutation index 
+    int y;                      //!< permutation index
+    unsigned char m[256];       //!< permutation table
+} mbedtls_arc4_context;
+
+*/
+
+typedef struct
+{
+    int x;                      //!< permutation index 
+    int y;                      //!< permutation index
+    unsigned char m[256];       //!< permutation table
+} mbedtls_arc4_context;
+
+unsigned char f0(mbedtls_arc4_context *ctx) {
+  return ctx->m[255];
+}
+
+typedef struct {
+  char c;
+  short s1;
+  int i;
+  long l;
+  long long ll;
+} all_sizes_struct;
+
+void _f0(all_sizes_struct *s) {
+  s->s1=42;
+  s->c='0';
+  s->i=1;
+  s->l=2;
+  s->ll=3;
+}
+
+//Assuming this adaptor maps s1's fields to s2
+typedef struct _adaptor {
+  int field1;
+  int field2;
+  int field1_size;
+  int field2_size
+} adaptor_struct;
+//Global adaptor object for f1 <- f2
+adaptor_struct the_adaptor;
+
 typedef struct _s1 {
-  int a;
-  int b;
+  char a;
+  short b;
 } struct1;
 
 typedef struct _s2 {
   int a;
   int b;
 } struct2;
-
-//Assuming this adaptor maps s1's fields to s2
-typedef struct _adaptor {
-  int field1;
-  int field2;
-} adaptor_struct;
-//Global adaptor object for f1 <- f2
-adaptor_struct the_adaptor;
 
 int f1(struct1 *s) {
   if(s) {
@@ -52,6 +102,20 @@ int adapted_f1(struct1 *s1p) {
   
   //2. Adapt target object to inner object as per adaptor
   //adapt_s1_to_s2(s1p, s2p, ap);
+  
+  if (the_adaptor.field1_size == 1) { // field2 can begin at offset 1 or 4
+
+    if (the_adaptor.field2_size == 1) { // field2 will begin at offset 1
+
+    } else { // field2 will begin at offset 4
+
+    }
+  } else if (the_adaptor.field1_size == 4) { // field2 will begin at offset 4
+
+  } else if (the_adaptor.field1_size == 8) { // field2 will begin at offset 8
+
+  }
+  
   if(the_adaptor.field1 == 0) s2p->a = s1p->a;
   else if(the_adaptor.field1 == 1) s2p->a = s1p->b;
   else {
@@ -201,3 +265,29 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
+
+
+
+/*
+* field1_size   field2_size   field2_offset
+* 1             1             1
+* 1             2             1
+* 1             4             4
+* 1             8             4 
+* 
+* 2             1             2
+* 2             2             2 
+* 2             4             4
+* 2             8             4
+*
+* 4             1             4
+* 4             2             4
+* 4             4             4
+* 4             8             4
+* 
+* 8             1             8  
+* 8             2             8
+* 8             4             8
+* 8             8             8
+*
+*/
