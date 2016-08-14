@@ -62,8 +62,8 @@ typedef struct _adaptor {
 adaptor_struct the_adaptor;
 
 typedef struct _s1 {
-  char a;
-  short b;
+  long a;
+  long b;
 } struct1;
 
 typedef struct _s2 {
@@ -74,8 +74,8 @@ typedef struct _s2 {
 int f1(struct1 *s) {
   if(s) {
     // s->a = 1;
-    //return s->a - s->b;
-    return s->b;
+    return s->a - s->b;
+    //return s->b;
   }
   return 0;
 }
@@ -83,8 +83,8 @@ int f1(struct1 *s) {
 int f2(struct2 *s) {
   if(s) {
     // s->b = 1;
-    // return s->b - s->a;
-    return s->a;
+    return s->b - s->a;
+    //return s->a;
   }
   return 0;
 }

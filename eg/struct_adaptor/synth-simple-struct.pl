@@ -12,6 +12,7 @@ my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
 my $region_limit = 8;
+my $n_conc_struct_limit = 10;
 my $starting_sane_addr = 0x42420000;
 my $sane_addr = $starting_sane_addr;
 
@@ -52,6 +53,12 @@ my $f1_completed_count = 0;
 my $iteration_count = 0;
 
 my $bin = "./struct_adaptor";
+
+print "compiling binary: ";
+my $unused = `gcc -static -g -o $bin $bin.c`;
+my $gcc_ec = $?;
+die "failed to compile $bin" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -161,13 +168,13 @@ sub reinitialize_synth_struct_opt () {
     @synth_struct_opt = ();
     push @synth_struct_opt, "-synthesize-structure-adaptor";
     my $tmp_str;
-    for (my $s=0; $s < 6; $s++ ) {
+    for (my $s=0; $s < $n_conc_struct_limit; $s++ ) {
 	if ($s < $steps) {
 	    $tmp_str = $tmp_str.sprintf("0x%x", ($starting_sane_addr + ($s * $region_limit)));
 	} else {
 	    $tmp_str = $tmp_str."0";
 	}
-	if($s != 5) { $tmp_str = $tmp_str.":"; }
+	if($s != $n_conc_struct_limit-1) { $tmp_str = $tmp_str.":"; }
     }
     push @synth_struct_opt, $tmp_str;
     for my $i (0 ..  $#synth_struct_opt) {
@@ -503,7 +510,7 @@ sub try_synth {
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
-my $struct_adapt = [04, 44];
+my $struct_adapt = [41, 441];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {
