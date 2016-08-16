@@ -11,7 +11,7 @@ srand($rand_seed);
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
-my $region_limit = 8;
+my $region_limit = 16;
 my $n_conc_struct_limit = 10;
 my $starting_sane_addr = 0x42420000;
 my $sane_addr = $starting_sane_addr;
@@ -143,8 +143,8 @@ my @ret_fields =
 
 my @struct_fields = 
 (
-   ["f1_type",  "reg8_t", "%01x"],
-   ["f2_type",  "reg8_t", "%01x"],
+   ["f1_type",  "reg16_t", "%01x"],
+   ["f2_type",  "reg16_t", "%01x"],
 );
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
@@ -247,7 +247,7 @@ sub check_adaptor {
 		"-omit-pf-af",
 		"-trace-temps",
 		"-trace-regions",
-		"-trace-memory-snapshots",
+		#"-trace-memory-snapshots",
 		"-trace-tables",
 		"-table-limit","12",
 		#"-save-decision-tree-interval", 1,
@@ -428,7 +428,7 @@ sub try_synth {
 		"-trace-stopping",
 		"-trace-regions",
 		"-trace-binary-paths-bracketed",
-		"-trace-memory-snapshots",
+		#"-trace-memory-snapshots",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
 		"-trace-tables",
