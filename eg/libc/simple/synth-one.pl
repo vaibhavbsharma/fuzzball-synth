@@ -293,13 +293,14 @@ sub check_adaptor {
 		} 
 	    }
 	    for my $v (split (/ /, $vars)) {
-		if($v =~ /^region_([0-9]+)_byte_0x([0-9]+)=(0x[0-9a-f]+)$/) {
+		if($v =~ /^region_([0-9]+)_byte_0x([0-9a-f]+)=(0x[0-9a-f]+)$/) {
 		    print "region assignment $1 $2 $3 for arg $regnum_to_arg[$1]\n";
 		    # $1 -> region number
 		    # $2 -> offset within region
 		    # $3 -> value to be set
+		    my $this_reg_byte = hex $2;
 		    if($regnum_to_saneaddr[$1] != 0) {
-			$region_contents[$1][$2+1]=$3;
+			$region_contents[$1][$this_reg_byte+1]=$3;
 		    }
 		}
 	    }
