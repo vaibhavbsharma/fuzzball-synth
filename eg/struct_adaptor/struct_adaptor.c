@@ -36,16 +36,18 @@ unsigned char f0(mbedtls_arc4_context *ctx) {
 }
 
 typedef struct {
-  char c;
-  short s1;
-  int i;
+  char c1;
   long l;
+  short s1;
+  char c2;
+  int i;
   long long ll;
 } all_sizes_struct;
 
 void _f0(all_sizes_struct *s) {
   s->s1=42;
-  s->c='0';
+  s->c1='0';
+  s->c2='0';
   s->i=1;
   s->l=2;
   s->ll=3;
@@ -62,13 +64,13 @@ typedef struct _adaptor {
 adaptor_struct the_adaptor;
 
 typedef struct _s1 {
-  short a;
-  short b;
+  char a;
+  char b;
 } struct1;
 
 typedef struct _s2 {
-  long a;
-  long b;
+  unsigned int a;
+  unsigned int b;
 } struct2;
 
 int f1(struct1 *s) {
@@ -80,7 +82,7 @@ int f1(struct1 *s) {
   return 0;
 }
 
-long f2(struct2 *s) {
+int f2(struct2 *s) {
   if(s) {
     // s->b = 1;
     return s->b - s->a;

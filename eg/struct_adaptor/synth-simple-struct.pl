@@ -145,6 +145,8 @@ my @struct_fields =
 (
    ["f1_type",  "reg16_t", "%01x"],
    ["f2_type",  "reg16_t", "%01x"],
+   ["field1_size",  "reg16_t", "%01x"],
+   ["field2_size",  "reg16_t", "%01x"],
 );
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
@@ -335,13 +337,14 @@ sub check_adaptor {
 		} 
 	    }
 	    for my $v (split (/ /, $vars)) {
-		if($v =~ /^region_([0-9]+)_byte_0x([0-9]+)=(0x[0-9a-f]+)$/) {
+		if($v =~ /^region_([0-9]+)_byte_0x([0-9a-f]+)=(0x[0-9a-f]+)$/) {
 		    print "region assignment $1 $2 $3 for arg $regnum_to_arg[$1]\n";
 		    # $1 -> region number
 		    # $2 -> offset within region
 		    # $3 -> value to be set
+		    my $this_reg_byte = hex $2;
 		    if($regnum_to_saneaddr[$1] != 0) {
-			$region_contents[$1][$2+1]=$3;
+			$region_contents[$1][$this_reg_byte+1]=$3;
 		    }
 		}
 	    }
@@ -510,7 +513,9 @@ sub try_synth {
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
-my $struct_adapt = [41, 441];
+#my $ret_adapt = [51, 0];
+my $struct_adapt = [(0) x @struct_fields];
+#my $struct_adapt = [48, 41, 2, 2];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {
