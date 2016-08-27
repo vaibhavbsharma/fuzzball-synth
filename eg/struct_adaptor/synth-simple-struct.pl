@@ -249,6 +249,7 @@ sub check_adaptor {
 		"-omit-pf-af",
 		"-trace-temps",
 		"-trace-regions",
+		#"-trace-struct-adaptor",
 		#"-trace-memory-snapshots",
 		"-trace-tables",
 		"-table-limit","12",
@@ -425,6 +426,7 @@ sub try_synth {
 		"-branch-preference", "$match_jne_addr:1",
 		"-trace-conditions", "-omit-pf-af",
 		"-trace-syscalls",
+		#"-trace-struct-adaptor",
 		#"-trace-decision-tree",
 		#"-save-decision-tree-interval","1",
 		"-trace-decisions",
@@ -515,7 +517,7 @@ my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
 #my $ret_adapt = [51, 0];
 my $struct_adapt = [(0) x @struct_fields];
-#my $struct_adapt = [48, 41, 2, 2];
+#my $struct_adapt = [441, 40, 8, 8];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {
@@ -546,8 +548,9 @@ my $done = 0;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
-    my $struct_adapt_s = join(",", @$struct_adapt);
-    print "Checking simple adaptor = $adapt_s, ret adaptor = $ret_adapt_s, struct adaptor = $struct_adapt_s :\n";
+    printf "Checking simple adaptor = $adapt_s, ret adaptor = $ret_adapt_s, ".
+	"struct adaptor = 0x%x,0x%x,%d,%d:\n",
+	    $struct_adapt->[0], $struct_adapt->[1], $struct_adapt->[2], $struct_adapt->[3];
     my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt, $ret_adapt, $struct_adapt);
     if ($res) {
 	print "Success!\n";
@@ -559,7 +562,9 @@ while (!$done) {
 	if ($f1_completed_count == $iteration_count) {
 	    $verified="complete";
 	}
-	print "Final adaptors: arg=$adapt_s, ret=$ret_adapt_s, struct=$struct_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
+	printf "Final adaptors: arg=$adapt_s, ret=$ret_adapt_s, ".
+	    "struct=0x%x,0x%x,%d,%d with $f1_completed_count,$iteration_count,$verified\n", 
+	    $struct_adapt->[0], $struct_adapt->[1], $struct_adapt->[2], $struct_adapt->[3];
 	$done = 1;
 	last;
     } else {
