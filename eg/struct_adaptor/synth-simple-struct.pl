@@ -12,6 +12,8 @@ my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
 my $region_limit = 16;
+my $n_fields = 2;
+my $max_conc_region_size = 8*$n_fields;
 my $n_conc_struct_limit = 10;
 my $starting_sane_addr = 0x42420000;
 my $sane_addr = $starting_sane_addr;
@@ -166,19 +168,15 @@ print "synth_ret_opt = @synth_ret_opt\n";
 my @synth_struct_opt;
 
 sub reinitialize_synth_struct_opt () {
-    my $steps = ($sane_addr - $starting_sane_addr)/$region_limit;
+    my $steps = ($sane_addr - $starting_sane_addr)/$max_conc_region_size;
     @synth_struct_opt = ();
-    push @synth_struct_opt, "-synthesize-structure-adaptor";
-    my $tmp_str;
-    for (my $s=0; $s < $n_conc_struct_limit; $s++ ) {
+    for (my $s=0; $s < $steps; $s++ ) {
+	push @synth_struct_opt, "-synthesize-structure-adaptor";
+	my $tmp_str;
 	if ($s < $steps) {
-	    $tmp_str = $tmp_str.sprintf("0x%x", ($starting_sane_addr + ($s * $region_limit)));
-	} else {
-	    $tmp_str = $tmp_str."0";
+	    push @synth_struct_opt, sprintf("0x%x", ($starting_sane_addr + ($s * $max_conc_region_size)));
 	}
-	if($s != $n_conc_struct_limit-1) { $tmp_str = $tmp_str.":"; }
     }
-    push @synth_struct_opt, $tmp_str;
     for my $i (0 ..  $#synth_struct_opt) {
     	print "synth_struct_opt[$i] = $synth_struct_opt[$i]\n";
     }
