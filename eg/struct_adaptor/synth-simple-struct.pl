@@ -8,16 +8,20 @@ die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identi
 my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
 srand($rand_seed);
+
+# Configurables
+
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
 my $region_limit = 16;
 my $n_fields = 2;
-my $max_conc_region_size = 8*$n_fields;
-my $n_conc_struct_limit = 10;
 my $starting_sane_addr = 0x42420000;
-my $sane_addr = $starting_sane_addr;
 
+# End configurables
+
+my $sane_addr = $starting_sane_addr;
+my $max_conc_region_size = 8*$n_fields;
 my @fuzzball_extra_args_arr;
 
 # Paths to binaries: these probably differ on your system. You can add
@@ -177,6 +181,8 @@ sub reinitialize_synth_struct_opt () {
 	    push @synth_struct_opt, sprintf("0x%x", ($starting_sane_addr + ($s * $max_conc_region_size)));
 	}
     }
+    push @synth_struct_opt, "-structure-adaptor-field-limit";
+    push @synth_struct_opt, sprintf("%d", $n_fields);
     for my $i (0 ..  $#synth_struct_opt) {
     	print "synth_struct_opt[$i] = $synth_struct_opt[$i]\n";
     }
@@ -308,7 +314,7 @@ sub check_adaptor {
 	    @regnum_to_arg = (0) x ($f1nargs+1);
 	    @regnum_to_saneaddr = (0) x ($f1nargs+1);
 	    my @tmp_reg_arr;
-	    for my $i (1 .. $region_limit+1) { push @tmp_reg_arr, 0; }
+	    for my $i (1 .. $max_conc_region_size+1) { push @tmp_reg_arr, 0; }
 	    for my $i (1 .. ($f1nargs+1)) { push @region_contents, [@tmp_reg_arr]; }
 	    $iteration_count++;
 	} elsif ($_ eq "Completed f1\n") {
@@ -331,7 +337,7 @@ sub check_adaptor {
 		    if ($arg_to_regnum[$index] != 0) {
 			$ce[$index] = $sane_addr;
 			$regnum_to_saneaddr[$arg_to_regnum[$index]] = $sane_addr;
-			$sane_addr = $sane_addr + $region_limit;
+			$sane_addr = $sane_addr + $max_conc_region_size;
 		    }
 		} 
 	    }
