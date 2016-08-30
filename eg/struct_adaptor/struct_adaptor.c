@@ -64,19 +64,22 @@ typedef struct _adaptor {
 adaptor_struct the_adaptor;
 
 typedef struct _s1 {
-  char a;
-  char b;
+  int a;
+  int b;
+  //int c;
 } struct1;
 
 typedef struct _s2 {
-  unsigned int a;
-  unsigned int b;
+  int a;
+  int b;
+  //int c;
 } struct2;
 
 int f1(struct1 *s) {
   if(s) {
     // s->a = 1;
     return s->a - s->b;
+    //return s->a - s->b - s->c;
     //return s->b;
   }
   return 0;
@@ -86,6 +89,7 @@ int f2(struct2 *s) {
   if(s) {
     // s->b = 1;
     return s->b - s->a;
+    //return s->b - s->a - s->c;
     //return s->a;
   }
   return 0;

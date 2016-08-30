@@ -147,13 +147,20 @@ my @ret_fields =
    ["ret_val",   "reg64_t", "%016x"],
 );
 
-my @struct_fields = 
-(
-   ["f1_type",  "reg16_t", "%01x"],
-   ["f2_type",  "reg16_t", "%01x"],
-   ["field1_size",  "reg16_t", "%01x"],
-   ["field2_size",  "reg16_t", "%01x"],
-);
+my @struct_fields = ();
+# (
+#    ["f1_type",  "reg16_t", "%01x"],
+#    ["f2_type",  "reg16_t", "%01x"],
+#    ["field1_size",  "reg16_t", "%01x"],
+#    ["field2_size",  "reg16_t", "%01x"],
+# );
+
+for (my $i =1; $i <= $n_fields; $i++) {
+    my $f_type_str = sprintf("f%d_type", $i);
+    my $field_size_str = sprintf("field%d_size", $i);
+    push @struct_fields, [$f_type_str, "reg16_t", "%01x"];
+    push @struct_fields, [$field_size_str, "reg16_t", "%01x"];
+}
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f1nargs=6;
@@ -175,13 +182,13 @@ sub reinitialize_synth_struct_opt () {
     my $steps = ($sane_addr - $starting_sane_addr)/$max_conc_region_size;
     @synth_struct_opt = ();
     for (my $s=0; $s < $steps; $s++ ) {
-	push @synth_struct_opt, "-synthesize-structure-adaptor";
+	push @synth_struct_opt, "-synth-struct-adaptor";
 	my $tmp_str;
 	if ($s < $steps) {
 	    push @synth_struct_opt, sprintf("0x%x", ($starting_sane_addr + ($s * $max_conc_region_size)));
 	}
     }
-    push @synth_struct_opt, "-structure-adaptor-field-limit";
+    push @synth_struct_opt, "-struct-adaptor-nfields";
     push @synth_struct_opt, sprintf("%d", $n_fields);
     for my $i (0 ..  $#synth_struct_opt) {
     	print "synth_struct_opt[$i] = $synth_struct_opt[$i]\n";
@@ -546,6 +553,15 @@ if ($f1nargs==0) {
     }
 }
 
+sub get_struct_adapt_str () {
+    my $tmp_str="";
+    for(my $i=0; $i<=$#struct_fields; $i++) {
+	my($name, $ty, $fmt) = @{$struct_fields[$i]};
+	$tmp_str=$tmp_str.sprintf("%s=0x".$fmt, $name, $struct_adapt->[$i]).", ";
+    }
+    return $tmp_str;
+}
+
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt structure-adaptor = @$struct_adapt\n";
 my @tests = ();
 my $done = 0;
@@ -553,8 +569,9 @@ while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
     printf "Checking simple adaptor = $adapt_s, ret adaptor = $ret_adapt_s, ".
-	"struct adaptor = 0x%x,0x%x,%d,%d:\n",
-	    $struct_adapt->[0], $struct_adapt->[1], $struct_adapt->[2], $struct_adapt->[3];
+	"struct adaptor = ".get_struct_adapt_str()."\n";
+	#"struct adaptor = 0x%x,0x%x,%d,%d:\n",
+	#    $struct_adapt->[0], $struct_adapt->[1], $struct_adapt->[2], $struct_adapt->[3];
     my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt, $ret_adapt, $struct_adapt);
     if ($res) {
 	print "Success!\n";
@@ -567,8 +584,8 @@ while (!$done) {
 	    $verified="complete";
 	}
 	printf "Final adaptors: arg=$adapt_s, ret=$ret_adapt_s, ".
-	    "struct=0x%x,0x%x,%d,%d with $f1_completed_count,$iteration_count,$verified\n", 
-	    $struct_adapt->[0], $struct_adapt->[1], $struct_adapt->[2], $struct_adapt->[3];
+	    "struct=%s with $f1_completed_count,$iteration_count,$verified\n", 
+	    get_struct_adapt_str();
 	$done = 1;
 	last;
     } else {
@@ -581,5 +598,5 @@ while (!$done) {
     ($adapt, $ret_adapt, $struct_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
     print "Synthesized arg adaptor ".join(",",@$adapt).
 	" and return adaptor ".join(",",@$ret_adapt).
-	" and struct adaptor ".join(",", @$struct_adapt)."\n";
+	" and struct adaptor ".get_struct_adapt_str()."\n";
 }
