@@ -81,7 +81,8 @@ int f1(struct1 *s) {
   if(s) {
     // s->a = 1;
     //return s->a - s->b;
-    return s->a - s->b - s->c + s->d;
+    //return s->a - s->b - s->c + s->d;
+    return 3*(s->a) + 5*(s->b) + 7*(s->c) + 11*(s->d);
     //return s->b;
   }
   return 0;
@@ -91,7 +92,8 @@ int f2(struct2 *s) {
   if(s) {
     // s->b = 1;
     //return s->b - s->a;
-    return s->b - s->a - s->c + s->d;
+    //return s->b - s->a - s->c + s->d;
+    return 3*(s->d) + 5*(s->c) + 7*(s->b) + 11*(s->a);
     //return s->a;
   }
   return 0;
