@@ -14,14 +14,14 @@ srand($rand_seed);
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
-my $region_limit = 16;
-my $n_fields = 2;
+my $n_fields = 4;
 my $starting_sane_addr = 0x42420000;
 
 # End configurables
 
 my $sane_addr = $starting_sane_addr;
 my $max_conc_region_size = 8*$n_fields;
+my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 
 # Paths to binaries: these probably differ on your system. You can add
@@ -167,7 +167,7 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f2nargs=6;
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
+my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",15,"-timeout-as-unsat");
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
@@ -307,9 +307,9 @@ sub check_adaptor {
     my($matches, $fails) = (0, 0);
     my(@ce, $this_ce);
     my(@arg_to_regnum, @regnum_to_arg, @fuzzball_extra_args, @regnum_to_saneaddr);
-    my(@region_contents);
     $this_ce = 0;
     my $f1_completed = 0;
+    my(@region_contents);
     $f1_completed_count = 0;
     $iteration_count = 0;
     while (<LOG>) {
@@ -321,6 +321,7 @@ sub check_adaptor {
 	    @regnum_to_arg = (0) x ($f1nargs+1);
 	    @regnum_to_saneaddr = (0) x ($f1nargs+1);
 	    my @tmp_reg_arr;
+	    @region_contents = ();
 	    for my $i (1 .. $max_conc_region_size+1) { push @tmp_reg_arr, 0; }
 	    for my $i (1 .. ($f1nargs+1)) { push @region_contents, [@tmp_reg_arr]; }
 	    $iteration_count++;
@@ -388,7 +389,7 @@ sub check_adaptor {
 		    }
 		}
 	    }
-	}  
+	}
 	print "  $_";
     }
     close LOG;

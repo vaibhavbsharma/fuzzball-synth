@@ -66,20 +66,22 @@ adaptor_struct the_adaptor;
 typedef struct _s1 {
   int a;
   int b;
-  //int c;
+  int c;
+  int d;
 } struct1;
 
 typedef struct _s2 {
   int a;
   int b;
-  //int c;
+  int c;
+  int d;
 } struct2;
 
 int f1(struct1 *s) {
   if(s) {
     // s->a = 1;
-    return s->a - s->b;
-    //return s->a - s->b - s->c;
+    //return s->a - s->b;
+    return s->a - s->b - s->c + s->d;
     //return s->b;
   }
   return 0;
@@ -88,8 +90,8 @@ int f1(struct1 *s) {
 int f2(struct2 *s) {
   if(s) {
     // s->b = 1;
-    return s->b - s->a;
-    //return s->b - s->a - s->c;
+    //return s->b - s->a;
+    return s->b - s->a - s->c + s->d;
     //return s->a;
   }
   return 0;
