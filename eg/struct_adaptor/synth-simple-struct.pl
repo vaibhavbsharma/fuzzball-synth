@@ -14,7 +14,7 @@ srand($rand_seed);
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
-my $n_fields = 4;
+my $n_fields = 2;
 my $starting_sane_addr = 0x42420000;
 
 # End configurables
@@ -158,7 +158,7 @@ my @struct_fields = ();
 for (my $i =1; $i <= $n_fields; $i++) {
     my $f_type_str = sprintf("f%d_type", $i);
     my $field_size_str = sprintf("field%d_size", $i);
-    push @struct_fields, [$f_type_str, "reg16_t", "%01x"];
+    push @struct_fields, [$f_type_str, "reg64_t", "%01x"];
     push @struct_fields, [$field_size_str, "reg16_t", "%01x"];
 }
 
@@ -260,7 +260,8 @@ sub check_adaptor {
 		"-omit-pf-af",
 		"-trace-temps",
 		"-trace-regions",
-		#"-trace-struct-adaptor",
+		"-trace-struct-adaptor",
+		"-time-stats",
 		#"-trace-memory-snapshots",
 		"-trace-tables",
 		"-table-limit","12",
@@ -438,7 +439,8 @@ sub try_synth {
 		"-branch-preference", "$match_jne_addr:1",
 		"-trace-conditions", "-omit-pf-af",
 		"-trace-syscalls",
-		#"-trace-struct-adaptor",
+		"-trace-struct-adaptor",
+		"-time-stats",
 		#"-trace-decision-tree",
 		#"-save-decision-tree-interval","1",
 		"-trace-decisions",
@@ -529,6 +531,17 @@ my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
 #my $ret_adapt = [51, 0];
 my $struct_adapt = [(0) x @struct_fields];
+for(my $i=0; $i< $n_fields; $i++) {
+    $struct_adapt->[$i*2] = (($i*4)<<32)+(((($i+1)*4)-1)<<16);
+    $struct_adapt->[$i*2+1] = 4;
+}
+# $struct_adapt->[0]=0x8000b0000;
+# $struct_adapt->[2]=0x400070000;
+# $struct_adapt->[4]=0x000030000;
+# 
+# $struct_adapt->[1] = $struct_adapt->[3] = $struct_adapt->[5] = 4;
+
+
 #my $struct_adapt = [441, 40, 8, 8];
 
 # Setting up the default adaptor to be the identity adaptor
@@ -566,6 +579,10 @@ sub get_struct_adapt_str () {
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt structure-adaptor = @$struct_adapt\n";
 my @tests = ();
 my $done = 0;
+my $start_time = time();
+my $reset_time = time();
+my $diff;
+my $diff1;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
@@ -574,6 +591,10 @@ while (!$done) {
 	#"struct adaptor = 0x%x,0x%x,%d,%d:\n",
 	#    $struct_adapt->[0], $struct_adapt->[1], $struct_adapt->[2], $struct_adapt->[3];
     my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt, $ret_adapt, $struct_adapt);
+    $diff = time() - $start_time;
+    $diff1 = time() - $reset_time;
+    print "elapsed time = $diff, last CE search time = $diff1\n";
+    $reset_time = time();
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
@@ -600,4 +621,8 @@ while (!$done) {
     print "Synthesized arg adaptor ".join(",",@$adapt).
 	" and return adaptor ".join(",",@$ret_adapt).
 	" and struct adaptor ".get_struct_adapt_str()."\n";
+    $diff = time() - $start_time;
+    $diff1 = time() - $reset_time;
+    print "elapsed time = $diff, last AS search time = $diff1\n";
+    $reset_time = time();
 }
