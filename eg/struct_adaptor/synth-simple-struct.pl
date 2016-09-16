@@ -14,7 +14,7 @@ srand($rand_seed);
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
-my $n_fields = 2;
+my $n_fields = 4;
 my $starting_sane_addr = 0x42420000;
 
 # End configurables
@@ -42,18 +42,18 @@ if (exists $ENV{FUZZBALL_LOC}) {
     $fuzzball = "fuzzball";
 }
 
-my $stp;
-if (exists $ENV{STP_LOC}) {
-    $stp = $ENV{STP_LOC};
-} elsif (-x "$git_fuzzball/stp/stp") {
-    $stp = "$git_fuzzball/stp/stp";
-} elsif (-x "$smcc_umn/stp/stp") {
-    $stp = "$smcc_umn/stp/stp";
-} elsif (-x "$smcc_home/stp/stp") {
-    $stp = "$smcc_home/stp/stp";
-} else {
-    $stp = "stp";
-}
+my $stp="./stp-wrapper";
+# if (exists $ENV{STP_LOC}) {
+#     $stp = $ENV{STP_LOC};
+# } elsif (-x "$git_fuzzball/stp/stp") {
+#     $stp = "$git_fuzzball/stp/stp";
+# } elsif (-x "$smcc_umn/stp/stp") {
+#     $stp = "$smcc_umn/stp/stp";
+# } elsif (-x "$smcc_home/stp/stp") {
+#     $stp = "$smcc_home/stp/stp";
+# } else {
+#     $stp = "stp-wrapper";
+# }
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
@@ -167,7 +167,7 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f2nargs=6;
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",15,"-timeout-as-unsat");
+my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-smtlib-solver-type","stp","-solver-timeout",15,"-timeout-as-unsat","-save-solver-files");
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));

@@ -28,7 +28,8 @@ def hash_file(f):
 cache_name = "stp-cache" # the `cache' is really just a directory...
 inpt = sys.argv
 create_cache(cache_name)
-file_hash = hash_file(inpt[3])
+# print("input command: "+inpt[0]+" "+inpt[1]+" "+inpt[2]+" "+inpt[3]+" "+inpt[4]+" "+inpt[5])
+file_hash = hash_file(inpt[len(inpt)-1])
 fname = os.path.join(cache_name, file_hash)
 if os.path.isfile (fname):
     sys.stdout.write(open(fname).read())
