@@ -15,12 +15,13 @@ my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
 my $n_fields = 4;
+my $max_struct_size=16;
 my $starting_sane_addr = 0x42420000;
 
 # End configurables
 
 my $sane_addr = $starting_sane_addr;
-my $max_conc_region_size = 8*$n_fields;
+my $max_conc_region_size = $max_struct_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 
@@ -158,8 +159,10 @@ my @struct_fields = ();
 for (my $i =1; $i <= $n_fields; $i++) {
     my $f_type_str = sprintf("f%d_type", $i);
     my $field_size_str = sprintf("field%d_size", $i);
+    my $field_n_str = sprintf("field%d_n", $i);
     push @struct_fields, [$f_type_str, "reg64_t", "%01x"];
     push @struct_fields, [$field_size_str, "reg16_t", "%01x"];
+    push @struct_fields, [$field_n_str, "reg16_t", "%01x"];
 }
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
@@ -185,11 +188,11 @@ sub reinitialize_synth_struct_opt () {
 	push @synth_struct_opt, "-synth-struct-adaptor";
 	my $tmp_str;
 	if ($s < $steps) {
-	    push @synth_struct_opt, sprintf("0x%x", ($starting_sane_addr + ($s * $max_conc_region_size)));
+	    push @synth_struct_opt, sprintf("0x%x", ($starting_sane_addr + ($s * $max_conc_region_size)) );
 	}
     }
-    push @synth_struct_opt, "-struct-adaptor-nfields";
-    push @synth_struct_opt, sprintf("%d", $n_fields);
+    push @synth_struct_opt, "-struct-adaptor-params";
+    push @synth_struct_opt, sprintf("%d:%d", $n_fields, $max_struct_size);
     for my $i (0 ..  $#synth_struct_opt) {
     	print "synth_struct_opt[$i] = $synth_struct_opt[$i]\n";
     }
@@ -260,7 +263,7 @@ sub check_adaptor {
 		"-omit-pf-af",
 		"-trace-temps",
 		"-trace-regions",
-		"-trace-struct-adaptor",
+		# "-trace-struct-adaptor",
 		"-time-stats",
 		#"-trace-memory-snapshots",
 		"-trace-tables",
@@ -439,7 +442,7 @@ sub try_synth {
 		"-branch-preference", "$match_jne_addr:1",
 		"-trace-conditions", "-omit-pf-af",
 		"-trace-syscalls",
-		"-trace-struct-adaptor",
+		# "-trace-struct-adaptor",
 		"-time-stats",
 		#"-trace-decision-tree",
 		#"-save-decision-tree-interval","1",
@@ -532,8 +535,9 @@ my $ret_adapt = [(0) x @ret_fields];
 #my $ret_adapt = [51, 0];
 my $struct_adapt = [(0) x @struct_fields];
 for(my $i=0; $i< $n_fields; $i++) {
-    $struct_adapt->[$i*2] = (($i*4)<<32)+(((($i+1)*4)-1)<<16);
-    $struct_adapt->[$i*2+1] = 4;
+    $struct_adapt->[$i*3] = (($i*4)<<32)+(((($i+1)*4)-1)<<16);
+    $struct_adapt->[$i*3+1] = 4;
+    $struct_adapt->[$i*3+2] = 1;
 }
 # $struct_adapt->[0]=0x8000b0000;
 # $struct_adapt->[2]=0x400070000;
