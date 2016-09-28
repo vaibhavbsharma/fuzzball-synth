@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+"""
+  Acts as a wrapper around STP. When this script is invoked by FuzzBALL with
+  the command "./stp-wrapper --SMTLIB2 -p <FILE>", it:
+  1. checks if STP's resonse to that query has been cached
+     a. if so, it returns the cached response
+     b. if not, it calls STP with the appropriate arguments and caches STP's
+        response (+ returns that to FuzzBALL) 
+  NOTE: you should probably manually empty the cache between synthesis runs
+"""
+
+import hashlib
+import os
+from subprocess import check_output
+import sys
+
+def create_cache(dir_name):
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+
+def hash_file(f):
+    h = hashlib.md5()
+    f = open(f, "rb")
+    h.update(f.read())
+    return h.hexdigest()
+
+cache_name = "stp-cache" # the `cache' is really just a directory...
+inpt = sys.argv
+create_cache(cache_name)
+# print("input command: "+inpt[0]+" "+inpt[1]+" "+inpt[2]+" "+inpt[3]+" "+inpt[4]+" "+inpt[5])
+file_hash = hash_file(inpt[len(inpt)-1])
+fname = os.path.join(cache_name, file_hash)
+if os.path.isfile (fname):
+    sys.stdout.write(open(fname).read())
+    #f = open(os.path.join(cache_name, "statistics"), "a")
+    #f.write(inpt[3] + " matched the file " + file_hash + "\n")
+    #f.close()
+else:
+    f = open(fname, "w")
+    inpt[0] = "../../../../tools/fuzzball/stp/stp"
+    res = check_output(inpt)
+    f.write(res)
+    #f2 = open(os.path.join(cache_name, "statistics"), "a")
+    #f2.write(inpt[3] + " generated the file " + file_hash + "\n")
+    #f2.close()
+    sys.stdout.write(res)
+    f.close()
+
+
+ 
+
