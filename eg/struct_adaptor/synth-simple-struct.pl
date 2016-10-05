@@ -29,7 +29,7 @@ my @fuzzball_extra_args_arr;
 # your locations to the list, or set the environment variable.
 my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
 my $smcc_home = "/home/smcc/bitblaze/fuzzball/trunk-gh";
-my $git_fuzzball = "../../../../../tools/fuzzball";
+my $git_fuzzball = "../../../../tools/fuzzball";
 my $fuzzball;
 if (exists $ENV{FUZZBALL_LOC}) {
     $fuzzball = $ENV{FUZZBALL_LOC};
