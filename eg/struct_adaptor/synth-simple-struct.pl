@@ -2,6 +2,7 @@
 
 use strict;
 
+$| = 1;
 
 die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
   unless @ARGV == 6;
