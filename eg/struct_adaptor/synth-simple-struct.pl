@@ -11,11 +11,11 @@ my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @A
 srand($rand_seed);
 
 # Configurables
-
+my $split_target_formulas=1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
-my $n_fields = 3;
+my $n_fields = 2;
 my $max_struct_size=16;
 my $starting_sane_addr = 0x42420000;
 
@@ -63,7 +63,8 @@ my $iteration_count = 0;
 my $bin = "./struct_adaptor";
 
 print "compiling binary: ";
-my $unused = `gcc -static -g -o $bin $bin.c`;
+#my $unused = `gcc -static -g -o $bin $bin.c`;
+my $unused = `gcc -static struct_adaptor.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o struct_adaptor -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
@@ -153,14 +154,14 @@ my @struct_fields = ();
 # (
 #    ["f1_type",  "reg16_t", "%01x"],
 #    ["f2_type",  "reg16_t", "%01x"],
-#    ["field1_size",  "reg16_t", "%01x"],
-#    ["field2_size",  "reg16_t", "%01x"],
+#    ["f1_size",  "reg16_t", "%01x"],
+#    ["f2_size",  "reg16_t", "%01x"],
 # );
 
 for (my $i =1; $i <= $n_fields; $i++) {
     my $f_type_str = sprintf("f%d_type", $i);
-    my $field_size_str = sprintf("field%d_size", $i);
-    my $field_n_str = sprintf("field%d_n", $i);
+    my $field_size_str = sprintf("f%d_size", $i);
+    my $field_n_str = sprintf("f%d_n", $i);
     push @struct_fields, [$f_type_str, "reg64_t", "%01x"];
     push @struct_fields, [$field_size_str, "reg16_t", "%01x"];
     push @struct_fields, [$field_n_str, "reg16_t", "%01x"];
@@ -171,7 +172,9 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f2nargs=6;
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp, "-smtlib-solver-type","stp");
+my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp, "-smtlib-solver-type","stp"
+		   #"-save-solver-files",
+);
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
@@ -197,7 +200,9 @@ sub reinitialize_synth_struct_opt () {
     for my $i (0 ..  $#synth_struct_opt) {
     	print "synth_struct_opt[$i] = $synth_struct_opt[$i]\n";
     }
-    # push @synth_struct_opt, "-split-target-formulas";
+    if($split_target_formulas==1) {
+	push @synth_struct_opt, "-split-target-formulas";
+    }
 }
 
 reinitialize_synth_struct_opt(); 
@@ -263,9 +268,9 @@ sub check_adaptor {
 		"-trace-sym-addrs",
 		"-trace-syscalls",
 		"-omit-pf-af",
-		"-trace-temps",
+		# "-trace-temps",
 		"-trace-regions",
-		# "-trace-struct-adaptor",
+		"-trace-struct-adaptor",
 		"-time-stats",
 		#"-trace-memory-snapshots",
 		"-trace-tables",
@@ -285,7 +290,6 @@ sub check_adaptor {
 		"-trace-conditions",
 		"-trace-decisions",
 		#"-trace-solver",
-		#"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
@@ -430,7 +434,7 @@ sub try_synth {
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, 
 		"-fuzz-start-addr", $fuzz_start_addr,
-		"-trace-temps",
+		# "-trace-temps",
 		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 		#counter example search mode otherwise
 		"-adaptor-search-mode",
@@ -446,7 +450,7 @@ sub try_synth {
 		"-branch-preference", "$match_jne_addr:1",
 		"-trace-conditions", "-omit-pf-af",
 		"-trace-syscalls",
-		# "-trace-struct-adaptor",
+		"-trace-struct-adaptor",
 		"-time-stats",
 		#"-trace-decision-tree",
 		#"-save-decision-tree-interval","1",
@@ -467,7 +471,6 @@ sub try_synth {
 		#"-trace-loads",
 		#"-trace-stores",
 		#"-trace-solver",
-		#"-save-solver-files", 
 		"-zero-memory",
 		@fuzzball_extra_args,
 		"-region-limit", $region_limit,
