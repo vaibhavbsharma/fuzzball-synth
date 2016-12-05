@@ -106,7 +106,7 @@ int f2_sf(struct2 *s) {
   return 0;
 }
 
-#define CRYPT_LEN 8
+#define CRYPT_LEN 1
 unsigned char g_input[CRYPT_LEN]="12345678";
 //int mbedtls_arc4_crypt( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
 //                unsigned char *output )
@@ -141,27 +141,27 @@ long f1(mbedtls_arc4_context *ctx)
   
   //return( 0 );
   ret+=output[0];
-  ret=ret<<8;
+  // ret=ret<<8;
 
-  ret+=output[1];
-  ret=ret<<8;
+  // ret+=output[1];
+  // ret=ret<<8;
 
-  ret+=output[2];
-  ret=ret<<8;
+  // ret+=output[2];
+  // ret=ret<<8;
 
-  ret+=output[3];
-  ret=ret<<8;
+  // ret+=output[3];
+  // ret=ret<<8;
 
-  ret+=output[4];
-  ret=ret<<8;
+  // ret+=output[4];
+  // ret=ret<<8;
 
-  ret+=output[5];
-  ret=ret<<8;
+  // ret+=output[5];
+  // ret=ret<<8;
 
-  ret+=output[6];
-  ret=ret<<8;
+  // ret+=output[6];
+  // ret=ret<<8;
 
-  ret+=output[7];
+  // ret+=output[7];
   // ret=ret<<8;
 
   return ret;
@@ -241,27 +241,27 @@ long f2(RC4_KEY *key)
   //key->y = y;
   outdata=outdata-8;  
   ret+=outdata[0];
-  ret=ret<<8;
-  
-  ret+=outdata[1];
-  ret=ret<<8;
-  
-  ret+=outdata[2];
-  ret=ret<<8;
+  // ret=ret<<8;
+  // 
+  // ret+=outdata[1];
+  // ret=ret<<8;
+  // 
+  // ret+=outdata[2];
+  // ret=ret<<8;
 
-  ret+=outdata[3];
-  ret=ret<<8;
+  // ret+=outdata[3];
+  // ret=ret<<8;
 
-  ret+=outdata[4];
-  ret=ret<<8;
+  // ret+=outdata[4];
+  // ret=ret<<8;
 
-  ret+=outdata[5];
-  ret=ret<<8;
+  // ret+=outdata[5];
+  // ret=ret<<8;
 
-  ret+=outdata[6];
-  ret=ret<<8;
+  // ret+=outdata[6];
+  // ret=ret<<8;
 
-  ret+=outdata[7];
+  // ret+=outdata[7];
   // ret=ret<<8;
 
   return ret;

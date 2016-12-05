@@ -190,7 +190,7 @@ sub reinitialize_synth_struct_opt () {
     my $steps = ($sane_addr - $starting_sane_addr)/$max_conc_region_size;
     @synth_struct_opt = ();
     for (my $s=0; $s < $steps; $s++ ) {
-	push @synth_struct_opt, "-synth-struct-adaptor";
+	push @synth_struct_opt, "-synthesize-struct-adaptor";
 	my $tmp_str;
 	if ($s < $steps) {
 	    push @synth_struct_opt, sprintf("0x%x", ($starting_sane_addr + ($s * $max_conc_region_size)) );
@@ -304,7 +304,7 @@ sub check_adaptor {
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
 		@synth_ret_opt, @conc_ret_adapt,
-		"-synth-struct-adaptor", $sane_addr,
+		"-synthesize-struct-adaptor", $sane_addr,
 		@synth_struct_opt, @conc_struct_adapt, 
 		"-disable-ce-cache",
 		"-return-zero-missing-x64-syscalls",
