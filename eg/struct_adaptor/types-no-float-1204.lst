@@ -1326,3 +1326,5 @@
 1409 3  mystrtol_1 long (const char *restrict, char **restrict, int) 
 1410 1  f1 int (struct1 *)
 1411 1  f2 int (struct2 *)
+1410 3  f1 int (struct1 *, const unsigned char *, int)
+1411 3  f2 int (struct2 *, int, const unsigned char *)
