@@ -12,21 +12,23 @@ srand($rand_seed);
 my $unused_1=`ulimit -s unlimited`;
 die "failed to set ulimit" unless $unused_1== 0;
 # Configurables
-my $split_target_formulas=0;
+my $split_target_formulas=1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
+my $adaptor_ivc = 1;
+
 my $n_fields = 2;
-my $max_struct_size=16;
+my $arr_len = 16;
 my $starting_sane_addr = 0x42420000;
 
 my $max_steps = 1000;
-
+my $key_const_val = 97;
 # End configurables
 
+my $max_struct_size=2*4 + $arr_len*4;
 my $sane_addr = $starting_sane_addr;
 my $string_addr = $starting_sane_addr + $max_struct_size*$max_steps;
-my $key_const_val = 97;
 my $max_conc_region_size = $max_struct_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
@@ -147,13 +149,6 @@ my @ret_fields =
 );
 
 my @struct_fields = ();
-# (
-#    ["f1_type",  "reg16_t", "%01x"],
-#    ["f2_type",  "reg16_t", "%01x"],
-#    ["f1_size",  "reg16_t", "%01x"],
-#    ["f2_size",  "reg16_t", "%01x"],
-# );
-
 for (my $i =1; $i <= $n_fields; $i++) {
     my $f_type_str = sprintf("f%d_type", $i);
     my $field_size_str = sprintf("f%d_size", $i);
@@ -168,7 +163,7 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f2nargs=6;
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp, "-smtlib-solver-type","stp"
+my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-smtlib-solver-type","stp"
 		   # ,"-save-solver-files"
 );
 
@@ -181,15 +176,21 @@ print "synth_ret_opt = @synth_ret_opt\n";
 
 my @synth_struct_opt;
 
-sub reinitialize_synth_struct_opt () {
+sub reinitialize_synth_struct_opt  {
+    my($is_ce) = (@_);
     my $steps = ($sane_addr - $starting_sane_addr)/$max_conc_region_size;
     @synth_struct_opt = ();
-    for (my $s=0; $s < $steps; $s++ ) {
-	push @synth_struct_opt, "-synthesize-struct-adaptor";
-	my $tmp_str;
-	if ($s < $steps) {
-	    push @synth_struct_opt, sprintf("0x%x", ($starting_sane_addr + ($s * $max_conc_region_size)) );
+    if( $is_ce == 0) {
+	for (my $s=0; $s < $steps; $s++ ) {
+	    push @synth_struct_opt, "-synthesize-struct-adaptor";
+	    my $tmp_str;
+	    if ($s < $steps) {
+		push @synth_struct_opt, sprintf("0x%x", ($starting_sane_addr + ($s * $max_conc_region_size)) );
+	    }
 	}
+    } else {
+	push @synth_struct_opt, "-synthesize-struct-adaptor";
+	push @synth_struct_opt, $sane_addr;
     }
     push @synth_struct_opt, "-struct-adaptor-params";
     push @synth_struct_opt, sprintf("%d:%d", $n_fields, $max_struct_size);
@@ -199,9 +200,12 @@ sub reinitialize_synth_struct_opt () {
     if($split_target_formulas==1) {
 	push @synth_struct_opt, "-split-target-formulas";
     }
+    if($adaptor_ivc==1) {
+	push @synth_struct_opt, "-adaptor-ivc";
+    }
 }
 
-reinitialize_synth_struct_opt(); 
+reinitialize_synth_struct_opt(1); 
 
 my @const_bounds_ec = ();
 if($const_lb != $const_ub) {
@@ -259,7 +263,8 @@ sub check_adaptor {
 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
 	push @conc_struct_adapt, ("-extra-condition", $s);
     }
-    my $tmp_str = sprintf("0x%x=0x1", $string_addr);
+    reinitialize_synth_struct_opt(1);
+    my $tmp_str = sprintf("0x%x=0x%x", $string_addr, $key_const_val);
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -267,7 +272,7 @@ sub check_adaptor {
 		"-trace-sym-addrs",
 		"-trace-syscalls",
 		"-omit-pf-af",
-		"-trace-temps",
+		# "-trace-temps",
 		"-trace-regions",
 		"-trace-struct-adaptor",
 		"-time-stats",
@@ -294,8 +299,7 @@ sub check_adaptor {
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
 		@synth_ret_opt, @conc_ret_adapt,
-		"-synthesize-struct-adaptor", $sane_addr,
-		@synth_struct_opt, @conc_struct_adapt, 
+		@synth_struct_opt,@conc_struct_adapt,
 		"-disable-ce-cache",
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
@@ -455,11 +459,11 @@ sub try_synth {
 	print TESTS $test_str, "\n";
     }
     close TESTS;
-    reinitialize_synth_struct_opt();
+    reinitialize_synth_struct_opt(0);
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, 
 		"-fuzz-start-addr", $fuzz_start_addr,
-		"-trace-temps",
+		# "-trace-temps",
 		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 		#counter example search mode otherwise
 		"-adaptor-search-mode",
@@ -475,7 +479,7 @@ sub try_synth {
 		"-branch-preference", "$match_jne_addr:1",
 		"-trace-conditions", "-omit-pf-af",
 		"-trace-syscalls",
-		"-trace-struct-adaptor",
+		# "-trace-struct-adaptor",
 		"-time-stats",
 		#"-trace-decision-tree",
 		#"-save-decision-tree-interval","1",
@@ -564,7 +568,6 @@ sub try_synth {
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
-#my $ret_adapt = [51, 0];
 my $struct_adapt = [(0) x @struct_fields];
 # type, size, number of array entries
 for(my $i=0; $i< $n_fields; $i++) {
@@ -572,13 +575,6 @@ for(my $i=0; $i< $n_fields; $i++) {
     $struct_adapt->[$i*3+1] = 4;
     $struct_adapt->[$i*3+2] = 1;
 }
-# $struct_adapt->[0]=0x8000b0000;
-# $struct_adapt->[2]=0x400070000;
-# $struct_adapt->[4]=0x000030000;
-# 
-# $struct_adapt->[1] = $struct_adapt->[3] = $struct_adapt->[5] = 4;
-#my $struct_adapt = [441, 40, 8, 8];
-#$struct_adapt = [0x0, 0x4, 0x2, 0x800090001, 0x4, 0x2];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {
@@ -593,7 +589,9 @@ if ($default_adaptor_pref == 1) {
     }
 }
 
-# $adapt = [0, 0, 0, 2, 0, 1]; 
+#$adapt = [0, 0, 1, 1, 0, 1]; 
+#$ret_adapt = [51, 0];
+#$struct_adapt = [0x30001, 0x4, 0x2, 0x8000b0001, 0x4, 0x4];
 
 # If outer function takes no arguments, then the inner function can only use constants
 if ($f1nargs==0) {

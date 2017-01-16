@@ -78,6 +78,8 @@ int f2_sf(struct2 *s) {
   return 0;
 }
 
+#define ARR_LEN 16
+
 //void mbedtls_arc4_setup( mbedtls_arc4_context *ctx, const unsigned char *key,
 //                 unsigned int keylen ) {
 int f1( mbedtls_arc4_context *ctx, const unsigned char *key, unsigned int keylen) {
@@ -92,18 +94,18 @@ int f1( mbedtls_arc4_context *ctx, const unsigned char *key, unsigned int keylen
   m = ctx->m;
   
   //for( i = 0; i < 256; i++ )
-  for( i = 0; i < 2; i++ )
+  for( i = 0; i < ARR_LEN; i++ )
     m[i] = (unsigned char) i;
 
   j = k = 0;
 
   //for( i = 0; i < 256; i++, k++ )
-  for( i = 0; i < 2; i++, k++ )
+  for( i = 0; i < ARR_LEN; i++, k++ )
     {
       if( k >= keylen ) k = 0;
 
       a = m[i];
-      j = ( j + a + key[k] ) & 0x1;
+      j = ( j + a + key[k] ) & (ARR_LEN - 1);
       m[i] = m[j];
       m[j] = (unsigned char) a;
     }
@@ -127,20 +129,20 @@ int f2(RC4_KEY *key, int len, const unsigned char *data)
 
 #define SK_LOOP(d,n) { \
                 tmp=d[(n)]; \
-                id2 = (data[id1] + tmp + id2) & 0x1; \
+                id2 = (data[id1] + tmp + id2) & (ARR_LEN - 1);	\
                 if (++id1 == len) id1=0; \
                 d[(n)]=d[id2]; \
                 d[id2]=tmp; }
 
   //for (i = 0; i < 256; i++)
-  for (i = 0; i < 2; i++)
+  for (i = 0; i < ARR_LEN; i++)
     d[i] = i;
-  for (i = 0; i < 2; i += 2) {
-    //for (i = 0; i < 256; i += 4) {
+  for (i = 0; i < ARR_LEN; i += 4) {
+  //for (i = 0; i < 256; i += 4) {
     SK_LOOP(d, i + 0);
     SK_LOOP(d, i + 1);
-    //SK_LOOP(d, i + 2);
-    //SK_LOOP(d, i + 3);
+    SK_LOOP(d, i + 2);
+    SK_LOOP(d, i + 3);
   }
   return 0;
 }
