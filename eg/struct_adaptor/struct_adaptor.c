@@ -78,10 +78,11 @@ typedef struct _s2 {
   int d;
 } struct2;
 
-int f1(struct1 *s) {
+int f1_sf(struct1 *s) {
   if(s) {
     // s->a = 1;
-    return s->a - s->b;
+    //return s->a - s->b;
+    return 3*(s->a) + 5*(s->b);
     //return s->a - s->b - s->c;
     //return s->a - s->b + s->c - s->d;
     //return 3*(s->a) + 5*(s->b) + 7*(s->c);
@@ -91,10 +92,11 @@ int f1(struct1 *s) {
   return 0;
 }
 
-int f2(struct2 *s) {
+int f2_sf(struct2 *s) {
   if(s) {
     // s->b = 1;
-    return s->b - s->a;
+    //return s->b - s->a;
+    return 3*(s->b) + 5*(s->a);
     //return 3*(s->c) + 5*(s->b) + 7*(s->a);
     //return s->c - s->b - s->a;
     //return s->d - s->c + s->b - s->a;
@@ -104,163 +106,163 @@ int f2(struct2 *s) {
   return 0;
 }
 
-#define CRYPT_LEN 8
-unsigned char g_input[CRYPT_LEN];
+#define CRYPT_LEN 1
+unsigned char g_input[CRYPT_LEN]="12345678";
 //int mbedtls_arc4_crypt( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
 //                unsigned char *output )
-unsigned long f1_c(mbedtls_arc4_context *ctx)
+long f1(mbedtls_arc4_context *ctx)
 {
   size_t length=CRYPT_LEN;
   unsigned char *input=g_input;
   unsigned char output[CRYPT_LEN];
-  unsigned long ret=0;
-    int x, y, a, b;
-    size_t i;
-    unsigned char *m;
-
-    x = ctx->x;
-    y = ctx->y;
-    m = ctx->m;
-
-    for( i = 0; i < length; i++ )
+  long ret=0;
+  int x, y, a, b;
+  size_t i;
+  unsigned char *m;
+  
+  x = ctx->x;
+  y = ctx->y;
+  m = ctx->m;
+  
+  for( i = 0; i < length; i++ )
     {
-        x = ( x + 1 ) & 0xFF; a = m[x];
-        y = ( y + a ) & 0xFF; b = m[y];
-
-        m[x] = (unsigned char) b;
-        m[y] = (unsigned char) a;
-
-        output[i] = (unsigned char)
-            ( input[i] ^ m[(unsigned char)( a + b )] );
+      x = ( x + 1 ) & 0x1; a = m[x];
+      y = ( y + a ) & 0x1; b = m[y];
+      
+      m[x] = (unsigned char) b;
+      m[y] = (unsigned char) a;
+      
+      output[i] = (unsigned char)
+	( input[i] ^ m[ ( a + b ) & 0x1 ] );
     }
-
-    //ctx->x = x;
-    //ctx->y = y;
-
-    //return( 0 );
+  
+  //ctx->x = x;
+  //ctx->y = y;
+  
+  //return( 0 );
   ret+=output[0];
-  ret=ret<<8;
+  // ret=ret<<8;
 
-  ret+=output[1];
-  ret=ret<<8;
+  // ret+=output[1];
+  // ret=ret<<8;
 
-  ret+=output[2];
-  ret=ret<<8;
+  // ret+=output[2];
+  // ret=ret<<8;
 
-  ret+=output[3];
-  ret=ret<<8;
+  // ret+=output[3];
+  // ret=ret<<8;
 
-  ret+=output[4];
-  ret=ret<<8;
+  // ret+=output[4];
+  // ret=ret<<8;
 
-  ret+=output[5];
-  ret=ret<<8;
+  // ret+=output[5];
+  // ret=ret<<8;
 
-  ret+=output[6];
-  ret=ret<<8;
+  // ret+=output[6];
+  // ret=ret<<8;
 
-  ret+=output[7];
-  ret=ret<<8;
+  // ret+=output[7];
+  // ret=ret<<8;
 
   return ret;
 }
 
 //void RC4(RC4_KEY *key, size_t len, const unsigned char *indata,
 //         unsigned char *outdata)
-unsigned long f2_c(RC4_KEY *key)
+long f2(RC4_KEY *key)
 {
   size_t len = CRYPT_LEN;
   unsigned char *indata = g_input;
   unsigned char outdata_buf[CRYPT_LEN];
   unsigned char *outdata=outdata_buf;
-  unsigned long ret=0;
+  long ret=0;
   //register RC4_INT *d;
   //register RC4_INT x, y, tx, ty;
-    RC4_INT *d;
-    RC4_INT x, y, tx, ty;
-    size_t i;
-
-    x = key->x;
-    y = key->y;
-    d = key->data;
-
-#define LOOP(in,out) \
-                x=((x+1)&0xff); \
-                tx=d[x]; \
-                y=(tx+y)&0xff; \
-                d[x]=ty=d[y]; \
-                d[y]=tx; \
-                (out) = d[(tx+ty)&0xff]^ (in);
-
-    i = len >> 3;
-    if (i) {
-        for (;;) {
-            LOOP(indata[0], outdata[0]);
-            LOOP(indata[1], outdata[1]);
-            LOOP(indata[2], outdata[2]);
-            LOOP(indata[3], outdata[3]);
-            LOOP(indata[4], outdata[4]);
-            LOOP(indata[5], outdata[5]);
-            LOOP(indata[6], outdata[6]);
-            LOOP(indata[7], outdata[7]);
-            indata += 8;
-            outdata += 8;
-            if (--i == 0)
-                break;
-        }
+  RC4_INT *d;
+  RC4_INT x, y, tx, ty;
+  size_t i;
+  
+  x = key->x;
+  y = key->y;
+  d = key->data;
+  
+#define LOOP(in,out)		\
+  x=((x+1)&0x1);		\
+  tx=d[x];			\
+  y=(tx+y)&0x1;		\
+  d[x]=ty=d[y];			\
+  d[y]=tx;					\
+  (out) = d[(tx+ty)&0x1]^ (in);
+  
+  i = len >> 3;
+  if (i) {
+    for (;;) {
+      LOOP(indata[0], outdata[0]);
+      LOOP(indata[1], outdata[1]);
+      LOOP(indata[2], outdata[2]);
+      LOOP(indata[3], outdata[3]);
+      LOOP(indata[4], outdata[4]);
+      LOOP(indata[5], outdata[5]);
+      LOOP(indata[6], outdata[6]);
+      LOOP(indata[7], outdata[7]);
+      indata += 8;
+      outdata += 8;
+      if (--i == 0)
+	break;
     }
-    i = len & 0x07;
-    if (i) {
-        for (;;) {
-            LOOP(indata[0], outdata[0]);
-            if (--i == 0)
-                break;
-            LOOP(indata[1], outdata[1]);
-            if (--i == 0)
-                break;
-            LOOP(indata[2], outdata[2]);
-            if (--i == 0)
-                break;
-            LOOP(indata[3], outdata[3]);
-            if (--i == 0)
-                break;
-            LOOP(indata[4], outdata[4]);
-            if (--i == 0)
-                break;
-            LOOP(indata[5], outdata[5]);
-            if (--i == 0)
-                break;
-            LOOP(indata[6], outdata[6]);
-            if (--i == 0)
-                break;
-        }
+  }
+  i = len & 0x07;
+  if (i) {
+    for (;;) {
+      LOOP(indata[0], outdata[0]);
+      if (--i == 0)
+	break;
+      LOOP(indata[1], outdata[1]);
+      if (--i == 0)
+	break;
+      LOOP(indata[2], outdata[2]);
+      if (--i == 0)
+	break;
+      LOOP(indata[3], outdata[3]);
+      if (--i == 0)
+	break;
+      LOOP(indata[4], outdata[4]);
+      if (--i == 0)
+	break;
+      LOOP(indata[5], outdata[5]);
+      if (--i == 0)
+	break;
+      LOOP(indata[6], outdata[6]);
+      if (--i == 0)
+	break;
     }
-    //key->x = x;
-    //key->y = y;
-
+  }
+  //key->x = x;
+  //key->y = y;
+  
   ret+=outdata[0];
-  ret=ret<<8;
+  // ret=ret<<8;
+  // 
+  // ret+=outdata[1];
+  // ret=ret<<8;
+  // 
+  // ret+=outdata[2];
+  // ret=ret<<8;
 
-  ret+=outdata[1];
-  ret=ret<<8;
+  // ret+=outdata[3];
+  // ret=ret<<8;
 
-  ret+=outdata[2];
-  ret=ret<<8;
+  // ret+=outdata[4];
+  // ret=ret<<8;
 
-  ret+=outdata[3];
-  ret=ret<<8;
+  // ret+=outdata[5];
+  // ret=ret<<8;
 
-  ret+=outdata[4];
-  ret=ret<<8;
+  // ret+=outdata[6];
+  // ret=ret<<8;
 
-  ret+=outdata[5];
-  ret=ret<<8;
-
-  ret+=outdata[6];
-  ret=ret<<8;
-
-  ret+=outdata[7];
-  ret=ret<<8;
+  // ret+=outdata[7];
+  // ret=ret<<8;
 
   return ret;
 }
@@ -385,6 +387,16 @@ int main(int argc, char **argv) {
   if (argc == 5 && argv[3][0]=='f') {
     fh = fopen(argv[4], "r");
   }
+  FILE *fh_ce;
+  if (argc == 5 && argv[3][0]=='g') {
+    fh_ce = fopen(argv[4], "r");
+    if (!fh_ce) {
+      fprintf(stderr, "Failed to open %s for reading: %s\n",
+	      argv[4], strerror(errno));
+      return 1;
+    }
+  }
+ 
   fuzz_start();
 
     if (argc < 4) {
@@ -413,9 +425,15 @@ int main(int argc, char **argv) {
 	    printf("Difference %ld vs. %ld\n", r1, r2);
 	}
     } else if (argv[3][0] == 'g') {
-	compare(0, 0,
-		global_arg0, global_arg1, global_arg2,
-		global_arg3, global_arg4, global_arg5);
+      long a, b, c, d, e, f;
+      fscanf(fh_ce, "%lx %lx %lx %lx %lx %lx",
+             &a, &b, &c, &d, &e, &f); 
+      printf("read ce inputs\n");
+      fflush(stdout);
+      compare(0, 0, a, b, c, d, e, f);
+      //compare(0, 0,
+      //	      global_arg0, global_arg1, global_arg2,
+      //	      global_arg3, global_arg4, global_arg5);
     } else if (argv[3][0] == 'f') {
 	long a, b, c, d, e, f;
         if (argv[4][0] == '-' && argv[4][1] == 0) {
