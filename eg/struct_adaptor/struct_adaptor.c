@@ -106,6 +106,8 @@ int f2_sf(struct2 *s) {
   return 0;
 }
 
+
+#define ARR_LEN 32
 #define CRYPT_LEN 1
 unsigned char g_input[CRYPT_LEN]="12345678";
 //int mbedtls_arc4_crypt( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
@@ -126,14 +128,14 @@ long f1(mbedtls_arc4_context *ctx)
   
   for( i = 0; i < length; i++ )
     {
-      x = ( x + 1 ) & 0x1; a = m[x];
-      y = ( y + a ) & 0x1; b = m[y];
+      x = ( x + 1 ) & (ARR_LEN - 1); a = m[x];
+      y = ( y + a ) & (ARR_LEN - 1); b = m[y];
       
       m[x] = (unsigned char) b;
       m[y] = (unsigned char) a;
       
       output[i] = (unsigned char)
-	( input[i] ^ m[ ( a + b ) & 0x1 ] );
+	( input[i] ^ m[ ( a + b ) & (ARR_LEN - 1) ] );
     }
   
   //ctx->x = x;
@@ -187,12 +189,12 @@ long f2(RC4_KEY *key)
   d = key->data;
   
 #define LOOP(in,out)		\
-  x=((x+1)&0x1);		\
+  x=((x+1)&(ARR_LEN - 1));		\
   tx=d[x];			\
-  y=(tx+y)&0x1;		\
+  y=(tx+y)&(ARR_LEN - 1);		\
   d[x]=ty=d[y];			\
   d[y]=tx;					\
-  (out) = d[(tx+ty)&0x1]^ (in);
+  (out) = d[(tx+ty)&(ARR_LEN - 1)]^ (in);
   
   i = len >> 3;
   if (i) {

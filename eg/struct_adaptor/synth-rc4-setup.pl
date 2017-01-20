@@ -163,7 +163,7 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f2nargs=6;
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-smtlib-solver-type","stp"
+my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp, "-smtlib-solver-type","stp"
 		   # ,"-save-solver-files"
 );
 
@@ -272,7 +272,7 @@ sub check_adaptor {
 		"-trace-sym-addrs",
 		"-trace-syscalls",
 		"-omit-pf-af",
-		# "-trace-temps",
+		"-trace-temps",
 		"-trace-regions",
 		"-trace-struct-adaptor",
 		"-time-stats",

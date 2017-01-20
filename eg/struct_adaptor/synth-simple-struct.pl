@@ -16,14 +16,15 @@ my $split_target_formulas=1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
-my $n_fields = 2;
-my $max_struct_size=16;
-my $starting_sane_addr = 0x42420000;
+my $adaptor_ivc = 1;
 
-my $adaptor_ivc=0;
+my $n_fields = 2;
+my $arr_len = 32;
+my $starting_sane_addr = 0x42420000;
 
 # End configurables
 
+my $max_struct_size=2*4 + $arr_len*4;
 my $sane_addr = $starting_sane_addr;
 my $max_conc_region_size = $max_struct_size;
 my $region_limit = $max_conc_region_size;
@@ -290,9 +291,9 @@ sub check_adaptor {
 		"-trace-sym-addrs",
 		"-trace-syscalls",
 		"-omit-pf-af",
-		"-trace-temps",
+		#"-trace-temps",
 		"-trace-regions",
-		"-trace-struct-adaptor",
+		#"-trace-struct-adaptor",
 		"-time-stats",
 		"-trace-memory-snapshots",
 		"-trace-tables",
