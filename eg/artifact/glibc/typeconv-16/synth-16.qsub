@@ -1,0 +1,6 @@
+#!/bin/bash -l        
+#PBS -l walltime=22:00:00,nodes=1:ppn=1,mem=1gb 
+#PBS -m abe 
+#PBS -M email@example.com 
+perl synth.pl 8 -1 > 16.txt
+#mpirun -np 24 program_name < inputfile > outputfile

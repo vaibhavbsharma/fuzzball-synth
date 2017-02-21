@@ -1,0 +1,1849 @@
+../fuzzball
+../stp
+fuzz-start-addr : 0x000000000042e1c0
+f1:   0x000000000042d980 @ 0x42e0b4
+f2:   0x000000000042da30
+wrap_f2: 0x000000000042e020 @ 0x42e10d
+arg0: 0x000000000063f328
+arg1: 0x000000000063f318
+arg2: 0x000000000063f338
+arg3: 0x000000000063f310
+arg4: 0x000000000063f330
+arg5: 0x000000000063f308
+branch: 0x42e142
+1332 = f1(2)
+1333 = f2(6)
+synth_ret_opt = -synthesize-return-adaptor return-typeconv:0x000000000042da30:0x42e112:6
+default adaptor = 0 0 0 1 0 1 0 1 0 1 0 1 ret-adaptor = 0 0
+Checking simple adaptor = 0,0,0,1,0,1,0,1,0,1,0,1, ret adaptor = 0,0
+../fuzzball -linux-syscalls -arch x64 ./obfs_clone2 -solver smtlib -solver-path ../stp -smtlib-solver-type stp -fuzz-start-addr 0x000000000042e1c0 -symbolic-long 0x000000000063f328=a -symbolic-long 0x000000000063f318=b -symbolic-long 0x000000000063f338=c -symbolic-long 0x000000000063f310=d -symbolic-long 0x000000000063f330=e -symbolic-long 0x000000000063f308=f -trace-sym-addr-details -trace-sym-addrs -trace-syscalls -omit-pf-af -trace-temps -trace-regions -trace-memory-snapshots -trace-tables -table-limit 12 -trace-binary-paths-bracketed -trace-basic -trace-conditions -trace-decisions -store-byte 0x42420000=0x61 -match-syscalls-in-addr-range 0x42e0b4:0x42e0b9:0x42e10d:0x42e112 -store-long 0x42420000=0x42420008 -store-long 0x42420008=0x42420010 -store-long 0x42420010=0x42420018 -synthesize-adaptor simple:0x42e10d:2:0x000000000042da30:6 -extra-condition a_is_const:reg1_t==0x0:reg1_t -extra-condition a_val:reg64_t==0x0000000000000000:reg64_t -extra-condition b_is_const:reg1_t==0x0:reg1_t -extra-condition b_val:reg64_t==0x0000000000000001:reg64_t -extra-condition c_is_const:reg1_t==0x0:reg1_t -extra-condition c_val:reg64_t==0x0000000000000001:reg64_t -extra-condition d_is_const:reg1_t==0x0:reg1_t -extra-condition d_val:reg64_t==0x0000000000000001:reg64_t -extra-condition e_is_const:reg1_t==0x0:reg1_t -extra-condition e_val:reg64_t==0x0000000000000001:reg64_t -extra-condition f_is_const:reg1_t==0x0:reg1_t -extra-condition f_val:reg64_t==0x0000000000000001:reg64_t -extra-condition 'a_is_const:reg1_t==0:reg1_t | a_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'a_is_const:reg1_t==0:reg1_t | a_val:reg64_t<=$0xf:reg64_t' -extra-condition 'b_is_const:reg1_t==0:reg1_t | b_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'b_is_const:reg1_t==0:reg1_t | b_val:reg64_t<=$0xf:reg64_t' -extra-condition 'c_is_const:reg1_t==0:reg1_t | c_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'c_is_const:reg1_t==0:reg1_t | c_val:reg64_t<=$0xf:reg64_t' -extra-condition 'd_is_const:reg1_t==0:reg1_t | d_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'd_is_const:reg1_t==0:reg1_t | d_val:reg64_t<=$0xf:reg64_t' -extra-condition 'e_is_const:reg1_t==0:reg1_t | e_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'e_is_const:reg1_t==0:reg1_t | e_val:reg64_t<=$0xf:reg64_t' -extra-condition 'f_is_const:reg1_t==0:reg1_t | f_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'f_is_const:reg1_t==0:reg1_t | f_val:reg64_t<=$0xf:reg64_t' -synthesize-return-adaptor return-typeconv:0x000000000042da30:0x42e112:6 -extra-condition ret_type:reg8_t==0x0:reg8_t -extra-condition ret_val:reg64_t==0x0000000000000000:reg64_t -disable-ce-cache -return-zero-missing-x64-syscalls -iteration-limit 100000000 -dont-compare-linux-syscalls -region-limit 8 -branch-preference 0x42e142:0 -trace-iterations -trace-assigns -solve-final-pc -trace-stopping -random-seed 416303 -- ./obfs_clone2 1332 1333 g ceinputs
+  Loading executable from ./obfs_clone2
+  Loading       PHDR segment from 00400040 to 00400238
+  Loading from dynamic linker /lib64/ld-linux-x86-64.so.2
+  Loading       text segment from b7f00000 to b7f22118
+  Loading       data segment from b8122c00 to b8123fe4
+                Zero filling from b8123fe4 to b81241c8
+          Extra zero filling from b81241c8 to b8125000
+  Loading    DYNAMIC segment from b8122e70 to b8122fe0
+  Loading       NOTE segment from b7f001c8 to b7f001ec
+  Loading   EH_FRAME segment from b7f1f780 to b7f1fdbc
+  Loading      RELRO segment from b8122c00 to b8123000
+  Finished ldso loading, entry at 0xb7f012d0
+  Loading     INTERP segment from 00400238 to 00400254
+  Loading       text segment from 00400000 to 0043e654
+  Loading       data segment from 0063ee10 to 0063f2c0
+                Zero filling from 0063f2c0 to 0063f348
+          Extra zero filling from 0063f348 to 00640000
+  Setting initial break to 0x00640000
+  Loading    DYNAMIC segment from 0063ee28 to 0063eff8
+  Loading       NOTE segment from 00400254 to 00400298
+  Loading   EH_FRAME segment from 0043bd80 to 0043c59c
+  Loading      STACK segment from 00000000 to 00000000
+  Loading      RELRO segment from 0063ee10 to 0063f000
+  Skipping missing env. var DISPLAY
+  Skipping missing env. var EDITOR
+  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var LANG to en_US.UTF-8
+  From real env., setting env. var LOGNAME to vaibhav
+  Skipping missing env. var PAGER
+  From real env., setting env. var PATH to /home/grad06/vaibhav/.opam/system/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
+  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/obfs
+  From real env., setting env. var SHELL to /bin/bash
+  From real env., setting env. var TERM to xterm-256color
+  From real env., setting env. var USER to vaibhav
+  Skipping missing env. var USERNAME
+  Skipping missing env. var XAUTHORITY
+  Initial stack pointer is 0xbfffd000
+  Starting address 0xb7f012d0, fuzz start 0x0042e1c0
+  Initial registers:
+  %rax: 0:reg64_t
+  %rbx: 0:reg64_t
+  %rcx: 0:reg64_t
+  %rdx: 0:reg64_t
+  %rsi: 0:reg64_t
+  %rdi: 0:reg64_t
+  %rsp: 0xbfffd000:reg64_t
+  %rbp: 0:reg64_t
+  %r8: 0:reg64_t
+  %r9: 0:reg64_t
+  %r10: 0:reg64_t
+  %r11: 0:reg64_t
+  %r12: 0:reg64_t
+  %r13: 0:reg64_t
+  %r14: 0:reg64_t
+  %r15: 0:reg64_t
+  CF: false
+  PF: false
+  AF: false
+  ZF: false
+  SF: false
+  OF: false
+  YMM0: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM1: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM2: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM3: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM4: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM5: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM6: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM7: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM8: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM9: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM10: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM11: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM12: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM13: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM14: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM15: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  Pre-fuzzing execution...
+  brk(0x00000000) = 6553600 (0x00640000)
+  uname(0xbfffcc2a) = 0 (0x00000000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  mmap(0x00000000, 8192, 0x3, 0x22, -1, 0) = 1342177280 (0x50000000)
+  access("/etc/ld.so.preload", 0x4) = -2 (0xfffffffffffffffe)
+  open("/etc/ld.so.cache", 0x80000, 0o0) = 3 (0x00000003)
+  fstat(3, 0xbfffc630) = 0 (0x00000000)
+  mmap(0x00000000, 238707, 0x1, 0x2, 3, 0) = 1342185472 (0x50002000)
+  close(3) = 0 (0x00000000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  open("/lib/x86_64-linux-gnu/libc.so.6", 0x80000, 0o0) = 3 (0x00000003)
+  read(3, 0xbfffc7d0, 832) = 832 (0x00000340)
+  fstat(3, 0xbfffc680) = 0 (0x00000000)
+  mmap(0x00000000, 3949248, 0x5, 0x802, 3, 0) = 1342427136 (0x5003d000)
+  mprotect(0x501f7000, 2097152, 0) = 0 (0x00000000)
+  mmap(0x503f7000, 24576, 0x3, 0x812, 3, 1810432) = 1346334720 (0x503f7000)
+  mmap(0x503fd000, 17088, 0x3, 0x32, -1, 0) = 1346359296 (0x503fd000)
+  close(3) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1346379776 (0x50402000)
+  mmap(0x00000000, 8192, 0x3, 0x22, -1, 0) = 1346383872 (0x50403000)
+  arch_prctl(4098, 0x50402b80) = 0 (0x00000000)
+  mprotect(0x503f7000, 16384, 1) = 0 (0x00000000)
+  mprotect(0x0063e000, 4096, 1) = 0 (0x00000000)
+  mprotect(0xb8122000, 4096, 1) = 0 (0x00000000)
+  munmap(0x50002000, 238707) = 0 (0x00000000)
+  brk(0x00000000) = 6553600 (0x00640000)
+  brk(0x00661000) = 6688768 (0x00661000)
+  open("ceinputs", 0x0, 0o0) = 3 (0x00000003)
+  GSSM#make_snap 1 -> 2
+  GSM#make_snap called
+  Setting up symbolic values:
+  GSSSM#make_snap 2 -> 3
+  linux_syscalls#make_snap called
+  Took snapshot
+  Iteration 1:
+  fstat(3, 0xbfffc8a0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1346392064 (0x50405000)
+  read(3, 0x50405000, 4096) = 31 (0x0000001f)
+  fstat(1, 0xbfffc570) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1346396160 (0x50406000)
+  write(1, 0x50406000, 15)
+  read ce inputs
+   = 15 (0x0000000f)
+  write(1, 0x50406000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  SRFM#save_sym_se saving f1_hash_list.length = 0
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50406000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50406000, 20)
+  Starting adapted_f1
+   = 20 (0x00000014)
+  SRFM#make_f2_sym_snap called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting simple adaptor
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=0x42420000:reg64_t
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...SRFM#ready to apply (0.000000 sec).
+  exec_runloop#thunk() should save arg regs here
+  Stopping at null deref at 0x0042dc9b
+  Coverage increased to 8472 on 1
+  Path: 
+  Final path: 
+  Satisfiable.
+  Input vars: b_val=0x1 c_val=0x1 d_val=0x1 f_val=0x1 e_val=0x1 
+elapsed time = 1, last CE search time = 1
+Mismatch on input 0x42420000, 0x1; adding as test
+Trying to synthesize with sane_addr=0x42420018
+../fuzzball -linux-syscalls -arch x64 ./obfs_clone2 -solver smtlib -solver-path ../stp -smtlib-solver-type stp -fuzz-start-addr 0x000000000042e1c0 -trace-temps -adaptor-search-mode -trace-iterations -trace-assigns -solve-final-pc -table-limit 12 -return-zero-missing-x64-syscalls -disable-ce-cache -synthesize-adaptor simple:0x42e10d:2:0x000000000042da30:6 -extra-condition 'a_is_const:reg1_t==0:reg1_t | a_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'a_is_const:reg1_t==0:reg1_t | a_val:reg64_t<=$0xf:reg64_t' -extra-condition 'b_is_const:reg1_t==0:reg1_t | b_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'b_is_const:reg1_t==0:reg1_t | b_val:reg64_t<=$0xf:reg64_t' -extra-condition 'c_is_const:reg1_t==0:reg1_t | c_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'c_is_const:reg1_t==0:reg1_t | c_val:reg64_t<=$0xf:reg64_t' -extra-condition 'd_is_const:reg1_t==0:reg1_t | d_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'd_is_const:reg1_t==0:reg1_t | d_val:reg64_t<=$0xf:reg64_t' -extra-condition 'e_is_const:reg1_t==0:reg1_t | e_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'e_is_const:reg1_t==0:reg1_t | e_val:reg64_t<=$0xf:reg64_t' -extra-condition 'f_is_const:reg1_t==0:reg1_t | f_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'f_is_const:reg1_t==0:reg1_t | f_val:reg64_t<=$0xf:reg64_t' -synthesize-return-adaptor return-typeconv:0x000000000042da30:0x42e112:6 -match-syscalls-in-addr-range 0x42e0b4:0x42e0b9:0x42e10d:0x42e112 -branch-preference 0x42e142:1 -trace-conditions -omit-pf-af -trace-syscalls -trace-decisions -trace-stopping -trace-regions -trace-binary-paths-bracketed -trace-memory-snapshots -trace-sym-addr-details -trace-sym-addrs -trace-tables -trace-basic -zero-memory -store-byte 0x42420014=0x0 -store-byte 0x4242000f=0x0 -store-byte 0x4242000e=0x0 -store-byte 0x42420007=0x0 -store-byte 0x42420017=0x0 -store-byte 0x42420016=0x0 -store-byte 0x4242000c=0x0 -store-byte 0x4242000d=0x0 -store-byte 0x42420006=0x0 -store-byte 0x42420005=0x0 -store-byte 0x42420015=0x0 -store-byte 0x42420004=0x0 -store-long 0x42420000=0x42420008 -store-long 0x42420008=0x42420010 -store-long 0x42420010=0x42420018 -region-limit 8 -dont-compare-linux-syscalls -random-seed 4544924 -- ./obfs_clone2 1332 1333 f tests
+  Loading executable from ./obfs_clone2
+  Loading       PHDR segment from 00400040 to 00400238
+  Loading from dynamic linker /lib64/ld-linux-x86-64.so.2
+  Loading       text segment from b7f00000 to b7f22118
+  Loading       data segment from b8122c00 to b8123fe4
+                Zero filling from b8123fe4 to b81241c8
+          Extra zero filling from b81241c8 to b8125000
+  Loading    DYNAMIC segment from b8122e70 to b8122fe0
+  Loading       NOTE segment from b7f001c8 to b7f001ec
+  Loading   EH_FRAME segment from b7f1f780 to b7f1fdbc
+  Loading      RELRO segment from b8122c00 to b8123000
+  Finished ldso loading, entry at 0xb7f012d0
+  Loading     INTERP segment from 00400238 to 00400254
+  Loading       text segment from 00400000 to 0043e654
+  Loading       data segment from 0063ee10 to 0063f2c0
+                Zero filling from 0063f2c0 to 0063f348
+          Extra zero filling from 0063f348 to 00640000
+  Setting initial break to 0x00640000
+  Loading    DYNAMIC segment from 0063ee28 to 0063eff8
+  Loading       NOTE segment from 00400254 to 00400298
+  Loading   EH_FRAME segment from 0043bd80 to 0043c59c
+  Loading      STACK segment from 00000000 to 00000000
+  Loading      RELRO segment from 0063ee10 to 0063f000
+  Skipping missing env. var DISPLAY
+  Skipping missing env. var EDITOR
+  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var LANG to en_US.UTF-8
+  From real env., setting env. var LOGNAME to vaibhav
+  Skipping missing env. var PAGER
+  From real env., setting env. var PATH to /home/grad06/vaibhav/.opam/system/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
+  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/obfs
+  From real env., setting env. var SHELL to /bin/bash
+  From real env., setting env. var TERM to xterm-256color
+  From real env., setting env. var USER to vaibhav
+  Skipping missing env. var USERNAME
+  Skipping missing env. var XAUTHORITY
+  Initial stack pointer is 0xbfffd000
+  Starting address 0xb7f012d0, fuzz start 0x0042e1c0
+  Initial registers:
+  %rax: 0:reg64_t
+  %rbx: 0:reg64_t
+  %rcx: 0:reg64_t
+  %rdx: 0:reg64_t
+  %rsi: 0:reg64_t
+  %rdi: 0:reg64_t
+  %rsp: 0xbfffd000:reg64_t
+  %rbp: 0:reg64_t
+  %r8: 0:reg64_t
+  %r9: 0:reg64_t
+  %r10: 0:reg64_t
+  %r11: 0:reg64_t
+  %r12: 0:reg64_t
+  %r13: 0:reg64_t
+  %r14: 0:reg64_t
+  %r15: 0:reg64_t
+  CF: false
+  PF: false
+  AF: false
+  ZF: false
+  SF: false
+  OF: false
+  YMM0: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM1: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM2: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM3: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM4: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM5: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM6: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM7: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM8: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM9: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM10: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM11: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM12: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM13: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM14: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM15: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  Pre-fuzzing execution...
+  brk(0x00000000) = 6553600 (0x00640000)
+  uname(0xbfffcc2a) = 0 (0x00000000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  mmap(0x00000000, 8192, 0x3, 0x22, -1, 0) = 1342177280 (0x50000000)
+  access("/etc/ld.so.preload", 0x4) = -2 (0xfffffffffffffffe)
+  open("/etc/ld.so.cache", 0x80000, 0o0) = 3 (0x00000003)
+  fstat(3, 0xbfffc630) = 0 (0x00000000)
+  mmap(0x00000000, 238707, 0x1, 0x2, 3, 0) = 1342185472 (0x50002000)
+  close(3) = 0 (0x00000000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  open("/lib/x86_64-linux-gnu/libc.so.6", 0x80000, 0o0) = 3 (0x00000003)
+  read(3, 0xbfffc7d0, 832) = 832 (0x00000340)
+  fstat(3, 0xbfffc680) = 0 (0x00000000)
+  mmap(0x00000000, 3949248, 0x5, 0x802, 3, 0) = 1342427136 (0x5003d000)
+  mprotect(0x501f7000, 2097152, 0) = 0 (0x00000000)
+  mmap(0x503f7000, 24576, 0x3, 0x812, 3, 1810432) = 1346334720 (0x503f7000)
+  mmap(0x503fd000, 17088, 0x3, 0x32, -1, 0) = 1346359296 (0x503fd000)
+  close(3) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1346379776 (0x50402000)
+  mmap(0x00000000, 8192, 0x3, 0x22, -1, 0) = 1346383872 (0x50403000)
+  arch_prctl(4098, 0x50402b80) = 0 (0x00000000)
+  mprotect(0x503f7000, 16384, 1) = 0 (0x00000000)
+  mprotect(0x0063e000, 4096, 1) = 0 (0x00000000)
+  mprotect(0xb8122000, 4096, 1) = 0 (0x00000000)
+  munmap(0x50002000, 238707) = 0 (0x00000000)
+  brk(0x00000000) = 6553600 (0x00640000)
+  brk(0x00661000) = 6688768 (0x00661000)
+  open("tests", 0x0, 0o0) = 3 (0x00000003)
+  GSSM#make_snap 1 -> 2
+  GSM#make_snap called
+  Setting up symbolic values:
+  GSSSM#make_snap 2 -> 3
+  linux_syscalls#make_snap called
+  Took snapshot
+  Iteration 1:
+  fstat(3, 0xbfffc8a0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1346392064 (0x50405000)
+  read(3, 0x50405000, 4096) = 31 (0x0000001f)
+  fstat(1, 0xbfffc570) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1346396160 (0x50406000)
+  write(1, 0x50406000, 12)
+  read a test
+   = 12 (0x0000000c)
+  write(1, 0x50406000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  SRFM#save_sym_se saving f1_hash_list.length = 0
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50406000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50406000, 20)
+  Starting adapted_f1
+   = 20 (0x00000014)
+  SRFM#make_f2_sym_snap called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting simple adaptor
+  setting arg= f_is_const_40272:reg1_t <> false  ? f_val_40271:reg64_t :
+   ( f_val_40271:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  setting arg= e_is_const_40276:reg1_t <> false  ? e_val_40275:reg64_t :
+   ( e_val_40275:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  setting arg= d_is_const_40280:reg1_t <> false  ? d_val_40279:reg64_t :
+   ( d_val_40279:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  setting arg= c_is_const_40284:reg1_t <> false  ? c_val_40283:reg64_t :
+   ( c_val_40283:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  setting arg= b_is_const_40288:reg1_t <> false  ? b_val_40287:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  setting arg= a_is_const_40292:reg1_t <> false  ? a_val_40291:reg64_t :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...exec_runloop#thunk() should save arg regs here
+  t0 =  a_is_const_40292:reg1_t <> false  ? cast(a_val_40291:reg64_t)L:reg32_t :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 1:reg32_t : 0x42420000:reg32_t)
+  t1 =  b_is_const_40288:reg1_t <> false  ? b_val_40287:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  t2 =  cast(cast(-cast(t0_49355:reg32_t)U:reg64_t)L:reg32_t)H:reg1_t
+   ^  0:reg32_t <$ t0_49355:reg32_t 
+   
+  t3 =  cast(cast(-cast(t0_49355:reg32_t)U:reg64_t)L:reg32_t)H:reg1_t
+   ^ t2_49803:reg1_t
+    ? 0xa3ec944:reg64_t : 0xd42bb06c:reg64_t
+  t4 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff42d54dbe:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0xbd2ab242:reg32_t 
+   
+  t5 =   cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff42d54dbe:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff42d54dbe:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t4_49829:reg1_t)
+    
+  Symbolic branch condition (0x0042da67) t5_49830:reg1_t
+  Current Path String: 
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 0
+  Current path: 0
+  t6 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff3d81d0f5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0xc27e2f0b:reg32_t 
+   
+  t7 =   cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff3d81d0f5:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff3d81d0f5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t6_49831:reg1_t)
+    
+  Symbolic branch condition (0x0042da93) t7_49832:reg1_t
+  Current Path String: 0
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 00
+  Current path: 00
+  t8 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff34106659:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0xcbef99a7:reg32_t 
+   
+  t9 =   cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff34106659:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff34106659:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t8_49833:reg1_t)
+    
+  Symbolic branch condition (0x0042dabf) t9_49834:reg1_t
+  Current Path String: 00
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 000
+  Current path: 000
+  t10 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff2bd44f95:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0xd42bb06b:reg32_t 
+   
+  t11 =   cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff2bd44f95:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff2bd44f95:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t10_49835:reg1_t)
+    
+  Symbolic branch condition (0x0042daeb) t11_49836:reg1_t
+  Current Path String: 000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 0000
+  Current path: 0000
+  t12 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff227ede96:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0xdd81216a:reg32_t 
+   
+  t13 =   cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff227ede96:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff227ede96:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t12_49837:reg1_t)
+    
+  Symbolic branch condition (0x0042db17) t13_49838:reg1_t
+  Current Path String: 0000
+  Trying false: Satisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 00000
+  Current path: 00000
+  t14 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xfffffffff886195c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0x779e6a4:reg32_t 
+   
+  t15 =   cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xfffffffff886195c:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xfffffffff886195c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t14_49839:reg1_t)
+    
+  Symbolic branch condition (0x0042db43) t15_49840:reg1_t
+  Current Path String: 00000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 000000
+  Current path: 000000
+  t16 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff811609b3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0x7ee9f64d:reg32_t 
+   
+  t17 =   cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff811609b3:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff811609b3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t16_49841:reg1_t)
+    
+  Symbolic branch condition (0x0042db6f) t17_49842:reg1_t
+  Current Path String: 000000
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 0000001
+  Current path: 0000001
+  t18 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff854189d7:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0x7abe7629:reg32_t 
+   
+  t19 =   cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff854189d7:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff854189d7:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t18_49843:reg1_t)
+    
+  Symbolic branch condition (0x0042db85) t19_49844:reg1_t
+  Current Path String: 0000001
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 00000011
+  Current path: 00000011
+  t20 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff972cac35:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0x68d353cb:reg32_t 
+   
+  t21 =   cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff972cac35:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff972cac35:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t20_49845:reg1_t)
+    
+  Symbolic branch condition (0x0042db9b) t21_49846:reg1_t
+  Current Path String: 00000011
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 000000111
+  Current path: 000000111
+  t22 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffffb3257c36:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0x4cda83ca:reg32_t 
+   
+  t23 =   cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffffb3257c36:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffffb3257c36:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t22_49847:reg1_t)
+    
+  Symbolic branch condition (0x0042dbb4) t23_49848:reg1_t
+  Current Path String: 000000111
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 0000001111
+  Current path: 0000001111
+  t24 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xfffffffff886195b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0x779e6a5:reg32_t 
+   
+  Symbolic branch condition (0x0042dbcd)  cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xfffffffff886195b:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+   
+  Current Path String: 0000001111
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 00000011110
+  Current path: 00000011110
+  t25 =  cast(cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xfffffffff5c136bc:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t3_49820:reg64_t)L:reg32_t <$ 0xa3ec944:reg32_t 
+   
+  Symbolic branch condition (0x0042dbe6)  cast(
+   cast(cast(t3_49820:reg64_t)L:reg32_t)U:reg64_t
+   + 0xfffffffff5c136bc:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+   
+  Current Path String: 00000011110
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 000000111101
+  Current path: 000000111101
+  Symbolic address t1_49361:reg64_t @ (0x42dc9b)
+  Concrete base terms: 
+  Concrete offset terms: 
+  Offset expression terms: 
+  Ambiguous expression terms:  b_is_const_40288:reg1_t <> false  ? b_val_40287:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  Ambiguous symbol terms: 
+  Current Path String: 000000111101
+  Trying true: Satisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 0000001111011
+  Current path: 0000001111011
+  SRFM#region_for took branch true in Not_found case expr =  b_is_const_40288:reg1_t <> false  ? b_val_40287:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  Current Path String: 0000001111011
+  Trying true: Satisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 00000011110111
+  Current path: 00000011110111
+  SRFM#region_for using concrete address 42420000 for  b_is_const_40288:reg1_t <> false  ? b_val_40287:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  SRFM#region_for regions seen in this path = 0
+  Address  b_is_const_40288:reg1_t <> false  ? b_val_40287:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t) is region 1
+  t26 =  cast(cast( -cast(t0_49355:reg32_t)U:reg64_t + 1:reg64_t )L:reg32_t)H:reg1_t
+   ^  1:reg32_t <$ t0_49355:reg32_t 
+   
+  t27 =  cast(cast( -cast(t0_49355:reg32_t)U:reg64_t + 1:reg64_t )L:reg32_t)H:reg1_t
+   ^ t26_51413:reg1_t
+    ? 0xa3ec944:reg64_t : 0xd42bb06c:reg64_t
+  t28 =  cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff42d54dbe:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t27_51414:reg64_t)L:reg32_t <$ 0xbd2ab242:reg32_t 
+   
+  t29 =   cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff42d54dbe:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff42d54dbe:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t28_51415:reg1_t)
+    
+  Symbolic branch condition (0x0042da67) t29_51416:reg1_t
+  Current Path String: 00000011110111
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 000000111101110
+  Current path: 000000111101110
+  t30 =  cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff3d81d0f5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t27_51414:reg64_t)L:reg32_t <$ 0xc27e2f0b:reg32_t 
+   
+  t31 =   cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff3d81d0f5:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff3d81d0f5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t30_51417:reg1_t)
+    
+  Symbolic branch condition (0x0042da93) t31_51418:reg1_t
+  Current Path String: 000000111101110
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 0000001111011100
+  Current path: 0000001111011100
+  t32 =  cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff34106659:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t27_51414:reg64_t)L:reg32_t <$ 0xcbef99a7:reg32_t 
+   
+  t33 =   cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff34106659:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff34106659:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t32_51419:reg1_t)
+    
+  Symbolic branch condition (0x0042dabf) t33_51420:reg1_t
+  Current Path String: 0000001111011100
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 00000011110111000
+  Current path: 00000011110111000
+  t34 =  cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff2bd44f95:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t27_51414:reg64_t)L:reg32_t <$ 0xd42bb06b:reg32_t 
+   
+  t35 =   cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff2bd44f95:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff2bd44f95:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t34_51421:reg1_t)
+    
+  Symbolic branch condition (0x0042daeb) t35_51422:reg1_t
+  Current Path String: 00000011110111000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 000000111101110000
+  Current path: 000000111101110000
+  t36 =  cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff227ede96:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t27_51414:reg64_t)L:reg32_t <$ 0xdd81216a:reg32_t 
+   
+  t37 =   cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff227ede96:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff227ede96:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t36_51423:reg1_t)
+    
+  Symbolic branch condition (0x0042db17) t37_51424:reg1_t
+  Current Path String: 000000111101110000
+  Trying true: Satisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 0000001111011100001
+  Current path: 0000001111011100001
+  t38 =  cast(cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff2bd44f94:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t27_51414:reg64_t)L:reg32_t <$ 0xd42bb06c:reg32_t 
+   
+  Symbolic branch condition (0x0042db2d)  cast(
+   cast(cast(t27_51414:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff2bd44f94:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+   
+  Current Path String: 0000001111011100001
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 00000011110111000011
+  Current path: 00000011110111000011
+  Starting return-typeconv adaptor
+  SRFM#compare_sym_se called len(f1_h_l) = 0 len(f2_h_l)=0
+  f1_hash_list_len = 0 f2_hash_list_len = 1
+  GSM#reset called
+  GHM#clear called
+  FM#compare_conc_se called
+  all side-effects were equal
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f2_special_handlers_snap
+  linux_syscalls#reset_f2_snap called
+  t39 =  ret_type_40293:reg8_t == 0:reg8_t  ? 0xdcd967bf:reg64_t :
+   ( ret_type_40293:reg8_t == 1:reg8_t  ? ret_val_40294:reg64_t :
+   ( ret_type_40293:reg8_t == 0xb:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+   cast(cast(f_val_40271:reg64_t)L:reg32_t)S:reg64_t :
+   ( f_val_40271:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+   cast(cast(e_val_40275:reg64_t)L:reg32_t)S:reg64_t :
+   ( e_val_40275:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+   cast(cast(d_val_40279:reg64_t)L:reg32_t)S:reg64_t :
+   ( d_val_40279:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+   cast(cast(c_val_40283:reg64_t)L:reg32_t)S:reg64_t :
+   ( c_val_40283:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+   cast(cast(b_val_40287:reg64_t)L:reg32_t)S:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+   cast(cast(a_val_40291:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0x42420000:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0xc:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+   cast(cast(f_val_40271:reg64_t)L:reg32_t)U:reg64_t :
+   ( f_val_40271:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+   cast(cast(e_val_40275:reg64_t)L:reg32_t)U:reg64_t :
+   ( e_val_40275:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+   cast(cast(d_val_40279:reg64_t)L:reg32_t)U:reg64_t :
+   ( d_val_40279:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+   cast(cast(c_val_40283:reg64_t)L:reg32_t)U:reg64_t :
+   ( c_val_40283:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+   cast(cast(b_val_40287:reg64_t)L:reg32_t)U:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+   cast(cast(a_val_40291:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0x42420000:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0x15:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+   cast(cast(f_val_40271:reg64_t)L:reg16_t)S:reg64_t :
+   ( f_val_40271:reg64_t == 1:reg64_t  ? 1:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+   cast(cast(e_val_40275:reg64_t)L:reg16_t)S:reg64_t :
+   ( e_val_40275:reg64_t == 1:reg64_t  ? 1:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+   cast(cast(d_val_40279:reg64_t)L:reg16_t)S:reg64_t :
+   ( d_val_40279:reg64_t == 1:reg64_t  ? 1:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+   cast(cast(c_val_40283:reg64_t)L:reg16_t)S:reg64_t :
+   ( c_val_40283:reg64_t == 1:reg64_t  ? 1:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+   cast(cast(b_val_40287:reg64_t)L:reg16_t)S:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+   cast(cast(a_val_40291:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0x16:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+   cast(cast(f_val_40271:reg64_t)L:reg16_t)U:reg64_t :
+   ( f_val_40271:reg64_t == 1:reg64_t  ? 1:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+   cast(cast(e_val_40275:reg64_t)L:reg16_t)U:reg64_t :
+   ( e_val_40275:reg64_t == 1:reg64_t  ? 1:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+   cast(cast(d_val_40279:reg64_t)L:reg16_t)U:reg64_t :
+   ( d_val_40279:reg64_t == 1:reg64_t  ? 1:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+   cast(cast(c_val_40283:reg64_t)L:reg16_t)U:reg64_t :
+   ( c_val_40283:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+   cast(cast(b_val_40287:reg64_t)L:reg16_t)U:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+   cast(cast(a_val_40291:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0x1f:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+   cast(cast(f_val_40271:reg64_t)L:reg8_t)S:reg64_t :
+   ( f_val_40271:reg64_t == 1:reg64_t  ? 1:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+   cast(cast(e_val_40275:reg64_t)L:reg8_t)S:reg64_t :
+   ( e_val_40275:reg64_t == 1:reg64_t  ? 1:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+   cast(cast(d_val_40279:reg64_t)L:reg8_t)S:reg64_t :
+   ( d_val_40279:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+   cast(cast(c_val_40283:reg64_t)L:reg8_t)S:reg64_t :
+   ( c_val_40283:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+   cast(cast(b_val_40287:reg64_t)L:reg8_t)S:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+   cast(cast(a_val_40291:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0x20:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+   cast(cast(f_val_40271:reg64_t)L:reg8_t)U:reg64_t :
+   ( f_val_40271:reg64_t == 1:reg64_t  ? 1:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+   cast(cast(e_val_40275:reg64_t)L:reg8_t)U:reg64_t :
+   ( e_val_40275:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+   cast(cast(d_val_40279:reg64_t)L:reg8_t)U:reg64_t :
+   ( d_val_40279:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+   cast(cast(c_val_40283:reg64_t)L:reg8_t)U:reg64_t :
+   ( c_val_40283:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+   cast(cast(b_val_40287:reg64_t)L:reg8_t)U:reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+   cast(cast(a_val_40291:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0x29:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+   cast(cast(f_val_40271:reg64_t)L:reg1_t)S:reg64_t :
+   ( f_val_40271:reg64_t == 1:reg64_t  ?
+   0xffffffffffffffff:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+   cast(cast(e_val_40275:reg64_t)L:reg1_t)S:reg64_t :
+   ( e_val_40275:reg64_t == 1:reg64_t  ?
+   0xffffffffffffffff:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+   cast(cast(d_val_40279:reg64_t)L:reg1_t)S:reg64_t :
+   ( d_val_40279:reg64_t == 1:reg64_t  ?
+   0xffffffffffffffff:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+   cast(cast(c_val_40283:reg64_t)L:reg1_t)S:reg64_t :
+   ( c_val_40283:reg64_t == 1:reg64_t  ?
+   0xffffffffffffffff:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+   cast(cast(b_val_40287:reg64_t)L:reg1_t)S:reg64_t
+   :
+   ( b_val_40287:reg64_t == 1:reg64_t  ?
+   0xffffffffffffffff:reg64_t : 0:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+   cast(cast(a_val_40291:reg64_t)L:reg1_t)S:reg64_t
+   :
+   ( a_val_40291:reg64_t == 1:reg64_t  ?
+   0xffffffffffffffff:reg64_t : 0:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0x2a:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+   cast(cast(f_val_40271:reg64_t)L:reg1_t)U:reg64_t :
+   ( f_val_40271:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+   cast(cast(e_val_40275:reg64_t)L:reg1_t)U:reg64_t :
+   ( e_val_40275:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+   cast(cast(d_val_40279:reg64_t)L:reg1_t)U:reg64_t :
+   ( d_val_40279:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+   cast(cast(c_val_40283:reg64_t)L:reg1_t)U:reg64_t
+   :
+   ( c_val_40283:reg64_t == 1:reg64_t  ? 1:reg64_t :
+   0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+   cast(cast(b_val_40287:reg64_t)L:reg1_t)U:
+   reg64_t :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 1:reg64_t
+   : 0:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+   cast(cast(a_val_40291:reg64_t)L:reg1_t)U:
+   reg64_t :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 1:reg64_t
+   : 0:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0x33:reg8_t  ?
+   0xffffffffdcd967bf:reg64_t :
+   ( ret_type_40293:reg8_t == 0x34:reg8_t  ?
+   0xdcd967bf:reg64_t :
+   ( ret_type_40293:reg8_t == 0x35:reg8_t  ? 1:reg64_t :
+   ( ret_type_40293:reg8_t == 0x3d:reg8_t  ?
+   0x67bf:reg64_t :
+   ( ret_type_40293:reg8_t == 0x3e:reg8_t  ?
+   0x67bf:reg64_t :
+   ( ret_type_40293:reg8_t == 0x47:reg8_t  ?
+   0xffffffffffffffbf:reg64_t :
+   ( ret_type_40293:reg8_t == 0x48:reg8_t  ?
+   0xbf:reg64_t :
+   ( ret_type_40293:reg8_t == 0x51:reg8_t  ?
+   0xffffffffffffffff:reg64_t : 1:reg64_t)))))))))))))))))
+  t40 =  ret_type_40293:reg8_t == 0:reg8_t  ? 0xdcd96700:reg64_t :
+   ( ret_type_40293:reg8_t == 1:reg8_t  ?
+    ret_val_40294:reg64_t & 0xffffffffffffff00:reg64_t  :
+   ( ret_type_40293:reg8_t == 0xb:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+    cast(cast(f_val_40271:reg64_t)L:reg32_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( f_val_40271:reg64_t == 1:reg64_t  ? 0:reg64_t : 0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+    cast(cast(e_val_40275:reg64_t)L:reg32_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( e_val_40275:reg64_t == 1:reg64_t  ? 0:reg64_t : 0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+    cast(cast(d_val_40279:reg64_t)L:reg32_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( d_val_40279:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+    cast(cast(c_val_40283:reg64_t)L:reg32_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( c_val_40283:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+    cast(cast(b_val_40287:reg64_t)L:reg32_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+    cast(cast(a_val_40291:reg64_t)L:reg32_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0x42420000:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0xc:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+    cast(cast(f_val_40271:reg64_t)L:reg32_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( f_val_40271:reg64_t == 1:reg64_t  ? 0:reg64_t : 0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+    cast(cast(e_val_40275:reg64_t)L:reg32_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( e_val_40275:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+    cast(cast(d_val_40279:reg64_t)L:reg32_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( d_val_40279:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+    cast(cast(c_val_40283:reg64_t)L:reg32_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( c_val_40283:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+    cast(cast(b_val_40287:reg64_t)L:reg32_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( b_val_40287:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0x42420000:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+    cast(cast(a_val_40291:reg64_t)L:reg32_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( a_val_40291:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0x42420000:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0x15:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+    cast(cast(f_val_40271:reg64_t)L:reg16_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+    cast(cast(e_val_40275:reg64_t)L:reg16_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+    cast(cast(d_val_40279:reg64_t)L:reg16_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+    cast(cast(c_val_40283:reg64_t)L:reg16_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+    cast(cast(b_val_40287:reg64_t)L:reg16_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+    cast(cast(a_val_40291:reg64_t)L:reg16_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t))))))
+   :
+   ( ret_type_40293:reg8_t == 0x16:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+    cast(cast(f_val_40271:reg64_t)L:reg16_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+    cast(cast(e_val_40275:reg64_t)L:reg16_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+    cast(cast(d_val_40279:reg64_t)L:reg16_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+    cast(cast(c_val_40283:reg64_t)L:reg16_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+    cast(cast(b_val_40287:reg64_t)L:reg16_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+    cast(cast(a_val_40291:reg64_t)L:reg16_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t))))))
+   :
+   ( ret_type_40293:reg8_t == 0x1f:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+    cast(cast(f_val_40271:reg64_t)L:reg8_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+    cast(cast(e_val_40275:reg64_t)L:reg8_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+    cast(cast(d_val_40279:reg64_t)L:reg8_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+    cast(cast(c_val_40283:reg64_t)L:reg8_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+    cast(cast(b_val_40287:reg64_t)L:reg8_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+    cast(cast(a_val_40291:reg64_t)L:reg8_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t))))))
+   :
+   ( ret_type_40293:reg8_t == 0x20:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+    cast(cast(f_val_40271:reg64_t)L:reg8_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+    cast(cast(e_val_40275:reg64_t)L:reg8_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+    cast(cast(d_val_40279:reg64_t)L:reg8_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+    cast(cast(c_val_40283:reg64_t)L:reg8_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+    cast(cast(b_val_40287:reg64_t)L:reg8_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+    cast(cast(a_val_40291:reg64_t)L:reg8_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t))))))
+   :
+   ( ret_type_40293:reg8_t == 0x29:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+    cast(cast(f_val_40271:reg64_t)L:reg1_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( f_val_40271:reg64_t == 1:reg64_t  ?
+   0xffffffffffffff00:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+    cast(cast(e_val_40275:reg64_t)L:reg1_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( e_val_40275:reg64_t == 1:reg64_t  ?
+   0xffffffffffffff00:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+    cast(cast(d_val_40279:reg64_t)L:reg1_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( d_val_40279:reg64_t == 1:reg64_t  ?
+   0xffffffffffffff00:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+    cast(cast(c_val_40283:reg64_t)L:reg1_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( c_val_40283:reg64_t == 1:reg64_t  ?
+   0xffffffffffffff00:reg64_t : 0:reg64_t))
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+    cast(cast(b_val_40287:reg64_t)L:reg1_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( b_val_40287:reg64_t == 1:reg64_t  ?
+   0xffffffffffffff00:reg64_t : 0:reg64_t))
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+    cast(cast(a_val_40291:reg64_t)L:reg1_t)S:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    :
+   ( a_val_40291:reg64_t == 1:reg64_t  ?
+   0xffffffffffffff00:reg64_t : 0:reg64_t)))))))
+   :
+   ( ret_type_40293:reg8_t == 0x2a:reg8_t  ?
+   ( ret_val_40294:reg64_t == 5:reg64_t  ?
+   ( f_is_const_40272:reg1_t <> false  ?
+    cast(cast(f_val_40271:reg64_t)L:reg1_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 4:reg64_t  ?
+   ( e_is_const_40276:reg1_t <> false  ?
+    cast(cast(e_val_40275:reg64_t)L:reg1_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 3:reg64_t  ?
+   ( d_is_const_40280:reg1_t <> false  ?
+    cast(cast(d_val_40279:reg64_t)L:reg1_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 2:reg64_t  ?
+   ( c_is_const_40284:reg1_t <> false  ?
+    cast(cast(c_val_40283:reg64_t)L:reg1_t)U:reg64_t
+   & 0xffffffffffffff00:reg64_t
+    : 0:reg64_t)
+   :
+   ( ret_val_40294:reg64_t == 1:reg64_t  ?
+   ( b_is_const_40288:reg1_t <> false  ?
+    cast(cast(b_val_40287:reg64_t)L:reg1_t)U:
+   reg64_t & 0xffffffffffffff00:reg64_t  :
+   0:reg64_t)
+   :
+   ( a_is_const_40292:reg1_t <> false  ?
+    cast(cast(a_val_40291:reg64_t)L:reg1_t)U:
+   reg64_t & 0xffffffffffffff00:reg64_t  :
+   0:reg64_t))))))
+   :
+   ( ret_type_40293:reg8_t == 0x33:reg8_t  ?
+   0xffffffffdcd96700:reg64_t :
+   ( ret_type_40293:reg8_t == 0x34:reg8_t  ?
+   0xdcd96700:reg64_t :
+   ( ret_type_40293:reg8_t == 0x35:reg8_t  ? 0:reg64_t :
+   ( ret_type_40293:reg8_t == 0x3d:reg8_t  ?
+   0x6700:reg64_t :
+   ( ret_type_40293:reg8_t == 0x3e:reg8_t  ?
+   0x6700:reg64_t :
+   ( ret_type_40293:reg8_t == 0x47:reg8_t  ?
+   0xffffffffffffff00:reg64_t :
+   ( ret_type_40293:reg8_t == 0x48:reg8_t  ?
+   0:reg64_t :
+   ( ret_type_40293:reg8_t == 0x51:reg8_t  ?
+   0xffffffffffffff00:reg64_t : 0:reg64_t)))))))))))))))))
+  Symbolic branch condition (0x50091362)  cast(cast(t40_51553:reg64_t)L:reg8_t)U:reg64_t == 0:reg64_t 
+  Current Path String: 00000011110111000011
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 000000111101110000111
+  Current path: 000000111101110000111
+  write(1, 0x50406000, 21)
+  Completed adapted_f1
+   = 21 (0x00000015)
+  Symbolic branch condition (0x0042e142)  t39_51551:reg64_t == 0xdcd967bf:reg64_t 
+  Current Path String: 000000111101110000111
+  Trying true: Satisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 0000001111011100001111
+  Current path: 0000001111011100001111
+  t41 =  cast( cast( t39_51551:reg64_t == 0xdcd967bf:reg64_t )U:reg8_t & 1:reg8_t )U:
+   reg64_t == 0:reg64_t 
+  t42 =  cast( cast( t39_51551:reg64_t == 0xdcd967bf:reg64_t )U:reg8_t & 1:reg8_t )U:
+   reg64_t
+   | 
+   (
+   (cast( t39_51551:reg64_t == 0xdcd967bf:reg64_t )U:reg64_t
+   | 0xa686300:reg64_t)
+    & 0xffffffffffffff00:reg64_t)
+    
+  Symbolic branch condition (0x0042e7a0)  cast(t42_51700:reg64_t)L:reg8_t == 0:reg8_t 
+  Current Path String: 0000001111011100001111
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 00000011110111000011110
+  Current path: 00000011110111000011110
+  read(3, 0x50405000, 4096) = 0 (0x00000000)
+  write(1, 0x50406000, 27)
+  Match
+  All tests succeeded!
+   = 27 (0x0000001b)
+  exit_group(0) (no return)
+  Stopping when program called exit() at 0x500fe1b7
+  Coverage increased to 9355 on 1
+  Path: 00000011110111000011110
+  Final path: 00000011110111000011110
+  Satisfiable.
+  Input vars: a_val=0x1 
+Synthesized arg adaptor ,1,,,,,,,,,, and return adaptor ,
+elapsed time = 3, last AS search time = 2
+Checking simple adaptor = ,1,,,,,,,,,,, ret adaptor = ,
+../fuzzball -linux-syscalls -arch x64 ./obfs_clone2 -solver smtlib -solver-path ../stp -smtlib-solver-type stp -fuzz-start-addr 0x000000000042e1c0 -symbolic-long 0x000000000063f328=a -symbolic-long 0x000000000063f318=b -symbolic-long 0x000000000063f338=c -symbolic-long 0x000000000063f310=d -symbolic-long 0x000000000063f330=e -symbolic-long 0x000000000063f308=f -trace-sym-addr-details -trace-sym-addrs -trace-syscalls -omit-pf-af -trace-temps -trace-regions -trace-memory-snapshots -trace-tables -table-limit 12 -trace-binary-paths-bracketed -trace-basic -trace-conditions -trace-decisions -store-byte 0x42420018=0x61 -match-syscalls-in-addr-range 0x42e0b4:0x42e0b9:0x42e10d:0x42e112 -store-long 0x42420018=0x42420020 -store-long 0x42420020=0x42420028 -store-long 0x42420028=0x42420030 -synthesize-adaptor simple:0x42e10d:2:0x000000000042da30:6 -extra-condition a_is_const:reg1_t==0x0:reg1_t -extra-condition a_val:reg64_t==0x0000000000000001:reg64_t -extra-condition b_is_const:reg1_t==0x0:reg1_t -extra-condition b_val:reg64_t==0x0000000000000000:reg64_t -extra-condition c_is_const:reg1_t==0x0:reg1_t -extra-condition c_val:reg64_t==0x0000000000000000:reg64_t -extra-condition d_is_const:reg1_t==0x0:reg1_t -extra-condition d_val:reg64_t==0x0000000000000000:reg64_t -extra-condition e_is_const:reg1_t==0x0:reg1_t -extra-condition e_val:reg64_t==0x0000000000000000:reg64_t -extra-condition f_is_const:reg1_t==0x0:reg1_t -extra-condition f_val:reg64_t==0x0000000000000000:reg64_t -extra-condition 'a_is_const:reg1_t==0:reg1_t | a_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'a_is_const:reg1_t==0:reg1_t | a_val:reg64_t<=$0xf:reg64_t' -extra-condition 'b_is_const:reg1_t==0:reg1_t | b_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'b_is_const:reg1_t==0:reg1_t | b_val:reg64_t<=$0xf:reg64_t' -extra-condition 'c_is_const:reg1_t==0:reg1_t | c_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'c_is_const:reg1_t==0:reg1_t | c_val:reg64_t<=$0xf:reg64_t' -extra-condition 'd_is_const:reg1_t==0:reg1_t | d_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'd_is_const:reg1_t==0:reg1_t | d_val:reg64_t<=$0xf:reg64_t' -extra-condition 'e_is_const:reg1_t==0:reg1_t | e_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'e_is_const:reg1_t==0:reg1_t | e_val:reg64_t<=$0xf:reg64_t' -extra-condition 'f_is_const:reg1_t==0:reg1_t | f_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'f_is_const:reg1_t==0:reg1_t | f_val:reg64_t<=$0xf:reg64_t' -synthesize-return-adaptor return-typeconv:0x000000000042da30:0x42e112:6 -extra-condition ret_type:reg8_t==0x0:reg8_t -extra-condition ret_val:reg64_t==0x0000000000000000:reg64_t -disable-ce-cache -return-zero-missing-x64-syscalls -iteration-limit 100000000 -dont-compare-linux-syscalls -region-limit 8 -branch-preference 0x42e142:0 -trace-iterations -trace-assigns -solve-final-pc -trace-stopping -random-seed 8348172 -- ./obfs_clone2 1332 1333 g ceinputs
+  Loading executable from ./obfs_clone2
+  Loading       PHDR segment from 00400040 to 00400238
+  Loading from dynamic linker /lib64/ld-linux-x86-64.so.2
+  Loading       text segment from b7f00000 to b7f22118
+  Loading       data segment from b8122c00 to b8123fe4
+                Zero filling from b8123fe4 to b81241c8
+          Extra zero filling from b81241c8 to b8125000
+  Loading    DYNAMIC segment from b8122e70 to b8122fe0
+  Loading       NOTE segment from b7f001c8 to b7f001ec
+  Loading   EH_FRAME segment from b7f1f780 to b7f1fdbc
+  Loading      RELRO segment from b8122c00 to b8123000
+  Finished ldso loading, entry at 0xb7f012d0
+  Loading     INTERP segment from 00400238 to 00400254
+  Loading       text segment from 00400000 to 0043e654
+  Loading       data segment from 0063ee10 to 0063f2c0
+                Zero filling from 0063f2c0 to 0063f348
+          Extra zero filling from 0063f348 to 00640000
+  Setting initial break to 0x00640000
+  Loading    DYNAMIC segment from 0063ee28 to 0063eff8
+  Loading       NOTE segment from 00400254 to 00400298
+  Loading   EH_FRAME segment from 0043bd80 to 0043c59c
+  Loading      STACK segment from 00000000 to 00000000
+  Loading      RELRO segment from 0063ee10 to 0063f000
+  Skipping missing env. var DISPLAY
+  Skipping missing env. var EDITOR
+  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var LANG to en_US.UTF-8
+  From real env., setting env. var LOGNAME to vaibhav
+  Skipping missing env. var PAGER
+  From real env., setting env. var PATH to /home/grad06/vaibhav/.opam/system/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
+  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/obfs
+  From real env., setting env. var SHELL to /bin/bash
+  From real env., setting env. var TERM to xterm-256color
+  From real env., setting env. var USER to vaibhav
+  Skipping missing env. var USERNAME
+  Skipping missing env. var XAUTHORITY
+  Initial stack pointer is 0xbfffd000
+  Starting address 0xb7f012d0, fuzz start 0x0042e1c0
+  Initial registers:
+  %rax: 0:reg64_t
+  %rbx: 0:reg64_t
+  %rcx: 0:reg64_t
+  %rdx: 0:reg64_t
+  %rsi: 0:reg64_t
+  %rdi: 0:reg64_t
+  %rsp: 0xbfffd000:reg64_t
+  %rbp: 0:reg64_t
+  %r8: 0:reg64_t
+  %r9: 0:reg64_t
+  %r10: 0:reg64_t
+  %r11: 0:reg64_t
+  %r12: 0:reg64_t
+  %r13: 0:reg64_t
+  %r14: 0:reg64_t
+  %r15: 0:reg64_t
+  CF: false
+  PF: false
+  AF: false
+  ZF: false
+  SF: false
+  OF: false
+  YMM0: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM1: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM2: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM3: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM4: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM5: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM6: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM7: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM8: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM9: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM10: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM11: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM12: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM13: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM14: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM15: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  Pre-fuzzing execution...
+  brk(0x00000000) = 6553600 (0x00640000)
+  uname(0xbfffcc2a) = 0 (0x00000000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  mmap(0x00000000, 8192, 0x3, 0x22, -1, 0) = 1342177280 (0x50000000)
+  access("/etc/ld.so.preload", 0x4) = -2 (0xfffffffffffffffe)
+  open("/etc/ld.so.cache", 0x80000, 0o0) = 3 (0x00000003)
+  fstat(3, 0xbfffc630) = 0 (0x00000000)
+  mmap(0x00000000, 238707, 0x1, 0x2, 3, 0) = 1342185472 (0x50002000)
+  close(3) = 0 (0x00000000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  open("/lib/x86_64-linux-gnu/libc.so.6", 0x80000, 0o0) = 3 (0x00000003)
+  read(3, 0xbfffc7d0, 832) = 832 (0x00000340)
+  fstat(3, 0xbfffc680) = 0 (0x00000000)
+  mmap(0x00000000, 3949248, 0x5, 0x802, 3, 0) = 1342427136 (0x5003d000)
+  mprotect(0x501f7000, 2097152, 0) = 0 (0x00000000)
+  mmap(0x503f7000, 24576, 0x3, 0x812, 3, 1810432) = 1346334720 (0x503f7000)
+  mmap(0x503fd000, 17088, 0x3, 0x32, -1, 0) = 1346359296 (0x503fd000)
+  close(3) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1346379776 (0x50402000)
+  mmap(0x00000000, 8192, 0x3, 0x22, -1, 0) = 1346383872 (0x50403000)
+  arch_prctl(4098, 0x50402b80) = 0 (0x00000000)
+  mprotect(0x503f7000, 16384, 1) = 0 (0x00000000)
+  mprotect(0x0063e000, 4096, 1) = 0 (0x00000000)
+  mprotect(0xb8122000, 4096, 1) = 0 (0x00000000)
+  munmap(0x50002000, 238707) = 0 (0x00000000)
+  brk(0x00000000) = 6553600 (0x00640000)
+  brk(0x00661000) = 6688768 (0x00661000)
+  open("ceinputs", 0x0, 0o0) = 3 (0x00000003)
+  GSSM#make_snap 1 -> 2
+  GSM#make_snap called
+  Setting up symbolic values:
+  GSSSM#make_snap 2 -> 3
+  linux_syscalls#make_snap called
+  Took snapshot
+  Iteration 1:
+  fstat(3, 0xbfffc8a0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1346392064 (0x50405000)
+  read(3, 0x50405000, 4096) = 31 (0x0000001f)
+  fstat(1, 0xbfffc570) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1346396160 (0x50406000)
+  write(1, 0x50406000, 15)
+  read ce inputs
+   = 15 (0x0000000f)
+  write(1, 0x50406000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  SRFM#save_sym_se saving f1_hash_list.length = 0
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50406000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50406000, 20)
+  Starting adapted_f1
+   = 20 (0x00000014)
+  SRFM#make_f2_sym_snap called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting simple adaptor
+  setting arg=0x42420018:reg64_t
+  setting arg=0x42420018:reg64_t
+  setting arg=0x42420018:reg64_t
+  setting arg=0x42420018:reg64_t
+  setting arg=0x42420018:reg64_t
+  setting arg=1:reg64_t
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...SRFM#ready to apply (0.000000 sec).
+  exec_runloop#thunk() should save arg regs here
+  Starting return-typeconv adaptor
+  SRFM#compare_sym_se called len(f1_h_l) = 0 len(f2_h_l)=0
+  f1_hash_list_len = 0 f2_hash_list_len = 0
+  FM#compare_conc_se called
+  all side-effects were equal
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f2_special_handlers_snap
+  linux_syscalls#reset_f2_snap called
+  t0 =  ret_type_40311:reg8_t == 0:reg8_t  ? 0xe96ccf45:reg64_t :
+   ( ret_type_40311:reg8_t == 1:reg8_t  ? ret_val_40312:reg64_t :
+   ( ret_type_40311:reg8_t == 0xb:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0x42420018:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0x42420018:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0x42420018:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0x42420018:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0x42420018:reg64_t :
+   1:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0xc:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0x42420018:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0x42420018:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0x42420018:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0x42420018:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0x42420018:reg64_t :
+   1:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0x15:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0x18:reg64_t :
+   1:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0x16:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0x18:reg64_t :
+   1:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0x1f:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0x18:reg64_t :
+   1:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0x20:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0x18:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0x18:reg64_t :
+   1:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0x29:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0xffffffffffffffff:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0x2a:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0x33:reg8_t  ?
+   0xffffffffe96ccf45:reg64_t :
+   ( ret_type_40311:reg8_t == 0x34:reg8_t  ?
+   0xe96ccf45:reg64_t :
+   ( ret_type_40311:reg8_t == 0x35:reg8_t  ? 1:reg64_t :
+   ( ret_type_40311:reg8_t == 0x3d:reg8_t  ?
+   0xffffffffffffcf45:reg64_t :
+   ( ret_type_40311:reg8_t == 0x3e:reg8_t  ?
+   0xcf45:reg64_t :
+   ( ret_type_40311:reg8_t == 0x47:reg8_t  ?
+   0x45:reg64_t :
+   ( ret_type_40311:reg8_t == 0x48:reg8_t  ?
+   0x45:reg64_t :
+   ( ret_type_40311:reg8_t == 0x51:reg8_t  ?
+   0xffffffffffffffff:reg64_t : 1:reg64_t)))))))))))))))))
+  t1 =  ret_type_40311:reg8_t == 0:reg8_t  ? 0xe96ccf00:reg64_t :
+   ( ret_type_40311:reg8_t == 1:reg8_t  ?
+    ret_val_40312:reg64_t & 0xffffffffffffff00:reg64_t  :
+   ( ret_type_40311:reg8_t == 0xb:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0x42420000:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0x42420000:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0x42420000:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0x42420000:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0x42420000:reg64_t :
+   0:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0xc:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0x42420000:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0x42420000:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0x42420000:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0x42420000:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0x42420000:reg64_t :
+   0:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0x15:reg8_t  ? 0:reg64_t :
+   ( ret_type_40311:reg8_t == 0x16:reg8_t  ? 0:reg64_t :
+   ( ret_type_40311:reg8_t == 0x1f:reg8_t  ? 0:reg64_t :
+   ( ret_type_40311:reg8_t == 0x20:reg8_t  ? 0:reg64_t :
+   ( ret_type_40311:reg8_t == 0x29:reg8_t  ?
+   ( ret_val_40312:reg64_t == 5:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 4:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 3:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 2:reg64_t  ? 0:reg64_t :
+   ( ret_val_40312:reg64_t == 1:reg64_t  ? 0:reg64_t :
+   0xffffffffffffff00:reg64_t)))))
+   :
+   ( ret_type_40311:reg8_t == 0x2a:reg8_t  ? 0:reg64_t :
+   ( ret_type_40311:reg8_t == 0x33:reg8_t  ?
+   0xffffffffe96ccf00:reg64_t :
+   ( ret_type_40311:reg8_t == 0x34:reg8_t  ?
+   0xe96ccf00:reg64_t :
+   ( ret_type_40311:reg8_t == 0x35:reg8_t  ? 0:reg64_t :
+   ( ret_type_40311:reg8_t == 0x3d:reg8_t  ?
+   0xffffffffffffcf00:reg64_t :
+   ( ret_type_40311:reg8_t == 0x3e:reg8_t  ?
+   0xcf00:reg64_t :
+   ( ret_type_40311:reg8_t == 0x47:reg8_t  ?
+   0:reg64_t :
+   ( ret_type_40311:reg8_t == 0x48:reg8_t  ?
+   0:reg64_t :
+   ( ret_type_40311:reg8_t == 0x51:reg8_t  ?
+   0xffffffffffffff00:reg64_t : 0:reg64_t)))))))))))))))))
+  Symbolic branch condition (0x50091362)  cast(cast(t1_51447:reg64_t)L:reg8_t)U:reg64_t == 0:reg64_t 
+  Current Path String: 
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Input vars: a_val=0x1 
+  Current Path String: 1
+  Current path: 1
+  write(1, 0x50406000, 21)
+  Completed adapted_f1
+   = 21 (0x00000015)
+  Symbolic branch condition (0x0042e142)  t0_51445:reg64_t == 0xe96ccf45:reg64_t 
+  Current Path String: 1
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Input vars: a_val=0x1 
+  Current Path String: 11
+  Current path: 11
+  t2 =  cast( cast( t0_51445:reg64_t == 0xe96ccf45:reg64_t )U:reg8_t & 1:reg8_t )U:
+   reg64_t == 0:reg64_t 
+  t3 =  cast( cast( t0_51445:reg64_t == 0xe96ccf45:reg64_t )U:reg8_t & 1:reg8_t )U:
+   reg64_t
+   | 
+   (
+   (cast( t0_51445:reg64_t == 0xe96ccf45:reg64_t )U:reg64_t
+   | 0xa686300:reg64_t)
+    & 0xffffffffffffff00:reg64_t)
+    
+  write(1, 0x50406000, 6)
+  Match
+   = 6 (0x00000006)
+  exit_group(0) (no return)
+  Stopping when program called exit() at 0x500fe1b7
+  Coverage increased to 9299 on 1
+  Path: 11
+  Final path: 11
+  Satisfiable.
+  Input vars: a_val=0x1 
+  CPU time 0.184000 sec, 0.184000 total
+  Wall time 0.184458 sec, 0.184462 total
+  Final coverage: 9299
+elapsed time = 4, last CE search time = 1
+Success!
+Final test set:
+ 1111621632, 1
+Final adaptors: arg=,1,,,,,,,,,,, ret=,, with 1,1,complete

@@ -1,0 +1,11 @@
+./tigress  \
+--Seed=3 \
+--Transform=Jit --Functions=f2  \
+--Transform=Virtualize --Functions=f2  \
+--Transform=RndArgs  --RndArgsBogusNo=4 --Functions=f2 \
+--Transform=InitOpaque  --Functions=f2 \
+--Transform=InitBranchFuns --Functions=f2 \
+--VirtualizeMaxDuplicateOps=2  --VirtualizeOperands=? \
+--VirtualizeSuperOpsRatio=2.0  --VirtualizeMaxMergeLength=10 \
+--VirtualizeBogusFunKinds=* --VirtualizeBogusLoopKinds=* \
+--out=obfs_clone_3.c ob.c\
