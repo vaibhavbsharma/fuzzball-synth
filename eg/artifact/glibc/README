@@ -1,0 +1,39 @@
+This directory contains the large scale evaluation setup for the argument substitution and type conversion adaptors presented in Section 4.5 of our ISSTA submission. The argument substitution adaptor evaluation is broken into 8 partitions. The type conversion adaptor evaluation is broken into 16 partitions. Each partition in both sets of experiments takes atmost 22 hours to finish. 
+
+We provide scripts, as qsub files, to start these adaptor synthesis evaluations as jobs on a supercomputing facility. Please note that if this evaluation is run using the qsub files, the email address to be notified when the job is completed has to be provided in each qsub file.
+
+Since it may not be feasible to run 22 hour jobs, we provide commands to synthesize 5 argument substitution adaptors and 4 type conversion adaptors between functions in glibc.
+
+Argument substitution adaptors:
+Please start by changing the current working directory to simple-1 (cd <artifact-root>/glibc/simple-1/).
+The last line in the output of each command will contain the final adaptor. 
+
+Command to synthesize wait <- waitpid adaptor: perl synth-one.pl 1055 1056 1 1 -1 15
+Argument substitution adaptor is (1,18446744073709551615,,,1,) which is interpreted as (1,-1, 0,0, 1,0). This representation of the argument substitution adaptor contains 3 tuples of the form (A,B), one for each argument of waitpid (waitpid takes 3 arguments). When A is 1, the inner function argument is to be set to the constant value in B. When A is 0, the inner function argument is to be set to the target function argument at position B, counting arguments from 0.
+Thus, the adaptor (1,-1, 0,0, 1,0) means that the 1st argument to waitpid should be the constant value -1, the 2nd argument to waitpid should be the 1st argument to wait, and the 3rd argument to waitpid should be the constant value 0.
+
+Command to synthesize wait <- wait4 adaptor: perl synth-one.pl 1055 1058 1 1 -1 15
+Argument substitution adaptor is (1,-1, 0,0, 1,0, 1,0)
+
+Command to synthesize waitpid <- wait4 adaptor: perl synth-one.pl 1056 1058 1 1 -1 15
+Argument substitution adaptor is (0,0, 0,1, 0,2, 1,0)
+
+Command to synthesize wait <- wait3 adaptor: perl synth-one.pl 1055 1057 1 1 -1 15
+Argument substitution adaptor is (0,0, 1,0, 1,0)
+
+Command to synthesize wait3 <- wait4 adaptor: perl synth-one.pl 1057 1058 1 1 -1 15
+Argument substitution adaptor is (1,-1, 0,0, 0,1, 0,2)
+
+Type conversion adaptors: 
+Please start by changing the current working directory to typeconv-1 (cd <artifact-root>/glibc/typeconv-1/).
+Command to synthesize ffs <- ffsl adaptor: perl synth-typeconv.pl 904 905 1 1 -1 15
+Type conversion adaptor is (11,0) where 11 represents 32-to-64 bit sign extension, and 0 represents that this extension is to be applied on the 1st argument to f1.
+
+Command to synthesize abs <- labs adaptor: perl synth-typeconv.pl 677 678 1 1 -1 15
+Type conversion adaptor is (11,0) and return value adaptor is (52,0) where 52 represents 32-to-64 bit zero extension on the return value.
+
+Command to synthesize recv <- recvfrom adaptor: perl synth-typeconv.pl 677 678 1 1 -1 15
+Type conversion adaptor is (11,0, 0,1, 0,2, 11,3, 1,0, 1,0) and return value adaptor is (0,0) (leaves return value unchanged). .
+
+Command to synthesize send <- sendto adaptor: perl synth-typeconv.pl 677 678 1 1 -1 15
+Type conversion adaptor is (11,0, 0,1, 0,2, 11,3, 1,0, 1,0) and return value adaptor is (0,0) (leaves return value unchanged). 

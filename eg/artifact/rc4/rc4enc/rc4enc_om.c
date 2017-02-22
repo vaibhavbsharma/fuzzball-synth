@@ -110,8 +110,8 @@ int f2_sf(struct2 *s) {
 #define ARR_LEN 256
 #define CRYPT_LEN 1
 unsigned char g_input[CRYPT_LEN]="12345678";
-// int f1( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
-//                 unsigned char *output )
+//int mbedtls_arc4_crypt( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
+//                unsigned char *output )
 long f2(mbedtls_arc4_context *ctx)
 {
   size_t length=CRYPT_LEN;
@@ -138,8 +138,8 @@ long f2(mbedtls_arc4_context *ctx)
 	( input[i] ^ m[ ( a + b ) & (ARR_LEN - 1) ] );
     }
   
-  ctx->x = x;
-  ctx->y = y;
+  //ctx->x = x;
+  //ctx->y = y;
   
   //return( 0 );
   ret+=output[0];
@@ -169,8 +169,8 @@ long f2(mbedtls_arc4_context *ctx)
   return ret;
 }
 
-// int f2(RC4_KEY *key, size_t len, const unsigned char *indata,
-//          unsigned char *outdata)
+//void RC4(RC4_KEY *key, size_t len, const unsigned char *indata,
+//         unsigned char *outdata)
 long f1(RC4_KEY *key)
 {
   size_t len = CRYPT_LEN;
@@ -239,9 +239,9 @@ long f1(RC4_KEY *key)
 	break;
     }
   }
-  key->x = x;
-  key->y = y;
-  //return 0;
+  //key->x = x;
+  //key->y = y;
+  
   ret+=outdata[0];
   // ret=ret<<8;
   // 
@@ -271,8 +271,68 @@ long f1(RC4_KEY *key)
 
 
 
-long wrap_f2(long a0, long a1, long a2, long a3) {
-  return f2(a0); //, a1, a2, a3);
+long wrap_f2(long a) {
+    return f2(a);
+}
+
+int adapted_f1(struct1 *s1p) {
+  int ret;
+  //1. Make an object of struct2
+  struct2 *s2p = (struct2 *) malloc(sizeof(struct2));
+  
+  if(!s1p) return 0;
+  
+  //2. Adapt target object to inner object as per adaptor
+  //adapt_s1_to_s2(s1p, s2p, ap);
+  
+  if (the_adaptor.field1_size == 1) { // field2 can begin at offset 1 or 4
+
+    if (the_adaptor.field2_size == 1) { // field2 will begin at offset 1
+
+    } else { // field2 will begin at offset 4
+
+    }
+  } else if (the_adaptor.field1_size == 4) { // field2 will begin at offset 4
+
+  } else if (the_adaptor.field1_size == 8) { // field2 will begin at offset 8
+
+  }
+  
+  if(the_adaptor.field1 == 0) s2p->a = s1p->a;
+  else if(the_adaptor.field1 == 1) s2p->a = s1p->b;
+  else {
+    s2p->a=0; //Something bad happened
+    printf("the_adaptor field1 setup incorrectly\n");
+  }
+
+  if(the_adaptor.field2 == 0) s2p->b = s1p->a;
+  else if(the_adaptor.field2 == 1) s2p->b = s1p->b;
+  else {
+    s2p->b=0; //Something bad happened
+    printf("the_adaptor field2 setup incorrectly\n");
+  }
+  
+  //3. Call adapted inner function
+  ret = f2(s2p);
+
+  //4. Apply inverse of adaptor to map inner object to target object
+  //adapt_s2_to_s1(s2p, s1p, ap);
+  if(the_adaptor.field1 == 0) s1p->a = s2p->a;
+  else if(the_adaptor.field1 == 1) s1p->b = s2p->a;
+  else { 
+    s1p->a=0; //Something bad happened
+    printf("the_adaptor field1 setup incorrectly\n");
+  }
+
+  if(the_adaptor.field2 == 0) s1p->a = s2p->b;
+  else if(the_adaptor.field2 == 1) s1p->b = s2p->b;
+  else {
+    s1p->b=0; //Something bad happened
+    printf("the_adaptor field2 setup incorrectly\n");
+  }
+
+  //5. Return saved return value
+  return ret;
 }
 
 int compare(long *r1p, long *r2p,
@@ -281,7 +341,7 @@ int compare(long *r1p, long *r2p,
   printf("Starting f1\n");  
   fflush(stdout);
 
-  long r1 = f1(a0); //, a1, a2, a3);
+  long r1 = f1(a0);
   
   printf("Completed f1\n");
   fflush(stdout);
@@ -289,7 +349,8 @@ int compare(long *r1p, long *r2p,
   printf("Starting adapted_f1\n");
   fflush(stdout);
   
-  long r2 = wrap_f2(a0, a1, a2, a3);
+  //long r2 = adapted_f1(a0); // To be used with synth-struct-adaptor-c.pl
+  long r2 = wrap_f2(a0); // To be used with synth-simple-struct.pl
   
   printf("Completed adapted_f1\n");
   fflush(stdout);
@@ -305,6 +366,19 @@ int compare(long *r1p, long *r2p,
     *r2p = r2;
   return r1 == r2;
 }
+
+//    int main() {
+//      struct1 s1_obj;
+//      
+//      //This is concrete adaptor
+//      ap.field1=2;
+//      ap.field2=1;
+//      
+//      s1_obj.a = 0;
+//      s1_obj.b = 255;
+//      
+//      printf("%d %d\n", f1(&s1_obj), adapted_f1(&s1_obj));
+//    }
 
 long global_arg0, global_arg1, global_arg2,
     global_arg3, global_arg4, global_arg5;

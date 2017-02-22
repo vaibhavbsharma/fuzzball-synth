@@ -22,27 +22,27 @@ my $n_fields = 2;
 my $arr_len = 256;
 my $starting_sane_addr = 0x42420000;
 
-my $max_steps = 1000;
-my $key_const_val = 97;
 # End configurables
 
 my $max_struct_size=2*4 + $arr_len*4;
 my $sane_addr = $starting_sane_addr;
-my $string_addr = $starting_sane_addr + $max_struct_size*$max_steps;
-my $output_addr = $string_addr + $max_struct_size;
 my $max_conc_region_size = $max_struct_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 
-# Paths to binaries: these probably differ on your system. You can add
-# your locations to the list, or set the environment variable.
-my $fuzzball="fuzzball";
-my $stp="stp"; #="./stp-wrapper";
-
+my $fuzzball="../../fuzzball";
+my $stp="../../stp";
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
 my $bin = "./rc4enc_mo";
+
+# print "compiling binary: ";
+# #my $unused = `gcc -static -g -o $bin $bin.c`;
+# my $unused = `gcc -static struct_adaptor.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o struct_adaptor -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+# my $gcc_ec = $?;
+# die "failed to compile $bin" unless $gcc_ec == 0;
+# print "gcc_ec = $gcc_ec\n";
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -220,7 +220,6 @@ sub check_adaptor {
 
     open(TESTS, ">ceinputs");
     my @vals = ($sane_addr, 0, 0, 0, 0, 0);
-    # my @vals = ($sane_addr, 1, $string_addr, $output_addr, 0, 0);
     splice(@vals, 6);
     my $test_str = join(" ", map(sprintf("0x%x", $_), @vals));
     print TESTS $test_str, "\n";
@@ -250,7 +249,6 @@ sub check_adaptor {
 	push @conc_struct_adapt, ("-extra-condition", $s);
     }
     reinitialize_synth_struct_opt(1);
-    # my $tmp_str = sprintf("0x%x=0x%x", $string_addr, $key_const_val);
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -286,7 +284,6 @@ sub check_adaptor {
 		"-trace-conditions",
 		"-trace-decisions",
 		#"-trace-solver",
-		# "-store-byte", $tmp_str,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
@@ -415,12 +412,7 @@ sub check_adaptor {
 	#printf("found memory assignment in CE search: $addr = $ce_mem_bytes{$addr}\n");
     }
 
-    push @fuzzball_extra_args, "-store-byte";
-    push @fuzzball_extra_args,sprintf("0x%x=0x%x", $string_addr, $key_const_val);
     $ce[0]=$sane_addr;
-    # $ce[1]=1;
-    # $ce[2]=$string_addr;
-    # $ce[3]=$output_addr;
     $sane_addr = $sane_addr + $max_conc_region_size;
 
     if ($matches == 0 and $fails == 0) {
@@ -569,10 +561,11 @@ for(my $i=0; $i< $n_fields; $i++) {
 # $struct_adapt->[2]=0x400070000;
 # $struct_adapt->[4]=0x000030000;
 # 
-# $struct_adapt->[1] = $struct_adapt->[3] = $struct_adapt->[5] = 4;
-#my $struct_adapt = [441, 40, 8, 8];
-# $struct_adapt = [0x70001, 0x4, 0x2, 0x800090000, 0x4, 0x2];
-# $ret_adapt = [72, 0];
+# correct adaptor is:
+#  arg=,, ret=72,, 
+#  struct=f1_type=0x70000, f1_size=0x1, f1_n=0x8, f2_type=0x801070000, f2_size=0x4, f2_n=0x100
+#$struct_adapt = [0x70000, 0x1, 0x8, 0x801070000, 0x4, 0x100];
+#$ret_adapt = [72, 0];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {
