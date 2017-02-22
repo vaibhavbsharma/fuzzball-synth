@@ -1,3 +1,0 @@
-Command (in the m-o direction): perl synth-rc4-mo-setup.pl 1328 1329 1 1 -1 15 
-
-Command (in the o-m direction): perl synth-rc4-om-setup.pl 1329 1328 1 1 -1 15
