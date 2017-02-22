@@ -32,8 +32,8 @@ Type conversion adaptor is (11,0) where 11 represents 32-to-64 bit sign extensio
 Command to synthesize abs <- labs adaptor: perl synth-typeconv.pl 677 678 1 1 -1 15
 Type conversion adaptor is (11,0) and return value adaptor is (52,0) where 52 represents 32-to-64 bit zero extension on the return value.
 
-Command to synthesize recv <- recvfrom adaptor: perl synth-typeconv.pl 677 678 1 1 -1 15
+Command to synthesize recv <- recvfrom adaptor: perl synth-typeconv.pl 135 136 1 1 -1 15
 Type conversion adaptor is (11,0, 0,1, 0,2, 11,3, 1,0, 1,0) and return value adaptor is (0,0) (leaves return value unchanged). .
 
-Command to synthesize send <- sendto adaptor: perl synth-typeconv.pl 677 678 1 1 -1 15
+Command to synthesize send <- sendto adaptor: perl synth-typeconv.pl 138 140 1 1 -1 15
 Type conversion adaptor is (11,0, 0,1, 0,2, 11,3, 1,0, 1,0) and return value adaptor is (0,0) (leaves return value unchanged). 
