@@ -6,10 +6,12 @@ Evaluation for Section 4.2 is in the 'obfs' directory.
 
 Evaluation for Section 4.3 is in the 'mm' directory.
 
-Evaluation for Section 4.4 is in the 'rc4' directory, with two subdirectories for RC4 encryption and RC4 key structure initialization.
+Evaluation for Section 4.4 is in the 'rc4' directory, with two subdirectories, one for RC4 encryption and one for RC4 key structure initialization.
 
 Evaluation for Section 4.5 is in the 'glibc' directory.
 
 The binary programs, 'fuzzball' and 'stp', are used throughout our evaluations.
+
+The library files, libboost_program_options.so.1.54.0 and libstp.so, are required by the stp binary, and are, therefore, placed into every evaluation subdirectory.
 
 The file 'adaptor-synthesis-changes-to-fuzzball.diff' provides all source level changes made by us to FuzzBALL's master branch on github.com, for the purposes of adaptor synthesis.
