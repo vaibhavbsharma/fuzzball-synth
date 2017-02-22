@@ -13,37 +13,8 @@ my $iteration_limit = 4000;
 
 my $region_limit = 936;
 
-# Paths to binaries: these probably differ on your system. You can add
-# your locations to the list, or set the environment variable.
-my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
-my $smcc_home = "/home/smcc/bitblaze/fuzzball/trunk-gh";
-my $git_fuzzball = "../../../../../tools/fuzzball";
-my $fuzzball;
-if (exists $ENV{FUZZBALL_LOC}) {
-    $fuzzball = $ENV{FUZZBALL_LOC};
-} elsif (-x "$git_fuzzball/exec_utils/fuzzball") {
-    $fuzzball = "$git_fuzzball/exec_utils/fuzzball";
-} elsif (-x "$smcc_umn/exec_utils/fuzzball") {
-    $fuzzball = "$smcc_umn/exec_utils/fuzzball";
-} elsif (-x "$smcc_home/exec_utils/fuzzball") {
-    $fuzzball = "$smcc_home/exec_utils/fuzzball";
-} else {
-    $fuzzball = "fuzzball";
-}
-
-my $stp;
-if (exists $ENV{STP_LOC}) {
-    $stp = $ENV{STP_LOC};
-} elsif (-x "$git_fuzzball/stp/stp") {
-    $stp = "$git_fuzzball/stp/stp";
-} elsif (-x "$smcc_umn/stp/stp") {
-    $stp = "$smcc_umn/stp/stp";
-} elsif (-x "$smcc_home/stp/stp") {
-    $stp = "$smcc_home/stp/stp";
-} else {
-    $stp = "stp";
-}
-
+my $fuzzball="../../fuzzball";
+my $stp="../../stp";
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
