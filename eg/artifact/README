@@ -25,6 +25,13 @@ Evaluation for Section 4.5 is in the 'glibc' directory. This directory
 contains experiments for synthesizing adaptors between functions in the 
 C library.
 
+To start with the easier-to-understand adaptors and progress to more
+difficult ones, we recommend beginning the artifact evaluation with 
+the glibc evaluation (directory named 'glibc'), then moving to the 
+matrix multiplication case study (mm), followed by the BIGNUM case 
+study (bn), the obfuscation case study (obfs), and finally 
+the RC4 case studies (rc4).
+
 The binary programs, 'fuzzball' and 'stp', are used throughout our 
 evaluations. 
 
@@ -35,7 +42,8 @@ github.com, for the purposes of adaptor synthesis.
 
 The 'stp' binary program was compiled from the source 
 available on the Bitblaze github repository 
-(https://github.com/bitblaze-fuzzball/stp).  The library files, 
+(https://github.com/bitblaze-fuzzball/stp) with the latest git commit
+hash being 7f9069fc5ed518a225848300d1f70e055e1c60fc.  The library files,
 libboost_program_options.so.1.54.0 and libstp.so, are required by 
 the stp binary, and are, therefore, placed into the lib directory 
 with every run_experiment.sh adding the path to 'lib' into its 
