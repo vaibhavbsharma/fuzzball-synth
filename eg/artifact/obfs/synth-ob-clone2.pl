@@ -33,13 +33,19 @@ my $max_conc_region_size = $max_matrix_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 
-my $fuzzball = "../fuzzball";
-my $stp = "../stp";
+my $fuzzball = "../bin/fuzzball";
+my $stp = "../bin/stp-old-dynamic";
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
 my $bin = "./obfs_clone2";
+
+# print "compiling binary: ";
+# my $unused = `/export/scratch/vaibhav/obfs_build/bin/clang -static $bin.c -o $bin`;
+# #my $unused = `gcc -static $bin.c -g -o $bin `;
+# my $gcc_ec = $?;
+# die "failed to compile $bin" unless $gcc_ec == 0;
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;

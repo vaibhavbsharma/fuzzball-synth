@@ -32,8 +32,8 @@ my $max_conc_region_size = $max_matrix_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 
-my $fuzzball = "../fuzzball";
-my $stp = "../stp";
+my $fuzzball = "../bin/fuzzball";
+my $stp = "../bin/stp-old-dynamic";
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
@@ -157,6 +157,7 @@ splice(@fields, 2 * $f2nargs);
 
 my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-smtlib-solver-type","stp"
 		   , "-timeout-as-unsat", "-solver-timeout", 10
+		   #, "-save-solver-files"
 );
 
 my @synth_opt = ("-synthesize-adaptor",
@@ -542,7 +543,7 @@ if ($f1nargs==0) {
 }
 
 # $adapt=[0,2, 0,0, 0,1];
-# $ret_adapt = [72, 0];
+# $ret_adapt = [64, 1];
 
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();

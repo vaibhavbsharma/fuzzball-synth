@@ -1,0 +1,1449 @@
+../../bin/fuzzball
+../../bin/stp-old-dynamic
+fuzz-start-addr: 0x0000000000404606
+f1:   0x00000000004043d8 @ 0x40451b
+f2:   0x000000000040442a
+wrap_f2: 0x000000000040447c @ 0x404574
+arg0: 0x00000000007b0e28
+arg1: 0x00000000007b0e48
+arg2: 0x00000000007b0e40
+arg3: 0x00000000007b0e30
+arg4: 0x00000000007b0e38
+arg5: 0x00000000007b0e20
+branch: 0x4045ba
+677 = abs(1)
+678 = labs(1)
+synth_ret_opt = -synthesize-return-adaptor return-typeconv:0x000000000040442a:0x404579:1
+default adaptor = 0 0 ret-adaptor = 0 0
+Checking 0,0 and 0,0:
+../../bin/fuzzball -linux-syscalls -arch x64 ./two-funcs -solver smtlib-batch -solver-path ../../bin/stp-old-dynamic -smtlib-solver-type stp -fuzz-start-addr 0x0000000000404606 -symbolic-long 0x00000000007b0e28=a -symbolic-long 0x00000000007b0e48=b -symbolic-long 0x00000000007b0e40=c -symbolic-long 0x00000000007b0e30=d -symbolic-long 0x00000000007b0e38=e -symbolic-long 0x00000000007b0e20=f -trace-sym-addr-details -trace-sym-addrs -trace-syscalls -omit-pf-af -trace-temps -trace-regions -trace-memory-snapshots -trace-tables -table-limit 12 -trace-binary-paths-bracketed -trace-basic -trace-conditions -trace-decisions -match-syscalls-in-addr-range 0x40451b:0x404520:0x404574:0x404579 -synthesize-adaptor typeconv:0x404574:1:0x000000000040442a:1 -extra-condition a_type:reg8_t==0x0:reg8_t -extra-condition a_val:reg64_t==0x0000000000000000:reg64_t -extra-condition 'a_type:reg8_t==0:reg8_t | a_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'a_type:reg8_t==0:reg8_t | a_val:reg64_t<=$0xf:reg64_t' -synthesize-return-adaptor return-typeconv:0x000000000040442a:0x404579:1 -extra-condition ret_type:reg8_t==0x0:reg8_t -extra-condition ret_val:reg64_t==0x0000000000000000:reg64_t -return-zero-missing-x64-syscalls -iteration-limit 4000 -region-limit 936 -branch-preference 0x4045ba:0 -trace-iterations -trace-assigns -solve-final-pc -trace-stopping -random-seed 416303 -- ./two-funcs 677 678 g
+  Loading executable from ./two-funcs
+  Loading       text segment from 00400000 to 0059bba9
+  Loading       data segment from 0079bea0 to 007a8558
+                Zero filling from 007a8558 to 007b1af8
+          Extra zero filling from 007b1af8 to 007b2000
+  Setting initial break to 0x007b2000
+  Loading       NOTE segment from 00400190 to 004001d4
+  Loading        TLS segment from 0079bea0 to 0079bed0
+  Loading      STACK segment from 00000000 to 00000000
+  Loading      RELRO segment from 0079bea0 to 0079c000
+  Skipping missing env. var DISPLAY
+  Skipping missing env. var EDITOR
+  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var LANG to en_US.UTF-8
+  From real env., setting env. var LOGNAME to vaibhav
+  Skipping missing env. var PAGER
+  From real env., setting env. var PATH to /home/grad06/vaibhav/.opam/system/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
+  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/glibc/typeconv-1
+  From real env., setting env. var SHELL to /bin/bash
+  From real env., setting env. var TERM to xterm-256color
+  From real env., setting env. var USER to vaibhav
+  Skipping missing env. var USERNAME
+  Skipping missing env. var XAUTHORITY
+  Initial stack pointer is 0xbfffd000
+  Starting address 0x004039ce, fuzz start 0x00404606
+  Initial registers:
+  %rax: 0:reg64_t
+  %rbx: 0:reg64_t
+  %rcx: 0:reg64_t
+  %rdx: 0:reg64_t
+  %rsi: 0:reg64_t
+  %rdi: 0:reg64_t
+  %rsp: 0xbfffd000:reg64_t
+  %rbp: 0:reg64_t
+  %r8: 0:reg64_t
+  %r9: 0:reg64_t
+  %r10: 0:reg64_t
+  %r11: 0:reg64_t
+  %r12: 0:reg64_t
+  %r13: 0:reg64_t
+  %r14: 0:reg64_t
+  %r15: 0:reg64_t
+  CF: false
+  PF: false
+  AF: false
+  ZF: false
+  SF: false
+  OF: false
+  YMM0: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM1: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM2: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM3: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM4: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM5: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM6: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM7: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM8: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM9: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM10: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM11: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM12: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM13: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM14: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM15: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  Pre-fuzzing execution...
+  uname(0xbfffcd80) = 0 (0x00000000)
+  brk(0x00000000) = 8069120 (0x007b2000)
+  brk(0x007b3200) = 8073728 (0x007b3200)
+  arch_prctl(4098, 0x007b28c0) = 0 (0x00000000)
+  set_tid_address(0x007b2b90) = 22086 (0x00005646)
+  set_robust_list(0x007b2ba0, 24) = 0 (0x00000000)
+  futex(0xbfffce80, 393, 1, 0x00000000, 0x00000000, 8071360) = -11 (0xfffffffffffffff5)
+  rt_sigaction(32, 0xbfffcd10, 0x00000000, 8) = 0 (0x00000000)
+  rt_sigaction(33, 0xbfffcd10, 0x00000000, 8) = 0 (0x00000000)
+  rt_sigprocmask(1, 0xbfffce88, 0x00000000, 8) = 0 (0x00000000)
+  getrlimit(3, 0xbfffce70) = 0 (0x00000000)
+  readlink("/proc/self/exe", 0xbfffbeb0, 4096) = 63 (0x0000003f)
+  brk(0x007d4200) = 8208896 (0x007d4200)
+  brk(0x007d5000) = 8212480 (0x007d5000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  GSSM#make_snap 1 -> 2
+  GSM#make_snap called
+  Setting up symbolic values:
+  GSSSM#make_snap 2 -> 3
+  linux_syscalls#make_snap called
+  Took snapshot
+  Iteration 1:
+  fstat(1, 0xbfffccf0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342177280 (0x50000000)
+  write(1, 0x50000000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  t0 =  cast(cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1f:reg8_t )L:
+   reg32_t)H:reg1_t
+   ^ cast(cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1e:reg8_t )L:
+   reg32_t)H:reg1_t
+   
+  t1 =  cast(a_13342:reg64_t)L:reg32_t
+   ^ cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1f:reg8_t )L:
+   reg32_t
+   
+  t2 = cast(
+   cast(t1_17484:reg32_t)U:reg64_t
+   + -cast(cast(
+   cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t
+   @>> 0x1f:reg8_t
+   )L:reg32_t)U:reg64_t
+   )L:reg32_t
+  t3 =  cast(t1_17484:reg32_t)U:reg64_t
+   < cast(cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1f:reg8_t )L:
+   reg32_t)U:reg64_t
+   
+  t4 =  cast(t2_17498:reg32_t)H:reg1_t
+   ^ 
+   t1_17484:reg32_t
+   <$ cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1f:reg8_t )L:
+   reg32_t
+    
+  t5 = cast(
+   t1_17484:reg32_t
+   + -cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1f:reg8_t )L:
+   reg32_t
+   )U:reg64_t
+  SRFM#save_sym_se saving f1_hash_list.length = 0
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50000000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50000000, 12)
+  Starting f2
+   = 12 (0x0000000c)
+  SRFM#make_f2_sym_snap called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting typeconv adaptor
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...SRFM#ready to apply (0.000000 sec).
+  exec_runloop#thunk() should save arg regs here
+  t6 =  a_type_13334:reg8_t == 1:reg8_t  ? a_val_13333:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ? a_13342:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t : 1:reg64_t))))))))))
+  t7 =  cast( t6_17758:reg64_t @>> 0x3f:reg8_t )H:reg1_t
+   ^ cast( t6_17758:reg64_t @>> 0x3e:reg8_t )H:reg1_t
+   
+  t8 =  - (t6_17758:reg64_t @>> 0x3f:reg8_t) 
+   +  (t6_17758:reg64_t ^  t6_17758:reg64_t @>> 0x3f:reg8_t ) 
+   
+  t9 =   (t6_17758:reg64_t ^  t6_17758:reg64_t @>> 0x3f:reg8_t ) 
+   <  t6_17758:reg64_t @>> 0x3f:reg8_t 
+   
+  t10 =  cast(t8_17896:reg64_t)H:reg1_t
+   ^ 
+    (t6_17758:reg64_t ^  t6_17758:reg64_t @>> 0x3f:reg8_t ) 
+   <$  t6_17758:reg64_t @>> 0x3f:reg8_t 
+    
+  Starting return-typeconv adaptor
+  SRFM#compare_sym_se called len(f1_h_l) = 0 len(f2_h_l)=0
+  f1_hash_list_len = 0 f2_hash_list_len = 0
+  FM#compare_conc_se called
+  all side-effects were equal
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f2_special_handlers_snap
+  linux_syscalls#reset_f2_snap called
+  t11 =  ret_type_13335:reg8_t == 0:reg8_t  ? t8_17896:reg64_t :
+   ( ret_type_13335:reg8_t == 1:reg8_t  ? ret_val_13336:reg64_t :
+   ( ret_type_13335:reg8_t == 0xb:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0xc:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg16_t)S:reg32_t)U:reg64_t
+   :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg8_t)S:reg32_t)U:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg1_t)S:reg32_t)U:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x15:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x16:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg8_t)S:reg16_t)U:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg1_t)S:
+   reg16_t)U:reg64_t
+   :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x1f:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t
+   :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x20:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg1_t)S:
+   reg8_t)U:reg64_t
+   :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:
+   reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t
+   : 1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x29:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t
+   :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:
+   reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ?
+   0:reg64_t : 0xffffffffffffffff:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x2a:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t
+   :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:
+   reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ?
+   0:reg64_t : 1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x33:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg32_t)S:reg64_t :
+   ( ret_type_13335:reg8_t == 0x34:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg32_t)U:reg64_t :
+   ( ret_type_13335:reg8_t == 0x35:reg8_t  ?
+   ( t8_17896:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)
+   :
+   ( ret_type_13335:reg8_t == 0x3d:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg16_t)S:reg64_t :
+   ( ret_type_13335:reg8_t == 0x3e:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg16_t)U:reg64_t :
+   ( ret_type_13335:reg8_t == 0x47:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg8_t)S:reg64_t
+   :
+   ( ret_type_13335:reg8_t == 0x48:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg8_t)U:
+   reg64_t :
+   ( ret_type_13335:reg8_t == 0x51:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg1_t)S:
+   reg64_t :
+   cast(cast(t8_17896:reg64_t)L:reg1_t)U:
+   reg64_t)))))))))))))))))
+  write(1, 0x50000000, 13)
+  Completed f2
+   = 13 (0x0000000d)
+  t12 =  cast( t5_17501:reg64_t + -t11_17918:reg64_t )H:reg1_t
+   ^  t5_17501:reg64_t <$ t11_17918:reg64_t 
+   
+  Symbolic branch condition (0x0040459e)  t5_17501:reg64_t == t11_17918:reg64_t 
+  Current Path String: 
+  Trying true: Satisfiable.
+  Input vars: 
+  Trying false: Satisfiable.
+  Input vars: a=0xd4000000 
+  Current Path String: 1
+  Current path: 1
+  t13 =  cast( t5_17501:reg64_t == t11_17918:reg64_t )U:reg64_t
+   |  (t5_17501:reg64_t & 0xffffffffffffff00:reg64_t) 
+   
+  write(1, 0x50000000, 6)
+  Match
+   = 6 (0x00000006)
+  exit_group(0) (no return)
+  Stopping when program called exit() at 0x004ab567
+  Coverage increased to 3387 on 1
+  Path: 1
+  Final path: 1
+  Satisfiable.
+  Input vars: 
+  SRFM#reset called
+  FM#reset calling mem#reset()
+  GSSM#reset called
+  GSM#clear clearing diff
+  GHM#clear called
+  GSM#clear clearing main
+  GHM#clear called
+  linux_syscalls#reset called
+  SRFM#reset clearing regions
+  SRFM#reset cleared regions
+  CPU time 0.072000 sec, 0.072000 total
+  Wall time 0.106047 sec, 0.106050 total
+  Iteration 2:
+  fstat(1, 0xbfffccf0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342177280 (0x50000000)
+  write(1, 0x50000000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  SRFM#save_sym_se saving f1_hash_list.length = 0
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50000000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50000000, 12)
+  Starting f2
+   = 12 (0x0000000c)
+  SRFM#make_f2_sym_snap called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting typeconv adaptor
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...SRFM#ready to apply (0.000000 sec).
+  exec_runloop#thunk() should save arg regs here
+  Starting return-typeconv adaptor
+  SRFM#compare_sym_se called len(f1_h_l) = 0 len(f2_h_l)=0
+  f1_hash_list_len = 0 f2_hash_list_len = 0
+  FM#compare_conc_se called
+  all side-effects were equal
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f2_special_handlers_snap
+  linux_syscalls#reset_f2_snap called
+  write(1, 0x50000000, 13)
+  Completed f2
+   = 13 (0x0000000d)
+  Symbolic branch condition (0x0040459e)  t5_17501:reg64_t == t11_17918:reg64_t 
+  Current Path String: 
+  Known false
+  Current Path String: 0
+  Current path: 0
+  write(1, 0x50000000, 9)
+  Mismatch
+   = 9 (0x00000009)
+  exit_group(0) (no return)
+  Stopping when program called exit() at 0x004ab567
+  Coverage increased to 3393 on 2
+  Path: 0
+  Final path: 0
+  Satisfiable.
+  Input vars: a=0xd4000000 
+Mismatch on input 3556769792; adding as test
+../../bin/fuzzball -linux-syscalls -arch x64 ./two-funcs -solver smtlib-batch -solver-path ../../bin/stp-old-dynamic -smtlib-solver-type stp -fuzz-start-addr 0x0000000000404606 -trace-temps -adaptor-search-mode -trace-iterations -trace-assigns -solve-final-pc -table-limit 12 -return-zero-missing-x64-syscalls -synthesize-adaptor typeconv:0x404574:1:0x000000000040442a:1 -extra-condition 'a_type:reg8_t==0:reg8_t | a_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'a_type:reg8_t==0:reg8_t | a_val:reg64_t<=$0xf:reg64_t' -synthesize-return-adaptor return-typeconv:0x000000000040442a:0x404579:1 -match-syscalls-in-addr-range 0x40451b:0x404520:0x404574:0x404579 -branch-preference 0x4045ba:1 -trace-conditions -omit-pf-af -trace-syscalls -trace-decisions -trace-stopping -trace-regions -trace-binary-paths-bracketed -trace-memory-snapshots -trace-sym-addr-details -trace-sym-addrs -trace-tables -trace-basic -region-limit 936 -random-seed 4544924 -- ./two-funcs 677 678 f tests
+  Loading executable from ./two-funcs
+  Loading       text segment from 00400000 to 0059bba9
+  Loading       data segment from 0079bea0 to 007a8558
+                Zero filling from 007a8558 to 007b1af8
+          Extra zero filling from 007b1af8 to 007b2000
+  Setting initial break to 0x007b2000
+  Loading       NOTE segment from 00400190 to 004001d4
+  Loading        TLS segment from 0079bea0 to 0079bed0
+  Loading      STACK segment from 00000000 to 00000000
+  Loading      RELRO segment from 0079bea0 to 0079c000
+  Skipping missing env. var DISPLAY
+  Skipping missing env. var EDITOR
+  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var LANG to en_US.UTF-8
+  From real env., setting env. var LOGNAME to vaibhav
+  Skipping missing env. var PAGER
+  From real env., setting env. var PATH to /home/grad06/vaibhav/.opam/system/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
+  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/glibc/typeconv-1
+  From real env., setting env. var SHELL to /bin/bash
+  From real env., setting env. var TERM to xterm-256color
+  From real env., setting env. var USER to vaibhav
+  Skipping missing env. var USERNAME
+  Skipping missing env. var XAUTHORITY
+  Initial stack pointer is 0xbfffd000
+  Starting address 0x004039ce, fuzz start 0x00404606
+  Initial registers:
+  %rax: 0:reg64_t
+  %rbx: 0:reg64_t
+  %rcx: 0:reg64_t
+  %rdx: 0:reg64_t
+  %rsi: 0:reg64_t
+  %rdi: 0:reg64_t
+  %rsp: 0xbfffd000:reg64_t
+  %rbp: 0:reg64_t
+  %r8: 0:reg64_t
+  %r9: 0:reg64_t
+  %r10: 0:reg64_t
+  %r11: 0:reg64_t
+  %r12: 0:reg64_t
+  %r13: 0:reg64_t
+  %r14: 0:reg64_t
+  %r15: 0:reg64_t
+  CF: false
+  PF: false
+  AF: false
+  ZF: false
+  SF: false
+  OF: false
+  YMM0: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM1: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM2: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM3: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM4: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM5: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM6: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM7: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM8: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM9: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM10: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM11: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM12: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM13: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM14: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM15: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  Pre-fuzzing execution...
+  uname(0xbfffcd80) = 0 (0x00000000)
+  brk(0x00000000) = 8069120 (0x007b2000)
+  brk(0x007b3200) = 8073728 (0x007b3200)
+  arch_prctl(4098, 0x007b28c0) = 0 (0x00000000)
+  set_tid_address(0x007b2b90) = 22095 (0x0000564f)
+  set_robust_list(0x007b2ba0, 24) = 0 (0x00000000)
+  futex(0xbfffce80, 393, 1, 0x00000000, 0x00000000, 8071360) = -11 (0xfffffffffffffff5)
+  rt_sigaction(32, 0xbfffcd10, 0x00000000, 8) = 0 (0x00000000)
+  rt_sigaction(33, 0xbfffcd10, 0x00000000, 8) = 0 (0x00000000)
+  rt_sigprocmask(1, 0xbfffce88, 0x00000000, 8) = 0 (0x00000000)
+  getrlimit(3, 0xbfffce70) = 0 (0x00000000)
+  readlink("/proc/self/exe", 0xbfffbeb0, 4096) = 63 (0x0000003f)
+  brk(0x007d4200) = 8208896 (0x007d4200)
+  brk(0x007d5000) = 8212480 (0x007d5000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  open("tests", 0x0, 0o0) = 3 (0x00000003)
+  GSSM#make_snap 1 -> 2
+  GSM#make_snap called
+  Setting up symbolic values:
+  GSSSM#make_snap 2 -> 3
+  linux_syscalls#make_snap called
+  Took snapshot
+  Iteration 1:
+  fstat(3, 0xbfffc9d0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342177280 (0x50000000)
+  read(3, 0x50000000, 4096) = 31 (0x0000001f)
+  fstat(1, 0xbfffcd40) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342181376 (0x50001000)
+  write(1, 0x50001000, 12)
+  read a test
+   = 12 (0x0000000c)
+  write(1, 0x50001000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  SRFM#save_sym_se saving f1_hash_list.length = 0
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50001000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50001000, 12)
+  Starting f2
+   = 12 (0x0000000c)
+  SRFM#make_f2_sym_snap called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting typeconv adaptor
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...exec_runloop#thunk() should save arg regs here
+  t0 =  a_type_14924:reg8_t == 1:reg8_t  ? a_val_14923:reg64_t :
+   ( a_type_14924:reg8_t == 0:reg8_t  ? 0xd4000000:reg64_t :
+   ( a_type_14924:reg8_t == 0xb:reg8_t  ? 0xffffffffd4000000:reg64_t :
+   ( a_type_14924:reg8_t == 0xc:reg8_t  ? 0xd4000000:reg64_t :
+   ( a_type_14924:reg8_t == 0x15:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x16:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x1f:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x20:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x29:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x2a:reg8_t  ? 0:reg64_t : 1:reg64_t)))))))))
+  t1 =  cast( t0_23736:reg64_t @>> 0x3f:reg8_t )H:reg1_t
+   ^ cast( t0_23736:reg64_t @>> 0x3e:reg8_t )H:reg1_t
+   
+  t2 =  - (t0_23736:reg64_t @>> 0x3f:reg8_t) 
+   +  (t0_23736:reg64_t ^  t0_23736:reg64_t @>> 0x3f:reg8_t ) 
+   
+  t3 =   (t0_23736:reg64_t ^  t0_23736:reg64_t @>> 0x3f:reg8_t ) 
+   <  t0_23736:reg64_t @>> 0x3f:reg8_t 
+   
+  t4 =  cast(t2_23874:reg64_t)H:reg1_t
+   ^ 
+    (t0_23736:reg64_t ^  t0_23736:reg64_t @>> 0x3f:reg8_t ) 
+   <$  t0_23736:reg64_t @>> 0x3f:reg8_t 
+    
+  Starting return-typeconv adaptor
+  SRFM#compare_sym_se called len(f1_h_l) = 0 len(f2_h_l)=0
+  f1_hash_list_len = 0 f2_hash_list_len = 0
+  FM#compare_conc_se called
+  all side-effects were equal
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f2_special_handlers_snap
+  linux_syscalls#reset_f2_snap called
+  t5 =  ret_type_14925:reg8_t == 0:reg8_t  ? t2_23874:reg64_t :
+   ( ret_type_14925:reg8_t == 1:reg8_t  ? ret_val_14926:reg64_t :
+   ( ret_type_14925:reg8_t == 0xb:reg8_t  ?
+   ( a_type_14924:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_14923:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_14924:reg8_t == 0:reg8_t  ? 0xffffffffd4000000:reg64_t :
+   ( a_type_14924:reg8_t == 0xb:reg8_t  ? 0xffffffffd4000000:reg64_t :
+   ( a_type_14924:reg8_t == 0xc:reg8_t  ? 0xffffffffd4000000:reg64_t :
+   ( a_type_14924:reg8_t == 0x15:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x16:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x1f:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x20:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x29:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x2a:reg8_t  ? 0:reg64_t :
+   1:reg64_t))))))))))
+   :
+   ( ret_type_14925:reg8_t == 0xc:reg8_t  ?
+   ( a_type_14924:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_14923:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_14924:reg8_t == 0:reg8_t  ? 0xd4000000:reg64_t :
+   ( a_type_14924:reg8_t == 0xb:reg8_t  ? 0xd4000000:reg64_t :
+   ( a_type_14924:reg8_t == 0xc:reg8_t  ? 0xd4000000:reg64_t :
+   ( a_type_14924:reg8_t == 0x15:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x16:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x1f:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x20:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x29:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x2a:reg8_t  ? 0:reg64_t :
+   1:reg64_t))))))))))
+   :
+   ( ret_type_14925:reg8_t == 0x15:reg8_t  ?
+   ( a_type_14924:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_14923:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_14924:reg8_t == 0:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xb:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xc:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x15:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x16:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x1f:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x20:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x29:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x2a:reg8_t  ? 0:reg64_t :
+   1:reg64_t))))))))))
+   :
+   ( ret_type_14925:reg8_t == 0x16:reg8_t  ?
+   ( a_type_14924:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_14923:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_14924:reg8_t == 0:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xb:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xc:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x15:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x16:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x1f:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x20:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x29:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x2a:reg8_t  ? 0:reg64_t
+   : 1:reg64_t))))))))))
+   :
+   ( ret_type_14925:reg8_t == 0x1f:reg8_t  ?
+   ( a_type_14924:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_14923:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_14924:reg8_t == 0:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xb:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xc:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x15:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x16:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x1f:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x20:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x29:reg8_t  ? 0:reg64_t
+   :
+   ( a_type_14924:reg8_t == 0x2a:reg8_t  ?
+   0:reg64_t : 1:reg64_t))))))))))
+   :
+   ( ret_type_14925:reg8_t == 0x20:reg8_t  ?
+   ( a_type_14924:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_14923:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_14924:reg8_t == 0:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xb:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xc:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x15:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x16:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x1f:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x20:reg8_t  ? 0:reg64_t
+   :
+   ( a_type_14924:reg8_t == 0x29:reg8_t  ?
+   0:reg64_t :
+   ( a_type_14924:reg8_t == 0x2a:reg8_t  ?
+   0:reg64_t : 1:reg64_t))))))))))
+   :
+   ( ret_type_14925:reg8_t == 0x29:reg8_t  ?
+   ( a_type_14924:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_14923:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_14924:reg8_t == 0:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xb:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xc:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x15:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x16:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x1f:reg8_t  ? 0:reg64_t
+   :
+   ( a_type_14924:reg8_t == 0x20:reg8_t  ?
+   0:reg64_t :
+   ( a_type_14924:reg8_t == 0x29:reg8_t  ?
+   0:reg64_t :
+   ( a_type_14924:reg8_t == 0x2a:reg8_t  ?
+   0:reg64_t : 0xffffffffffffffff:reg64_t))))))))))
+   :
+   ( ret_type_14925:reg8_t == 0x2a:reg8_t  ?
+   ( a_type_14924:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_14923:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_14924:reg8_t == 0:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xb:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0xc:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x15:reg8_t  ? 0:reg64_t :
+   ( a_type_14924:reg8_t == 0x16:reg8_t  ? 0:reg64_t
+   :
+   ( a_type_14924:reg8_t == 0x1f:reg8_t  ?
+   0:reg64_t :
+   ( a_type_14924:reg8_t == 0x20:reg8_t  ?
+   0:reg64_t :
+   ( a_type_14924:reg8_t == 0x29:reg8_t  ?
+   0:reg64_t :
+   ( a_type_14924:reg8_t == 0x2a:reg8_t  ?
+   0:reg64_t : 1:reg64_t))))))))))
+   :
+   ( ret_type_14925:reg8_t == 0x33:reg8_t  ?
+   cast(cast(t2_23874:reg64_t)L:reg32_t)S:reg64_t :
+   ( ret_type_14925:reg8_t == 0x34:reg8_t  ?
+   cast(cast(t2_23874:reg64_t)L:reg32_t)U:reg64_t :
+   ( ret_type_14925:reg8_t == 0x35:reg8_t  ?
+   ( t2_23874:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)
+   :
+   ( ret_type_14925:reg8_t == 0x3d:reg8_t  ?
+   cast(cast(t2_23874:reg64_t)L:reg16_t)S:reg64_t :
+   ( ret_type_14925:reg8_t == 0x3e:reg8_t  ?
+   cast(cast(t2_23874:reg64_t)L:reg16_t)U:reg64_t :
+   ( ret_type_14925:reg8_t == 0x47:reg8_t  ?
+   cast(cast(t2_23874:reg64_t)L:reg8_t)S:reg64_t
+   :
+   ( ret_type_14925:reg8_t == 0x48:reg8_t  ?
+   cast(cast(t2_23874:reg64_t)L:reg8_t)U:
+   reg64_t :
+   ( ret_type_14925:reg8_t == 0x51:reg8_t  ?
+   cast(cast(t2_23874:reg64_t)L:reg1_t)S:
+   reg64_t :
+   cast(cast(t2_23874:reg64_t)L:reg1_t)U:
+   reg64_t)))))))))))))))))
+  write(1, 0x50001000, 13)
+  Completed f2
+   = 13 (0x0000000d)
+  Symbolic branch condition (0x0040459e)  t5_23896:reg64_t == 0x2c000000:reg64_t 
+  Current Path String: 
+  Trying false: Satisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 0
+  Current path: 0
+  Symbolic branch condition (0x00404a44) ! (t5_23896:reg64_t == 0x2c000000:reg64_t) 
+  Current Path String: 0
+  Trying true: Trying false: Current Path String: 01
+  Current path: 01
+  write(1, 0x50001000, 9)
+  Mismatch
+   = 9 (0x00000009)
+  exit_group(1) (no return)
+  Stopping when program called exit() at 0x004ab567
+  Coverage increased to 4407 on 1
+  Path: 01
+  Final path: 01
+  Satisfiable.
+  SRFM#reset called
+  FM#reset calling mem#reset()
+  GSSM#reset called
+  GSM#clear clearing diff
+  GHM#clear called
+  GSM#clear clearing main
+  GHM#clear called
+  linux_syscalls#reset called
+  SRFM#reset clearing regions
+  SRFM#reset cleared regions
+  CPU time 0.120000 sec, 0.120000 total
+  Wall time 0.171883 sec, 0.171887 total
+  Iteration 2:
+  fstat(3, 0xbfffc9d0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342177280 (0x50000000)
+  read(3, 0x50000000, 4096) = 31 (0x0000001f)
+  fstat(1, 0xbfffcd40) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342181376 (0x50001000)
+  write(1, 0x50001000, 12)
+  read a test
+   = 12 (0x0000000c)
+  write(1, 0x50001000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  SRFM#save_sym_se saving f1_hash_list.length = 0
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50001000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50001000, 12)
+  Starting f2
+   = 12 (0x0000000c)
+  SRFM#make_f2_sym_snap called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting typeconv adaptor
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...exec_runloop#thunk() should save arg regs here
+  Starting return-typeconv adaptor
+  SRFM#compare_sym_se called len(f1_h_l) = 0 len(f2_h_l)=0
+  f1_hash_list_len = 0 f2_hash_list_len = 0
+  FM#compare_conc_se called
+  all side-effects were equal
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f2_special_handlers_snap
+  linux_syscalls#reset_f2_snap called
+  write(1, 0x50001000, 13)
+  Completed f2
+   = 13 (0x0000000d)
+  Symbolic branch condition (0x0040459e)  t5_23896:reg64_t == 0x2c000000:reg64_t 
+  Current Path String: 
+  Known true
+  Current Path String: 1
+  Current path: 1
+  Symbolic branch condition (0x00404a44) ! (t5_23896:reg64_t == 0x2c000000:reg64_t) 
+  Current Path String: 1
+  Trying false: Satisfiable.
+  Trying true: Current Path String: 10
+  Current path: 10
+  read(3, 0x50000000, 4096) = 0 (0x00000000)
+  write(1, 0x50001000, 27)
+  Match
+  All tests succeeded!
+   = 27 (0x0000001b)
+  exit_group(0) (no return)
+  Stopping when program called exit() at 0x004ab567
+  Coverage increased to 4458 on 2
+  Path: 10
+  Final path: 10
+  Satisfiable.
+  Input vars: ret_type=0x34 a_type=0xb 
+Synthesized arg adaptor 11, and return adaptor 52,
+Checking 11, and 52,:
+../../bin/fuzzball -linux-syscalls -arch x64 ./two-funcs -solver smtlib-batch -solver-path ../../bin/stp-old-dynamic -smtlib-solver-type stp -fuzz-start-addr 0x0000000000404606 -symbolic-long 0x00000000007b0e28=a -symbolic-long 0x00000000007b0e48=b -symbolic-long 0x00000000007b0e40=c -symbolic-long 0x00000000007b0e30=d -symbolic-long 0x00000000007b0e38=e -symbolic-long 0x00000000007b0e20=f -trace-sym-addr-details -trace-sym-addrs -trace-syscalls -omit-pf-af -trace-temps -trace-regions -trace-memory-snapshots -trace-tables -table-limit 12 -trace-binary-paths-bracketed -trace-basic -trace-conditions -trace-decisions -match-syscalls-in-addr-range 0x40451b:0x404520:0x404574:0x404579 -synthesize-adaptor typeconv:0x404574:1:0x000000000040442a:1 -extra-condition a_type:reg8_t==0xb:reg8_t -extra-condition a_val:reg64_t==0x0000000000000000:reg64_t -extra-condition 'a_type:reg8_t==0:reg8_t | a_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'a_type:reg8_t==0:reg8_t | a_val:reg64_t<=$0xf:reg64_t' -synthesize-return-adaptor return-typeconv:0x000000000040442a:0x404579:1 -extra-condition ret_type:reg8_t==0x34:reg8_t -extra-condition ret_val:reg64_t==0x0000000000000000:reg64_t -return-zero-missing-x64-syscalls -iteration-limit 4000 -region-limit 936 -branch-preference 0x4045ba:0 -trace-iterations -trace-assigns -solve-final-pc -trace-stopping -random-seed 8348172 -- ./two-funcs 677 678 g
+  Loading executable from ./two-funcs
+  Loading       text segment from 00400000 to 0059bba9
+  Loading       data segment from 0079bea0 to 007a8558
+                Zero filling from 007a8558 to 007b1af8
+          Extra zero filling from 007b1af8 to 007b2000
+  Setting initial break to 0x007b2000
+  Loading       NOTE segment from 00400190 to 004001d4
+  Loading        TLS segment from 0079bea0 to 0079bed0
+  Loading      STACK segment from 00000000 to 00000000
+  Loading      RELRO segment from 0079bea0 to 0079c000
+  Skipping missing env. var DISPLAY
+  Skipping missing env. var EDITOR
+  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var LANG to en_US.UTF-8
+  From real env., setting env. var LOGNAME to vaibhav
+  Skipping missing env. var PAGER
+  From real env., setting env. var PATH to /home/grad06/vaibhav/.opam/system/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
+  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/glibc/typeconv-1
+  From real env., setting env. var SHELL to /bin/bash
+  From real env., setting env. var TERM to xterm-256color
+  From real env., setting env. var USER to vaibhav
+  Skipping missing env. var USERNAME
+  Skipping missing env. var XAUTHORITY
+  Initial stack pointer is 0xbfffd000
+  Starting address 0x004039ce, fuzz start 0x00404606
+  Initial registers:
+  %rax: 0:reg64_t
+  %rbx: 0:reg64_t
+  %rcx: 0:reg64_t
+  %rdx: 0:reg64_t
+  %rsi: 0:reg64_t
+  %rdi: 0:reg64_t
+  %rsp: 0xbfffd000:reg64_t
+  %rbp: 0:reg64_t
+  %r8: 0:reg64_t
+  %r9: 0:reg64_t
+  %r10: 0:reg64_t
+  %r11: 0:reg64_t
+  %r12: 0:reg64_t
+  %r13: 0:reg64_t
+  %r14: 0:reg64_t
+  %r15: 0:reg64_t
+  CF: false
+  PF: false
+  AF: false
+  ZF: false
+  SF: false
+  OF: false
+  YMM0: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM1: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM2: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM3: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM4: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM5: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM6: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM7: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM8: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM9: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM10: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM11: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM12: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM13: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM14: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM15: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  Pre-fuzzing execution...
+  uname(0xbfffcd80) = 0 (0x00000000)
+  brk(0x00000000) = 8069120 (0x007b2000)
+  brk(0x007b3200) = 8073728 (0x007b3200)
+  arch_prctl(4098, 0x007b28c0) = 0 (0x00000000)
+  set_tid_address(0x007b2b90) = 22104 (0x00005658)
+  set_robust_list(0x007b2ba0, 24) = 0 (0x00000000)
+  futex(0xbfffce80, 393, 1, 0x00000000, 0x00000000, 8071360) = -11 (0xfffffffffffffff5)
+  rt_sigaction(32, 0xbfffcd10, 0x00000000, 8) = 0 (0x00000000)
+  rt_sigaction(33, 0xbfffcd10, 0x00000000, 8) = 0 (0x00000000)
+  rt_sigprocmask(1, 0xbfffce88, 0x00000000, 8) = 0 (0x00000000)
+  getrlimit(3, 0xbfffce70) = 0 (0x00000000)
+  readlink("/proc/self/exe", 0xbfffbeb0, 4096) = 63 (0x0000003f)
+  brk(0x007d4200) = 8208896 (0x007d4200)
+  brk(0x007d5000) = 8212480 (0x007d5000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  GSSM#make_snap 1 -> 2
+  GSM#make_snap called
+  Setting up symbolic values:
+  GSSSM#make_snap 2 -> 3
+  linux_syscalls#make_snap called
+  Took snapshot
+  Iteration 1:
+  fstat(1, 0xbfffccf0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342177280 (0x50000000)
+  write(1, 0x50000000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  t0 =  cast(cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1f:reg8_t )L:
+   reg32_t)H:reg1_t
+   ^ cast(cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1e:reg8_t )L:
+   reg32_t)H:reg1_t
+   
+  t1 =  cast(a_13342:reg64_t)L:reg32_t
+   ^ cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1f:reg8_t )L:
+   reg32_t
+   
+  t2 = cast(
+   cast(t1_17484:reg32_t)U:reg64_t
+   + -cast(cast(
+   cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t
+   @>> 0x1f:reg8_t
+   )L:reg32_t)U:reg64_t
+   )L:reg32_t
+  t3 =  cast(t1_17484:reg32_t)U:reg64_t
+   < cast(cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1f:reg8_t )L:
+   reg32_t)U:reg64_t
+   
+  t4 =  cast(t2_17498:reg32_t)H:reg1_t
+   ^ 
+   t1_17484:reg32_t
+   <$ cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1f:reg8_t )L:
+   reg32_t
+    
+  t5 = cast(
+   t1_17484:reg32_t
+   + -cast( cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t @>> 0x1f:reg8_t )L:
+   reg32_t
+   )U:reg64_t
+  SRFM#save_sym_se saving f1_hash_list.length = 0
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50000000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50000000, 12)
+  Starting f2
+   = 12 (0x0000000c)
+  SRFM#make_f2_sym_snap called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting typeconv adaptor
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...SRFM#ready to apply (0.000000 sec).
+  exec_runloop#thunk() should save arg regs here
+  t6 =  a_type_13334:reg8_t == 1:reg8_t  ? a_val_13333:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ? a_13342:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t : 1:reg64_t))))))))))
+  t7 =  cast( t6_17758:reg64_t @>> 0x3f:reg8_t )H:reg1_t
+   ^ cast( t6_17758:reg64_t @>> 0x3e:reg8_t )H:reg1_t
+   
+  t8 =  - (t6_17758:reg64_t @>> 0x3f:reg8_t) 
+   +  (t6_17758:reg64_t ^  t6_17758:reg64_t @>> 0x3f:reg8_t ) 
+   
+  t9 =   (t6_17758:reg64_t ^  t6_17758:reg64_t @>> 0x3f:reg8_t ) 
+   <  t6_17758:reg64_t @>> 0x3f:reg8_t 
+   
+  t10 =  cast(t8_17896:reg64_t)H:reg1_t
+   ^ 
+    (t6_17758:reg64_t ^  t6_17758:reg64_t @>> 0x3f:reg8_t ) 
+   <$  t6_17758:reg64_t @>> 0x3f:reg8_t 
+    
+  Starting return-typeconv adaptor
+  SRFM#compare_sym_se called len(f1_h_l) = 0 len(f2_h_l)=0
+  f1_hash_list_len = 0 f2_hash_list_len = 0
+  FM#compare_conc_se called
+  all side-effects were equal
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f2_special_handlers_snap
+  linux_syscalls#reset_f2_snap called
+  t11 =  ret_type_13335:reg8_t == 0:reg8_t  ? t8_17896:reg64_t :
+   ( ret_type_13335:reg8_t == 1:reg8_t  ? ret_val_13336:reg64_t :
+   ( ret_type_13335:reg8_t == 0xb:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0xc:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg32_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg16_t)S:reg32_t)U:reg64_t
+   :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg8_t)S:reg32_t)U:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg1_t)S:reg32_t)U:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x15:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x16:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg16_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg8_t)S:reg16_t)U:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg1_t)S:
+   reg16_t)U:reg64_t
+   :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x1f:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t
+   :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x20:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg8_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(cast(a_13342:reg64_t)L:reg1_t)S:
+   reg8_t)U:reg64_t
+   :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:
+   reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ? 0:reg64_t
+   : 1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x29:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:reg64_t
+   :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)S:
+   reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ?
+   0:reg64_t : 0xffffffffffffffff:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x2a:reg8_t  ?
+   ( a_type_13334:reg8_t == 1:reg8_t  ?
+   cast(cast(a_val_13333:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xb:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0xc:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x15:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x16:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t :
+   ( a_type_13334:reg8_t == 0x1f:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:reg64_t
+   :
+   ( a_type_13334:reg8_t == 0x20:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x29:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:
+   reg64_t :
+   ( a_type_13334:reg8_t == 0x2a:reg8_t  ?
+   cast(cast(a_13342:reg64_t)L:reg1_t)U:
+   reg64_t :
+   ( a_13342:reg64_t == 0:reg64_t  ?
+   0:reg64_t : 1:reg64_t)))))))))))
+   :
+   ( ret_type_13335:reg8_t == 0x33:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg32_t)S:reg64_t :
+   ( ret_type_13335:reg8_t == 0x34:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg32_t)U:reg64_t :
+   ( ret_type_13335:reg8_t == 0x35:reg8_t  ?
+   ( t8_17896:reg64_t == 0:reg64_t  ? 0:reg64_t :
+   1:reg64_t)
+   :
+   ( ret_type_13335:reg8_t == 0x3d:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg16_t)S:reg64_t :
+   ( ret_type_13335:reg8_t == 0x3e:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg16_t)U:reg64_t :
+   ( ret_type_13335:reg8_t == 0x47:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg8_t)S:reg64_t
+   :
+   ( ret_type_13335:reg8_t == 0x48:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg8_t)U:
+   reg64_t :
+   ( ret_type_13335:reg8_t == 0x51:reg8_t  ?
+   cast(cast(t8_17896:reg64_t)L:reg1_t)S:
+   reg64_t :
+   cast(cast(t8_17896:reg64_t)L:reg1_t)U:
+   reg64_t)))))))))))))))))
+  write(1, 0x50000000, 13)
+  Completed f2
+   = 13 (0x0000000d)
+  t12 =  cast( t5_17501:reg64_t + -t11_17918:reg64_t )H:reg1_t
+   ^  t5_17501:reg64_t <$ t11_17918:reg64_t 
+   
+  Symbolic branch condition (0x0040459e)  t5_17501:reg64_t == t11_17918:reg64_t 
+  Current Path String: 
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Input vars: a_type=0xb ret_type=0x34 
+  Current Path String: 1
+  Current path: 1
+  t13 =  cast( t5_17501:reg64_t == t11_17918:reg64_t )U:reg64_t
+   |  (t5_17501:reg64_t & 0xffffffffffffff00:reg64_t) 
+   
+  write(1, 0x50000000, 6)
+  Match
+   = 6 (0x00000006)
+  exit_group(0) (no return)
+  Stopping when program called exit() at 0x004ab567
+  Coverage increased to 3387 on 1
+  Path: 1
+  Final path: 1
+  Satisfiable.
+  Input vars: a_type=0xb ret_type=0x34 
+  CPU time 0.068000 sec, 0.068000 total
+  Wall time 0.079613 sec, 0.079616 total
+  Final coverage: 3387
+Success!
+Final test set:
+ 3556769792, 
+Final adaptor is 11, and 52, with 1,1,complete

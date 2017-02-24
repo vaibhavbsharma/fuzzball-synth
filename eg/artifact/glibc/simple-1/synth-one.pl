@@ -13,8 +13,8 @@ my $iteration_limit = 4000;
 
 my $region_limit = 936;
 
-my $fuzzball="../../fuzzball";
-my $stp="../../stp";
+my $fuzzball="../../bin/fuzzball";
+my $stp="../../bin/stp-old-dynamic";
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
@@ -105,7 +105,9 @@ my @ret_fields =
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
+my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-smtlib-solver-type","stp"
+		   #, "-solver-timeout",5,"-timeout-as-unsat"
+    );
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));

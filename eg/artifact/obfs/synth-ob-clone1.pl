@@ -33,8 +33,8 @@ my $max_conc_region_size = $max_matrix_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 
-my $fuzzball = "../fuzzball";
-my $stp = "../stp";
+my $fuzzball = "../bin/fuzzball";
+my $stp = "../bin/stp-old-dynamic";
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;

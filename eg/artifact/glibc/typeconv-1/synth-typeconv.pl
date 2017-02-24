@@ -17,8 +17,8 @@ my $sane_addr = 0x42420000;
 
 my @fuzzball_extra_args_arr;
 
-my $fuzzball="../../fuzzball";
-my $stp="../../stp";
+my $fuzzball="../../bin/fuzzball";
+my $stp="../../bin/stp-old-dynamic";
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
@@ -111,7 +111,9 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
+my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-smtlib-solver-type","stp"
+		   #, "-solver-timeout",5,"-timeout-as-unsat"
+    );
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "typeconv", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));

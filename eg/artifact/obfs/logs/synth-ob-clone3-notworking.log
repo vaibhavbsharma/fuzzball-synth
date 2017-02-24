@@ -1,0 +1,4199 @@
+../bin/fuzzball
+../bin/stp-old-dynamic
+fuzz-start-addr : 0x0000000000484530
+f1:   0x0000000000484480 @ 0x484347
+f2:   0x0000000000401100
+wrap_f2: 0x00000000004010b0 @ 0x4843a8
+arg0: 0x00000000007a4e68
+arg1: 0x00000000007a4e70
+arg2: 0x00000000007a4ef8
+arg3: 0x00000000007a4f10
+arg4: 0x00000000007a4f08
+arg5: 0x00000000007a4de0
+branch: 0x4843eb
+1332 = f1(2)
+1333 = f2(6)
+synth_ret_opt = -synthesize-return-adaptor return-typeconv:0x0000000000401100:0x4843ad:6
+default adaptor = 0 0 0 1 0 1 0 1 0 1 0 1 ret-adaptor = 0 0
+Checking simple adaptor = 0,0,0,1,0,1,0,1,0,1,0,1, ret adaptor = 0,0
+../bin/fuzzball -linux-syscalls -arch x64 ./obfs_clone3_notworking_static -solver smtlib -solver-path ../bin/stp-old-dynamic -smtlib-solver-type stp -fuzz-start-addr 0x0000000000484530 -symbolic-long 0x00000000007a4e68=a -symbolic-long 0x00000000007a4e70=b -symbolic-long 0x00000000007a4ef8=c -symbolic-long 0x00000000007a4f10=d -symbolic-long 0x00000000007a4f08=e -symbolic-long 0x00000000007a4de0=f -trace-sym-addr-details -trace-sym-addrs -trace-syscalls -omit-pf-af -trace-temps -trace-regions -trace-memory-snapshots -trace-tables -table-limit 12 -trace-binary-paths-bracketed -trace-basic -trace-conditions -trace-decisions -store-byte 0x42420000=0x61 -match-syscalls-in-addr-range 0x484347:0x48434c:0x4843a8:0x4843ad -store-long 0x42420000=0x42420008 -store-long 0x42420008=0x42420010 -store-long 0x42420010=0x42420018 -synthesize-adaptor simple:0x4843a8:2:0x0000000000401100:6 -extra-condition a_is_const:reg1_t==0x0:reg1_t -extra-condition a_val:reg64_t==0x0000000000000000:reg64_t -extra-condition b_is_const:reg1_t==0x0:reg1_t -extra-condition b_val:reg64_t==0x0000000000000001:reg64_t -extra-condition c_is_const:reg1_t==0x0:reg1_t -extra-condition c_val:reg64_t==0x0000000000000001:reg64_t -extra-condition d_is_const:reg1_t==0x0:reg1_t -extra-condition d_val:reg64_t==0x0000000000000001:reg64_t -extra-condition e_is_const:reg1_t==0x0:reg1_t -extra-condition e_val:reg64_t==0x0000000000000001:reg64_t -extra-condition f_is_const:reg1_t==0x0:reg1_t -extra-condition f_val:reg64_t==0x0000000000000001:reg64_t -extra-condition 'a_is_const:reg1_t==0:reg1_t | a_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'a_is_const:reg1_t==0:reg1_t | a_val:reg64_t<=$0xf:reg64_t' -extra-condition 'b_is_const:reg1_t==0:reg1_t | b_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'b_is_const:reg1_t==0:reg1_t | b_val:reg64_t<=$0xf:reg64_t' -extra-condition 'c_is_const:reg1_t==0:reg1_t | c_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'c_is_const:reg1_t==0:reg1_t | c_val:reg64_t<=$0xf:reg64_t' -extra-condition 'd_is_const:reg1_t==0:reg1_t | d_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'd_is_const:reg1_t==0:reg1_t | d_val:reg64_t<=$0xf:reg64_t' -extra-condition 'e_is_const:reg1_t==0:reg1_t | e_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'e_is_const:reg1_t==0:reg1_t | e_val:reg64_t<=$0xf:reg64_t' -extra-condition 'f_is_const:reg1_t==0:reg1_t | f_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'f_is_const:reg1_t==0:reg1_t | f_val:reg64_t<=$0xf:reg64_t' -synthesize-return-adaptor return-typeconv:0x0000000000401100:0x4843ad:6 -extra-condition ret_type:reg8_t==0x0:reg8_t -extra-condition ret_val:reg64_t==0x0000000000000000:reg64_t -disable-ce-cache -return-zero-missing-x64-syscalls -iteration-limit 100000000 -dont-compare-linux-syscalls -region-limit 8 -branch-preference 0x4843eb:0 -trace-iterations -trace-assigns -solve-final-pc -trace-stopping -random-seed 416303 -- ./obfs_clone3_notworking_static 1332 1333 g ceinputs
+  Loading executable from ./obfs_clone3_notworking_static
+  Loading       text segment from 00400000 to 0059a4c0
+  Loading       data segment from 0079aeb0 to 007a2d50
+                Zero filling from 007a2d50 to 007a5648
+          Extra zero filling from 007a5648 to 007a6000
+  Setting initial break to 0x007a6000
+  Loading       NOTE segment from 00400190 to 004001d4
+  Loading        TLS segment from 0079aeb0 to 0079aed0
+  Loading      STACK segment from 00000000 to 00000000
+  Loading      RELRO segment from 0079aeb0 to 0079b000
+  Skipping missing env. var DISPLAY
+  Skipping missing env. var EDITOR
+  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var LANG to en_US.UTF-8
+  From real env., setting env. var LOGNAME to vaibhav
+  Skipping missing env. var PAGER
+  From real env., setting env. var PATH to /home/grad06/vaibhav/.opam/system/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
+  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/obfs
+  From real env., setting env. var SHELL to /bin/bash
+  From real env., setting env. var TERM to xterm-256color
+  From real env., setting env. var USER to vaibhav
+  Skipping missing env. var USERNAME
+  Skipping missing env. var XAUTHORITY
+  Initial stack pointer is 0xbfffd000
+  Starting address 0x00400f7e, fuzz start 0x00484530
+  Initial registers:
+  %rax: 0:reg64_t
+  %rbx: 0:reg64_t
+  %rcx: 0:reg64_t
+  %rdx: 0:reg64_t
+  %rsi: 0:reg64_t
+  %rdi: 0:reg64_t
+  %rsp: 0xbfffd000:reg64_t
+  %rbp: 0:reg64_t
+  %r8: 0:reg64_t
+  %r9: 0:reg64_t
+  %r10: 0:reg64_t
+  %r11: 0:reg64_t
+  %r12: 0:reg64_t
+  %r13: 0:reg64_t
+  %r14: 0:reg64_t
+  %r15: 0:reg64_t
+  CF: false
+  PF: false
+  AF: false
+  ZF: false
+  SF: false
+  OF: false
+  YMM0: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM1: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM2: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM3: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM4: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM5: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM6: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM7: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM8: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM9: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM10: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM11: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM12: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM13: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM14: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM15: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  Pre-fuzzing execution...
+  uname(0xbfffcd80) = 0 (0x00000000)
+  brk(0x00000000) = 8019968 (0x007a6000)
+  brk(0x007a71c0) = 8024512 (0x007a71c0)
+  arch_prctl(4098, 0x007a6880) = 0 (0x00000000)
+  readlink("/proc/self/exe", 0xbfffbeb0, 4096) = 63 (0x0000003f)
+  brk(0x007c81c0) = 8159680 (0x007c81c0)
+  brk(0x007c9000) = 8163328 (0x007c9000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  open("ceinputs", 0x0, 0o0) = 3 (0x00000003)
+  GSSM#make_snap 1 -> 2
+  GSM#make_snap called
+  Setting up symbolic values:
+  GSSSM#make_snap 2 -> 3
+  linux_syscalls#make_snap called
+  Took snapshot
+  Iteration 1:
+  fstat(3, 0xbfffc8c0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342177280 (0x50000000)
+  read(3, 0x50000000, 4096) = 31 (0x0000001f)
+  fstat(1, 0xbfffc580) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342181376 (0x50001000)
+  write(1, 0x50001000, 15)
+  read ce inputs
+   = 15 (0x0000000f)
+  write(1, 0x50001000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  SRFM#save_sym_se saving f1_hash_list.length = 0
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50001000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50001000, 20)
+  Starting adapted_f1
+   = 20 (0x00000014)
+  SRFM#make_f2_sym_snap called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting simple adaptor
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=0x42420000:reg64_t
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...SRFM#ready to apply (0.000000 sec).
+  exec_runloop#thunk() should save arg regs here
+  Symbolic address mem_3643[0xbffea370:reg32_t]:reg64_t @ (0x452281)
+  Concrete base terms: 
+  Concrete offset terms: 
+  Offset expression terms: 
+  Ambiguous expression terms: 
+  Ambiguous symbol terms: mem_3643[0xbffea370:reg32_t]:reg64_t
+  Current Path String: 
+  Trying true: Satisfiable.
+  Input vars: mem_word_0xbffea370=0x1010101 mem_byte_0xbffea372=0x1 mem_short_0xbffea372=0x101 b_val=0x1 mem_byte_0xbffea377=0x1 f_val=0x1 mem_byte_0xbffea370=0x1 mem_byte_0xbffea371=0x1 mem_short_0xbffea370=0x101 mem_byte_0xbffea373=0x1 mem_byte_0xbffea374=0x1 mem_short_0xbffea376=0x101 mem_byte_0xbffea375=0x1 mem_byte_0xbffea376=0x1 mem_long_0xbffea370=0x101010101010101 mem_word_0xbffea374=0x1010101 mem_short_0xbffea374=0x101 e_val=0x1 d_val=0x1 c_val=0x1 
+  Trying false: Satisfiable.
+  Input vars: c_val=0x1 b_val=0x1 f_val=0x1 d_val=0x1 e_val=0x1 
+  Current Path String: 1
+  Current path: 1
+  SRFM#region_for took branch true in Not_found case expr = mem_3643[0xbffea370:reg32_t]:reg64_t
+  SRFM#region_for regions seen in this path = 0
+  Address mem_3643[0xbffea370:reg32_t]:reg64_t is region 1
+  Unsupported jump into symbolic region 1
+  Stopping at symbolic jump at 0x00452281
+  Coverage increased to 27880 on 1
+  Path: 1
+  Final path: 1
+  Satisfiable.
+  Input vars: c_val=0x1 d_val=0x1 mem_byte_0xbffea377=0x1 f_val=0x1 b_val=0x1 e_val=0x1 mem_short_0xbffea370=0x101 mem_short_0xbffea376=0x101 mem_short_0xbffea374=0x101 mem_word_0xbffea374=0x1010101 mem_word_0xbffea370=0x1010101 mem_long_0xbffea370=0x101010101010101 mem_byte_0xbffea376=0x1 mem_byte_0xbffea375=0x1 mem_byte_0xbffea373=0x1 mem_byte_0xbffea372=0x1 mem_byte_0xbffea371=0x1 mem_byte_0xbffea370=0x1 mem_byte_0xbffea374=0x1 mem_short_0xbffea372=0x101 
+  SRFM#reset called
+  FM#reset calling mem#reset()
+  GSSM#reset called
+  GSM#clear clearing diff
+  GHM#clear called
+  GSM#clear clearing main
+  GHM#clear called
+  linux_syscalls#reset called
+  SRFM#reset clearing regions
+  GSM#clear clearing diff
+  GHM#clear called
+  GSM#clear clearing main
+  GHM#clear called
+  SRFM#reset cleared regions
+  CPU time 3.476000 sec, 3.476000 total
+  Wall time 3.477188 sec, 3.477191 total
+  Iteration 2:
+  fstat(3, 0xbfffc8c0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342185472 (0x50002000)
+  read(3, 0x50002000, 4096) = 31 (0x0000001f)
+  fstat(1, 0xbfffc580) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342189568 (0x50003000)
+  write(1, 0x50003000, 15)
+  read ce inputs
+   = 15 (0x0000000f)
+  write(1, 0x50003000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  GSM#make_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  SRFM#save_sym_se saving f1_hash_list.length = 1
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50003000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50003000, 20)
+  Starting adapted_f1
+   = 20 (0x00000014)
+  SRFM#make_f2_sym_snap called
+  GSM#reset called
+  GHM#clear called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting simple adaptor
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=1:reg64_t
+  setting arg=0x42420000:reg64_t
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...SRFM#ready to apply (0.000000 sec).
+  exec_runloop#thunk() should save arg regs here
+  Symbolic address mem_3643[0xbffea370:reg32_t]:reg64_t @ (0x452281)
+  Concrete base terms: 
+  Concrete offset terms: 
+  Offset expression terms: 
+  Ambiguous expression terms: 
+  Ambiguous symbol terms: mem_3643[0xbffea370:reg32_t]:reg64_t
+  Current Path String: 
+  Known false
+  Current Path String: 0
+  Current path: 0
+  SRFM#region_for took branch false in Not_found case expr = mem_3643[0xbffea370:reg32_t]:reg64_t
+  Stopping at null deref at 0x00452281
+  Path: 0
+  Final path: 0
+  Satisfiable.
+  Input vars: d_val=0x1 f_val=0x1 e_val=0x1 c_val=0x1 b_val=0x1 
+elapsed time = 5, last CE search time = 5
+Mismatch on input 0x42420000, 0x1; adding as test
+Trying to synthesize with sane_addr=0x42420018
+../bin/fuzzball -linux-syscalls -arch x64 ./obfs_clone3_notworking_static -solver smtlib -solver-path ../bin/stp-old-dynamic -smtlib-solver-type stp -fuzz-start-addr 0x0000000000484530 -trace-temps -adaptor-search-mode -trace-iterations -trace-assigns -solve-final-pc -table-limit 12 -return-zero-missing-x64-syscalls -disable-ce-cache -synthesize-adaptor simple:0x4843a8:2:0x0000000000401100:6 -extra-condition 'a_is_const:reg1_t==0:reg1_t | a_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'a_is_const:reg1_t==0:reg1_t | a_val:reg64_t<=$0xf:reg64_t' -extra-condition 'b_is_const:reg1_t==0:reg1_t | b_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'b_is_const:reg1_t==0:reg1_t | b_val:reg64_t<=$0xf:reg64_t' -extra-condition 'c_is_const:reg1_t==0:reg1_t | c_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'c_is_const:reg1_t==0:reg1_t | c_val:reg64_t<=$0xf:reg64_t' -extra-condition 'd_is_const:reg1_t==0:reg1_t | d_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'd_is_const:reg1_t==0:reg1_t | d_val:reg64_t<=$0xf:reg64_t' -extra-condition 'e_is_const:reg1_t==0:reg1_t | e_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'e_is_const:reg1_t==0:reg1_t | e_val:reg64_t<=$0xf:reg64_t' -extra-condition 'f_is_const:reg1_t==0:reg1_t | f_val:reg64_t>=$0xffffffffffffffff:reg64_t' -extra-condition 'f_is_const:reg1_t==0:reg1_t | f_val:reg64_t<=$0xf:reg64_t' -synthesize-return-adaptor return-typeconv:0x0000000000401100:0x4843ad:6 -match-syscalls-in-addr-range 0x484347:0x48434c:0x4843a8:0x4843ad -branch-preference 0x4843eb:1 -trace-conditions -omit-pf-af -trace-syscalls -trace-decisions -trace-stopping -trace-regions -trace-binary-paths-bracketed -trace-memory-snapshots -trace-sym-addr-details -trace-sym-addrs -trace-tables -trace-basic -zero-memory -store-byte 0x42420014=0x0 -store-byte 0x4242000f=0x0 -store-byte 0x4242000e=0x0 -store-byte 0x42420007=0x0 -store-byte 0x42420017=0x0 -store-byte 0x42420016=0x0 -store-byte 0x4242000c=0x0 -store-byte 0x4242000d=0x0 -store-byte 0x42420006=0x0 -store-byte 0x42420005=0x0 -store-byte 0x42420015=0x0 -store-byte 0x42420004=0x0 -store-long 0x42420000=0x42420008 -store-long 0x42420008=0x42420010 -store-long 0x42420010=0x42420018 -region-limit 8 -dont-compare-linux-syscalls -random-seed 4544924 -- ./obfs_clone3_notworking_static 1332 1333 f tests
+  Loading executable from ./obfs_clone3_notworking_static
+  Loading       text segment from 00400000 to 0059a4c0
+  Loading       data segment from 0079aeb0 to 007a2d50
+                Zero filling from 007a2d50 to 007a5648
+          Extra zero filling from 007a5648 to 007a6000
+  Setting initial break to 0x007a6000
+  Loading       NOTE segment from 00400190 to 004001d4
+  Loading        TLS segment from 0079aeb0 to 0079aed0
+  Loading      STACK segment from 00000000 to 00000000
+  Loading      RELRO segment from 0079aeb0 to 0079b000
+  Skipping missing env. var DISPLAY
+  Skipping missing env. var EDITOR
+  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var LANG to en_US.UTF-8
+  From real env., setting env. var LOGNAME to vaibhav
+  Skipping missing env. var PAGER
+  From real env., setting env. var PATH to /home/grad06/vaibhav/.opam/system/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
+  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/obfs
+  From real env., setting env. var SHELL to /bin/bash
+  From real env., setting env. var TERM to xterm-256color
+  From real env., setting env. var USER to vaibhav
+  Skipping missing env. var USERNAME
+  Skipping missing env. var XAUTHORITY
+  Initial stack pointer is 0xbfffd000
+  Starting address 0x00400f7e, fuzz start 0x00484530
+  Initial registers:
+  %rax: 0:reg64_t
+  %rbx: 0:reg64_t
+  %rcx: 0:reg64_t
+  %rdx: 0:reg64_t
+  %rsi: 0:reg64_t
+  %rdi: 0:reg64_t
+  %rsp: 0xbfffd000:reg64_t
+  %rbp: 0:reg64_t
+  %r8: 0:reg64_t
+  %r9: 0:reg64_t
+  %r10: 0:reg64_t
+  %r11: 0:reg64_t
+  %r12: 0:reg64_t
+  %r13: 0:reg64_t
+  %r14: 0:reg64_t
+  %r15: 0:reg64_t
+  CF: false
+  PF: false
+  AF: false
+  ZF: false
+  SF: false
+  OF: false
+  YMM0: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM1: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM2: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM3: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM4: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM5: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM6: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM7: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM8: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM9: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM10: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM11: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM12: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM13: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM14: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  YMM15: 0:reg64_t 0:reg64_t 0:reg64_t 0:reg64_t
+  Pre-fuzzing execution...
+  uname(0xbfffcd80) = 0 (0x00000000)
+  brk(0x00000000) = 8019968 (0x007a6000)
+  brk(0x007a71c0) = 8024512 (0x007a71c0)
+  arch_prctl(4098, 0x007a6880) = 0 (0x00000000)
+  readlink("/proc/self/exe", 0xbfffbeb0, 4096) = 63 (0x0000003f)
+  brk(0x007c81c0) = 8159680 (0x007c81c0)
+  brk(0x007c9000) = 8163328 (0x007c9000)
+  access("/etc/ld.so.nohwcap", 0x0) = -2 (0xfffffffffffffffe)
+  open("tests", 0x0, 0o0) = 3 (0x00000003)
+  GSSM#make_snap 1 -> 2
+  GSM#make_snap called
+  Setting up symbolic values:
+  GSSSM#make_snap 2 -> 3
+  linux_syscalls#make_snap called
+  Took snapshot
+  Iteration 1:
+  fstat(3, 0xbfffc8c0) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342177280 (0x50000000)
+  read(3, 0x50000000, 4096) = 31 (0x0000001f)
+  fstat(1, 0xbfffc580) = 0 (0x00000000)
+  mmap(0x00000000, 4096, 0x3, 0x22, -1, 0) = 1342181376 (0x50001000)
+  write(1, 0x50001000, 12)
+  read a test
+   = 12 (0x0000000c)
+  write(1, 0x50001000, 12)
+  Starting f1
+   = 12 (0x0000000c)
+  SRFM#make_sym_snap called
+  FM#make_f1_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f1_special_handlers_snap
+  linux_syscalls#make_f1_snap called
+  linux_syscalls#make_snap called
+  SRFM#save_sym_se saving f1_hash_list.length = 0
+  FM#save_f1_conc_se called
+  AS#ready to apply (0.000000 sec). eof1
+  GSSM#reset4_3 4 -> 3 
+  GSM#reset called
+  GHM#clear called
+  FM#reset_f1_special_handlers_snap
+  linux_syscalls#reset_f1_snap called
+  write(1, 0x50001000, 13)
+  Completed f1
+   = 13 (0x0000000d)
+  write(1, 0x50001000, 20)
+  Starting adapted_f1
+   = 20 (0x00000014)
+  SRFM#make_f2_sym_snap called
+  FM#make_f2_conc_snap called
+  GSSM#make_snap 3 -> 4
+  GSM#make_snap called
+  FM#make_f2_special_handlers_snap
+  linux_syscalls#make_f2_snap called
+  linux_syscalls#make_snap called
+  Starting simple adaptor
+  setting arg= f_is_const_13559:reg1_t <> false  ? f_val_13558:reg64_t :
+   ( f_val_13558:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  setting arg= e_is_const_13563:reg1_t <> false  ? e_val_13562:reg64_t :
+   ( e_val_13562:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  setting arg= d_is_const_13567:reg1_t <> false  ? d_val_13566:reg64_t :
+   ( d_val_13566:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  setting arg= c_is_const_13571:reg1_t <> false  ? c_val_13570:reg64_t :
+   ( c_val_13570:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  setting arg= b_is_const_13575:reg1_t <> false  ? b_val_13574:reg64_t :
+   ( b_val_13574:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  setting arg= a_is_const_13579:reg1_t <> false  ? a_val_13578:reg64_t :
+   ( a_val_13578:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  AS#ready to apply (0.000000 sec). sof2
+  SRFM#Generating structure adaptor formulas...exec_runloop#thunk() should save arg regs here
+  t0 =  c_is_const_13571:reg1_t <> false  ? c_val_13570:reg64_t :
+   ( c_val_13570:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  t1 =  b_is_const_13575:reg1_t <> false  ? b_val_13574:reg64_t :
+   ( b_val_13574:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  t2 =  a_is_const_13579:reg1_t <> false  ? a_val_13578:reg64_t :
+   ( a_val_13578:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420000:reg64_t)
+  t3 =  d_is_const_13567:reg1_t <> false  ? cast(d_val_13566:reg64_t)L:reg32_t :
+   ( d_val_13566:reg64_t == 1:reg64_t  ? 1:reg32_t : 0x42420000:reg32_t)
+  t4 =  c_is_const_13571:reg1_t <> false  ?
+     (c_val_13570:reg64_t & 0xffffffffffffff00:reg64_t)  | 1:reg64_t  :
+   ( c_val_13570:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420001:reg64_t)
+  t5 =  b_is_const_13575:reg1_t <> false  ?
+     (b_val_13574:reg64_t & 0xffffffffffffff00:reg64_t)  | 1:reg64_t  :
+   ( b_val_13574:reg64_t == 1:reg64_t  ? 1:reg64_t : 0x42420001:reg64_t)
+  t6 =  ( a_is_const_13579:reg1_t <> false  ?
+    a_val_13578:reg64_t & 0xffffffffffffff00:reg64_t  :
+   ( a_val_13578:reg64_t == 1:reg64_t  ? 0:reg64_t : 0x42420000:reg64_t))
+   | cast(cast(t4_93606:reg64_t)L:reg8_t)U:reg64_t
+   
+  t7 =  cast( cast(t6_93615:reg64_t)L:reg8_t & cast(t5_93612:reg64_t)L:reg8_t )U:
+   reg64_t == 0:reg64_t 
+  t8 =  cast( cast(t6_93615:reg64_t)L:reg8_t & cast(t5_93612:reg64_t)L:reg8_t )U:
+   reg64_t |  (t6_93615:reg64_t & 0xffffffffffffff00:reg64_t)  
+  t9 =  cast( cast(t5_93612:reg64_t)L:reg8_t ^ cast(t4_93606:reg64_t)L:reg8_t )U:
+   reg64_t == 0:reg64_t 
+  t10 =  cast( cast(t5_93612:reg64_t)L:reg8_t ^ cast(t4_93606:reg64_t)L:reg8_t )U:
+   reg64_t |  (t4_93606:reg64_t & 0xffffffffffffff00:reg64_t)  
+  t11 =  cast( cast(t10_93629:reg64_t)L:reg8_t | cast(t8_93622:reg64_t)L:reg8_t )U:
+   reg64_t == 0:reg64_t 
+  t12 =  cast( cast(t10_93629:reg64_t)L:reg8_t | cast(t8_93622:reg64_t)L:reg8_t )U:
+   reg64_t |  (t8_93622:reg64_t & 0xffffffffffffff00:reg64_t)  
+  t13 =  cast( cast(t12_93636:reg64_t)L:reg8_t & 1:reg8_t )U:reg64_t == 0:reg64_t  ?
+   0x4979878a:reg64_t : 0x894cc130:reg64_t
+  t14 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8012e644:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7fed19bc:reg32_t 
+   
+  t15 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8012e644:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8012e644:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t14_93668:reg1_t)
+    
+  Symbolic branch condition (0x004011b7) t15_93669:reg1_t
+  Current Path String: 
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 1
+  Current path: 1
+  t16 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80206119:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7fdf9ee7:reg32_t 
+   
+  t17 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80206119:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80206119:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t16_93670:reg1_t)
+    
+  Symbolic branch condition (0x004011d3) t17_93671:reg1_t
+  Current Path String: 1
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 11
+  Current path: 11
+  t18 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8029f0ac:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7fd60f54:reg32_t 
+   
+  t19 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8029f0ac:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8029f0ac:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t18_93672:reg1_t)
+    
+  Symbolic branch condition (0x004011ef) t19_93673:reg1_t
+  Current Path String: 11
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 111
+  Current path: 111
+  t20 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff803423ca:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7fcbdc36:reg32_t 
+   
+  t21 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff803423ca:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff803423ca:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t20_93674:reg1_t)
+    
+  Symbolic branch condition (0x0040120b) t21_93675:reg1_t
+  Current Path String: 111
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 1111
+  Current path: 1111
+  t22 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ff8b195:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x80074e6b:reg32_t 
+   
+  t23 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ff8b195:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ff8b195:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t22_93676:reg1_t)
+    
+  Symbolic branch condition (0x00401227) t23_93677:reg1_t
+  Current Path String: 1111
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110
+  Current path: 11110
+  t24 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ff56fde:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x800a9022:reg32_t 
+   
+  t25 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ff56fde:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ff56fde:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t24_93678:reg1_t)
+    
+  Symbolic branch condition (0x0040125f) t25_93679:reg1_t
+  Current Path String: 11110
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100
+  Current path: 111100
+  t26 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7fd3cff6:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x802c300a:reg32_t 
+   
+  t27 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7fd3cff6:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7fd3cff6:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t26_93680:reg1_t)
+    
+  Symbolic branch condition (0x00401297) t27_93681:reg1_t
+  Current Path String: 111100
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000
+  Current path: 1111000
+  t28 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7fb466e0:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x804b9920:reg32_t 
+   
+  t29 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7fb466e0:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7fb466e0:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t28_93682:reg1_t)
+    
+  Symbolic branch condition (0x004012cf) t29_93683:reg1_t
+  Current Path String: 1111000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000
+  Current path: 11110000
+  t30 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7fb2734e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x804d8cb2:reg32_t 
+   
+  t31 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7fb2734e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7fb2734e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t30_93684:reg1_t)
+    
+  Symbolic branch condition (0x00401307) t31_93685:reg1_t
+  Current Path String: 11110000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000
+  Current path: 111100000
+  t32 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7faf7d9f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x80508261:reg32_t 
+   
+  t33 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7faf7d9f:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7faf7d9f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t32_93686:reg1_t)
+    
+  Symbolic branch condition (0x0040133f) t33_93687:reg1_t
+  Current Path String: 111100000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000
+  Current path: 1111000000
+  t34 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f8e6b03:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x807194fd:reg32_t 
+   
+  t35 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f8e6b03:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f8e6b03:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t34_93688:reg1_t)
+    
+  Symbolic branch condition (0x00401377) t35_93689:reg1_t
+  Current Path String: 1111000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000
+  Current path: 11110000000
+  t36 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f7e40bf:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8081bf41:reg32_t 
+   
+  t37 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f7e40bf:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f7e40bf:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t36_93690:reg1_t)
+    
+  Symbolic branch condition (0x004013af) t37_93691:reg1_t
+  Current Path String: 11110000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000
+  Current path: 111100000000
+  t38 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f774c21:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8088b3df:reg32_t 
+   
+  t39 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f774c21:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f774c21:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t38_93692:reg1_t)
+    
+  Symbolic branch condition (0x004013e7) t39_93693:reg1_t
+  Current Path String: 111100000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000
+  Current path: 1111000000000
+  t40 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f6688b4:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8099774c:reg32_t 
+   
+  t41 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f6688b4:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f6688b4:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t40_93694:reg1_t)
+    
+  Symbolic branch condition (0x0040141f) t41_93695:reg1_t
+  Current Path String: 1111000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000
+  Current path: 11110000000000
+  t42 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f3e2792:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x80c1d86e:reg32_t 
+   
+  t43 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f3e2792:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f3e2792:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t42_93696:reg1_t)
+    
+  Symbolic branch condition (0x00401457) t43_93697:reg1_t
+  Current Path String: 11110000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000
+  Current path: 111100000000000
+  t44 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f3c1941:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x80c3e6bf:reg32_t 
+   
+  t45 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f3c1941:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f3c1941:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t44_93698:reg1_t)
+    
+  Symbolic branch condition (0x0040148f) t45_93699:reg1_t
+  Current Path String: 111100000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000
+  Current path: 1111000000000000
+  t46 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f3347dd:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x80ccb823:reg32_t 
+   
+  t47 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f3347dd:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f3347dd:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t46_93700:reg1_t)
+    
+  Symbolic branch condition (0x004014c7) t47_93701:reg1_t
+  Current Path String: 1111000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000
+  Current path: 11110000000000000
+  t48 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f22e177:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x80dd1e89:reg32_t 
+   
+  t49 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f22e177:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7f22e177:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t48_93702:reg1_t)
+    
+  Symbolic branch condition (0x004014ff) t49_93703:reg1_t
+  Current Path String: 11110000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000
+  Current path: 111100000000000000
+  t50 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7efc5b5d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8103a4a3:reg32_t 
+   
+  t51 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7efc5b5d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7efc5b5d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t50_93704:reg1_t)
+    
+  Symbolic branch condition (0x00401537) t51_93705:reg1_t
+  Current Path String: 111100000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000
+  Current path: 1111000000000000000
+  t52 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ef6d2b7:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x81092d49:reg32_t 
+   
+  t53 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ef6d2b7:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ef6d2b7:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t52_93706:reg1_t)
+    
+  Symbolic branch condition (0x0040156f) t53_93707:reg1_t
+  Current Path String: 1111000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000
+  Current path: 11110000000000000000
+  t54 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff804ba43a:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7fb45bc6:reg32_t 
+   
+  t55 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff804ba43a:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff804ba43a:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t54_93708:reg1_t)
+    
+  Symbolic branch condition (0x004015a7) t55_93709:reg1_t
+  Current Path String: 11110000000000000000
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 111100000000000000001
+  Current path: 111100000000000000001
+  t56 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff804d5654:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7fb2a9ac:reg32_t 
+   
+  t57 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff804d5654:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff804d5654:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t56_93710:reg1_t)
+    
+  Symbolic branch condition (0x004015c3) t57_93711:reg1_t
+  Current Path String: 111100000000000000001
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 1111000000000000000011
+  Current path: 1111000000000000000011
+  t58 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8065f21b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7f9a0de5:reg32_t 
+   
+  t59 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8065f21b:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8065f21b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t58_93712:reg1_t)
+    
+  Symbolic branch condition (0x004015df) t59_93713:reg1_t
+  Current Path String: 1111000000000000000011
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 11110000000000000000111
+  Current path: 11110000000000000000111
+  t60 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8081ba4b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7f7e45b5:reg32_t 
+   
+  t61 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8081ba4b:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8081ba4b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t60_93714:reg1_t)
+    
+  Symbolic branch condition (0x004015fb) t61_93715:reg1_t
+  Current Path String: 11110000000000000000111
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 111100000000000000001111
+  Current path: 111100000000000000001111
+  t62 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff808791dc:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7f786e24:reg32_t 
+   
+  t63 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff808791dc:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff808791dc:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t62_93716:reg1_t)
+    
+  Symbolic branch condition (0x00401617) t63_93717:reg1_t
+  Current Path String: 111100000000000000001111
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 1111000000000000000011111
+  Current path: 1111000000000000000011111
+  t64 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8089d0f1:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7f762f0f:reg32_t 
+   
+  t65 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8089d0f1:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8089d0f1:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t64_93718:reg1_t)
+    
+  Symbolic branch condition (0x00401633) t65_93719:reg1_t
+  Current Path String: 1111000000000000000011111
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 11110000000000000000111111
+  Current path: 11110000000000000000111111
+  t66 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8095fcff:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7f6a0301:reg32_t 
+   
+  t67 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8095fcff:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff8095fcff:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t66_93720:reg1_t)
+    
+  Symbolic branch condition (0x0040164f) t67_93721:reg1_t
+  Current Path String: 11110000000000000000111111
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 111100000000000000001111111
+  Current path: 111100000000000000001111111
+  t68 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff809934d0:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7f66cb30:reg32_t 
+   
+  t69 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff809934d0:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff809934d0:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t68_93722:reg1_t)
+    
+  Symbolic branch condition (0x0040166b) t69_93723:reg1_t
+  Current Path String: 111100000000000000001111111
+  Trying true: Satisfiable.
+  Trying false: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111
+  Current path: 1111000000000000000011111111
+  t70 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80bdb4d2:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7f424b2e:reg32_t 
+   
+  t71 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80bdb4d2:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80bdb4d2:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t70_93724:reg1_t)
+    
+  Symbolic branch condition (0x00401687) t71_93725:reg1_t
+  Current Path String: 1111000000000000000011111111
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 11110000000000000000111111111
+  Current path: 11110000000000000000111111111
+  t72 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80c3e5e3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7f3c1a1d:reg32_t 
+   
+  t73 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80c3e5e3:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80c3e5e3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t72_93726:reg1_t)
+    
+  Symbolic branch condition (0x004016a3) t73_93727:reg1_t
+  Current Path String: 11110000000000000000111111111
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 111100000000000000001111111111
+  Current path: 111100000000000000001111111111
+  t74 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80c9eb77:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x7f361489:reg32_t 
+   
+  t75 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80c9eb77:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff80c9eb77:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t74_93728:reg1_t)
+    
+  Symbolic branch condition (0x004016bf) t75_93729:reg1_t
+  Current Path String: 111100000000000000001111111111
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 1111000000000000000011111111111
+  Current path: 1111000000000000000011111111111
+  t76 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ef57047:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x810a8fb9:reg32_t 
+   
+  t77 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ef57047:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ef57047:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t76_93730:reg1_t)
+    
+  Symbolic branch condition (0x004016db) t77_93731:reg1_t
+  Current Path String: 1111000000000000000011111111111
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110
+  Current path: 11110000000000000000111111111110
+  t78 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ee5bc45:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x811a43bb:reg32_t 
+   
+  t79 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ee5bc45:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ee5bc45:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t78_93732:reg1_t)
+    
+  Symbolic branch condition (0x00401713) t79_93733:reg1_t
+  Current Path String: 11110000000000000000111111111110
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100
+  Current path: 111100000000000000001111111111100
+  t80 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ecd9870:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x81326790:reg32_t 
+   
+  t81 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ecd9870:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ecd9870:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t80_93734:reg1_t)
+    
+  Symbolic branch condition (0x0040174b) t81_93735:reg1_t
+  Current Path String: 111100000000000000001111111111100
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000
+  Current path: 1111000000000000000011111111111000
+  t82 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ec32e74:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x813cd18c:reg32_t 
+   
+  t83 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ec32e74:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ec32e74:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t82_93736:reg1_t)
+    
+  Symbolic branch condition (0x00401783) t83_93737:reg1_t
+  Current Path String: 1111000000000000000011111111111000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000
+  Current path: 11110000000000000000111111111110000
+  t84 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7eb93de5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8146c21b:reg32_t 
+   
+  t85 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7eb93de5:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7eb93de5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t84_93738:reg1_t)
+    
+  Symbolic branch condition (0x004017bb) t85_93739:reg1_t
+  Current Path String: 11110000000000000000111111111110000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000
+  Current path: 111100000000000000001111111111100000
+  t86 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7eb0eeea:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x814f1116:reg32_t 
+   
+  t87 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7eb0eeea:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7eb0eeea:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t86_93740:reg1_t)
+    
+  Symbolic branch condition (0x004017f3) t87_93741:reg1_t
+  Current Path String: 111100000000000000001111111111100000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000
+  Current path: 1111000000000000000011111111111000000
+  t88 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ea9d934:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x815626cc:reg32_t 
+   
+  t89 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ea9d934:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ea9d934:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t88_93742:reg1_t)
+    
+  Symbolic branch condition (0x0040182b) t89_93743:reg1_t
+  Current Path String: 1111000000000000000011111111111000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000
+  Current path: 11110000000000000000111111111110000000
+  t90 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e9f9c37:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x816063c9:reg32_t 
+   
+  t91 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e9f9c37:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e9f9c37:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t90_93744:reg1_t)
+    
+  Symbolic branch condition (0x00401863) t91_93745:reg1_t
+  Current Path String: 11110000000000000000111111111110000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000
+  Current path: 111100000000000000001111111111100000000
+  t92 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e9ab651:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x816549af:reg32_t 
+   
+  t93 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e9ab651:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e9ab651:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t92_93746:reg1_t)
+    
+  Symbolic branch condition (0x0040189b) t93_93747:reg1_t
+  Current Path String: 111100000000000000001111111111100000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000
+  Current path: 1111000000000000000011111111111000000000
+  t94 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e7fba40:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x818045c0:reg32_t 
+   
+  t95 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e7fba40:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e7fba40:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t94_93748:reg1_t)
+    
+  Symbolic branch condition (0x004018d3) t95_93749:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000
+  Current path: 11110000000000000000111111111110000000000
+  t96 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e6caa8a:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x81935576:reg32_t 
+   
+  t97 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e6caa8a:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e6caa8a:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t96_93750:reg1_t)
+    
+  Symbolic branch condition (0x0040190b) t97_93751:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000
+  Current path: 111100000000000000001111111111100000000000
+  t98 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e4b4716:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x81b4b8ea:reg32_t 
+   
+  t99 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e4b4716:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e4b4716:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t98_93752:reg1_t)
+    
+  Symbolic branch condition (0x00401943) t99_93753:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000
+  Current path: 1111000000000000000011111111111000000000000
+  t100 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e35647d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x81ca9b83:reg32_t 
+   
+  t101 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e35647d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e35647d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t100_93754:reg1_t)
+    
+  Symbolic branch condition (0x0040197b) t101_93755:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000
+  Current path: 11110000000000000000111111111110000000000000
+  t102 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e27aac3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x81d8553d:reg32_t 
+   
+  t103 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e27aac3:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e27aac3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t102_93756:reg1_t)
+    
+  Symbolic branch condition (0x004019b3) t103_93757:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000
+  Current path: 111100000000000000001111111111100000000000000
+  t104 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e0f62d7:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x81f09d29:reg32_t 
+   
+  t105 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e0f62d7:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7e0f62d7:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t104_93758:reg1_t)
+    
+  Symbolic branch condition (0x004019eb) t105_93759:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000
+  Current path: 1111000000000000000011111111111000000000000000
+  t106 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7dfcde44:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x820321bc:reg32_t 
+   
+  t107 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7dfcde44:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7dfcde44:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t106_93760:reg1_t)
+    
+  Symbolic branch condition (0x00401a23) t107_93761:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000
+  Current path: 11110000000000000000111111111110000000000000000
+  t108 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7de14c2b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x821eb3d5:reg32_t 
+   
+  t109 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7de14c2b:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7de14c2b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t108_93762:reg1_t)
+    
+  Symbolic branch condition (0x00401a5b) t109_93763:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000
+  Current path: 111100000000000000001111111111100000000000000000
+  t110 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7dd464a5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x822b9b5b:reg32_t 
+   
+  t111 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7dd464a5:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7dd464a5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t110_93764:reg1_t)
+    
+  Symbolic branch condition (0x00401a93) t111_93765:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000
+  t112 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7dc301ce:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x823cfe32:reg32_t 
+   
+  t113 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7dc301ce:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7dc301ce:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t112_93766:reg1_t)
+    
+  Symbolic branch condition (0x00401acb) t113_93767:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000
+  t114 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7da5aec9:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x825a5137:reg32_t 
+   
+  t115 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7da5aec9:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7da5aec9:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t114_93768:reg1_t)
+    
+  Symbolic branch condition (0x00401b03) t115_93769:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000
+  t116 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7da405a3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x825bfa5d:reg32_t 
+   
+  t117 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7da405a3:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7da405a3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t116_93770:reg1_t)
+    
+  Symbolic branch condition (0x00401b3b) t117_93771:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000
+  t118 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d8b3869:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8274c797:reg32_t 
+   
+  t119 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d8b3869:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d8b3869:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t118_93772:reg1_t)
+    
+  Symbolic branch condition (0x00401b73) t119_93773:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000
+  t120 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d8370a7:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x827c8f59:reg32_t 
+   
+  t121 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d8370a7:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d8370a7:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t120_93774:reg1_t)
+    
+  Symbolic branch condition (0x00401bab) t121_93775:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000
+  t122 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d7ba056:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82845faa:reg32_t 
+   
+  t123 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d7ba056:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d7ba056:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t122_93776:reg1_t)
+    
+  Symbolic branch condition (0x00401be3) t123_93777:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000
+  t124 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d52bd10:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82ad42f0:reg32_t 
+   
+  t125 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d52bd10:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d52bd10:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t124_93778:reg1_t)
+    
+  Symbolic branch condition (0x00401c1b) t125_93779:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000
+  t126 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d454da9:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82bab257:reg32_t 
+   
+  t127 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d454da9:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d454da9:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t126_93780:reg1_t)
+    
+  Symbolic branch condition (0x00401c53) t127_93781:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000
+  t128 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d3c654f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82c39ab1:reg32_t 
+   
+  t129 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d3c654f:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d3c654f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t128_93782:reg1_t)
+    
+  Symbolic branch condition (0x00401c8b) t129_93783:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000
+  t130 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d38cf7f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82c73081:reg32_t 
+   
+  t131 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d38cf7f:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d38cf7f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t130_93784:reg1_t)
+    
+  Symbolic branch condition (0x00401cc3) t131_93785:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000
+  t132 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d3896bb:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82c76945:reg32_t 
+   
+  t133 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d3896bb:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d3896bb:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t132_93786:reg1_t)
+    
+  Symbolic branch condition (0x00401cfb) t133_93787:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000
+  t134 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d1f5a11:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82e0a5ef:reg32_t 
+   
+  t135 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d1f5a11:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d1f5a11:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t134_93788:reg1_t)
+    
+  Symbolic branch condition (0x00401d33) t135_93789:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000
+  t136 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d1c2409:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82e3dbf7:reg32_t 
+   
+  t137 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d1c2409:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d1c2409:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t136_93790:reg1_t)
+    
+  Symbolic branch condition (0x00401d6b) t137_93791:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000
+  t138 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d1675d2:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82e98a2e:reg32_t 
+   
+  t139 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d1675d2:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d1675d2:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t138_93792:reg1_t)
+    
+  Symbolic branch condition (0x00401da3) t139_93793:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000
+  t140 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d15db2c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82ea24d4:reg32_t 
+   
+  t141 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d15db2c:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d15db2c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t140_93794:reg1_t)
+    
+  Symbolic branch condition (0x00401ddb) t141_93795:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000
+  t142 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d0bfa45:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x82f405bb:reg32_t 
+   
+  t143 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d0bfa45:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7d0bfa45:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t142_93796:reg1_t)
+    
+  Symbolic branch condition (0x00401e13) t143_93797:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000
+  t144 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ce2fdcd:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x831d0233:reg32_t 
+   
+  t145 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ce2fdcd:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ce2fdcd:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t144_93798:reg1_t)
+    
+  Symbolic branch condition (0x00401e4b) t145_93799:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000
+  t146 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7cdc0f2d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8323f0d3:reg32_t 
+   
+  t147 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7cdc0f2d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7cdc0f2d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t146_93800:reg1_t)
+    
+  Symbolic branch condition (0x00401e83) t147_93801:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000
+  t148 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7cd905f3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8326fa0d:reg32_t 
+   
+  t149 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7cd905f3:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7cd905f3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t148_93802:reg1_t)
+    
+  Symbolic branch condition (0x00401ebb) t149_93803:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000
+  t150 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c84987e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x837b6782:reg32_t 
+   
+  t151 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c84987e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c84987e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t150_93804:reg1_t)
+    
+  Symbolic branch condition (0x00401ef3) t151_93805:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000
+  t152 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c7d778d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x83828873:reg32_t 
+   
+  t153 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c7d778d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c7d778d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t152_93806:reg1_t)
+    
+  Symbolic branch condition (0x00401f2b) t153_93807:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000
+  t154 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c3fa482:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x83c05b7e:reg32_t 
+   
+  t155 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c3fa482:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c3fa482:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t154_93808:reg1_t)
+    
+  Symbolic branch condition (0x00401f63) t155_93809:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000
+  t156 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c27e0fb:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x83d81f05:reg32_t 
+   
+  t157 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c27e0fb:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c27e0fb:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t156_93810:reg1_t)
+    
+  Symbolic branch condition (0x00401f9b) t157_93811:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000
+  t158 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c1a23f3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x83e5dc0d:reg32_t 
+   
+  t159 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c1a23f3:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c1a23f3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t158_93812:reg1_t)
+    
+  Symbolic branch condition (0x00401fd3) t159_93813:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000
+  t160 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c17c82f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x83e837d1:reg32_t 
+   
+  t161 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c17c82f:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c17c82f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t160_93814:reg1_t)
+    
+  Symbolic branch condition (0x0040200b) t161_93815:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000
+  t162 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c088430:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x83f77bd0:reg32_t 
+   
+  t163 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c088430:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7c088430:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t162_93816:reg1_t)
+    
+  Symbolic branch condition (0x00402043) t163_93817:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000
+  t164 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bfc7467:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x84038b99:reg32_t 
+   
+  t165 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bfc7467:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bfc7467:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t164_93818:reg1_t)
+    
+  Symbolic branch condition (0x0040207b) t165_93819:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000
+  t166 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bde8801:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x842177ff:reg32_t 
+   
+  t167 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bde8801:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bde8801:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t166_93820:reg1_t)
+    
+  Symbolic branch condition (0x004020b3) t167_93821:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000
+  t168 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bd49a37:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x842b65c9:reg32_t 
+   
+  t169 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bd49a37:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bd49a37:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t168_93822:reg1_t)
+    
+  Symbolic branch condition (0x004020eb) t169_93823:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000
+  t170 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bc23e15:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x843dc1eb:reg32_t 
+   
+  t171 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bc23e15:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bc23e15:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t170_93824:reg1_t)
+    
+  Symbolic branch condition (0x00402123) t171_93825:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000
+  t172 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bbddcd3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8442232d:reg32_t 
+   
+  t173 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bbddcd3:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bbddcd3:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t172_93826:reg1_t)
+    
+  Symbolic branch condition (0x0040215b) t173_93827:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000
+  t174 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bbcb8f8:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x84434708:reg32_t 
+   
+  t175 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bbcb8f8:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7bbcb8f8:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t174_93828:reg1_t)
+    
+  Symbolic branch condition (0x00402193) t175_93829:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000
+  t176 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b80ed9e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x847f1262:reg32_t 
+   
+  t177 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b80ed9e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b80ed9e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t176_93830:reg1_t)
+    
+  Symbolic branch condition (0x004021cb) t177_93831:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000
+  t178 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b61da7e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x849e2582:reg32_t 
+   
+  t179 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b61da7e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b61da7e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t178_93832:reg1_t)
+    
+  Symbolic branch condition (0x00402203) t179_93833:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000
+  t180 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b59e345:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x84a61cbb:reg32_t 
+   
+  t181 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b59e345:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b59e345:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t180_93834:reg1_t)
+    
+  Symbolic branch condition (0x0040223b) t181_93835:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000
+  t182 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b2607e8:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x84d9f818:reg32_t 
+   
+  t183 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b2607e8:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b2607e8:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t182_93836:reg1_t)
+    
+  Symbolic branch condition (0x00402273) t183_93837:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000
+  t184 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b230fff:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x84dcf001:reg32_t 
+   
+  t185 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b230fff:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b230fff:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t184_93838:reg1_t)
+    
+  Symbolic branch condition (0x004022ab) t185_93839:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000
+  t186 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b164c78:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x84e9b388:reg32_t 
+   
+  t187 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b164c78:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b164c78:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t186_93840:reg1_t)
+    
+  Symbolic branch condition (0x004022e3) t187_93841:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000
+  t188 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b065a5f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x84f9a5a1:reg32_t 
+   
+  t189 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b065a5f:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7b065a5f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t188_93842:reg1_t)
+    
+  Symbolic branch condition (0x0040231b) t189_93843:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000
+  t190 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7afd1b1e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8502e4e2:reg32_t 
+   
+  t191 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7afd1b1e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7afd1b1e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t190_93844:reg1_t)
+    
+  Symbolic branch condition (0x00402353) t191_93845:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000
+  t192 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7af6ab3c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x850954c4:reg32_t 
+   
+  t193 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7af6ab3c:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7af6ab3c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t192_93846:reg1_t)
+    
+  Symbolic branch condition (0x0040238b) t193_93847:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000
+  t194 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7af125a9:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x850eda57:reg32_t 
+   
+  t195 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7af125a9:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7af125a9:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t194_93848:reg1_t)
+    
+  Symbolic branch condition (0x004023c3) t195_93849:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000
+  t196 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7aedcf1e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x851230e2:reg32_t 
+   
+  t197 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7aedcf1e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7aedcf1e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t196_93850:reg1_t)
+    
+  Symbolic branch condition (0x004023fb) t197_93851:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000
+  t198 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7add05ab:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8522fa55:reg32_t 
+   
+  t199 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7add05ab:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7add05ab:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t198_93852:reg1_t)
+    
+  Symbolic branch condition (0x00402433) t199_93853:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000
+  t200 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ac9d5b5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x85362a4b:reg32_t 
+   
+  t201 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ac9d5b5:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7ac9d5b5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t200_93854:reg1_t)
+    
+  Symbolic branch condition (0x0040246b) t201_93855:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000
+  t202 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7aae7b23:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x855184dd:reg32_t 
+   
+  t203 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7aae7b23:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7aae7b23:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t202_93856:reg1_t)
+    
+  Symbolic branch condition (0x004024a3) t203_93857:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000
+  t204 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a95e44c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x856a1bb4:reg32_t 
+   
+  t205 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a95e44c:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a95e44c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t204_93858:reg1_t)
+    
+  Symbolic branch condition (0x004024db) t205_93859:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000
+  t206 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a6a63b8:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x85959c48:reg32_t 
+   
+  t207 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a6a63b8:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a6a63b8:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t206_93860:reg1_t)
+    
+  Symbolic branch condition (0x00402513) t207_93861:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000
+  t208 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a67251e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8598dae2:reg32_t 
+   
+  t209 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a67251e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a67251e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t208_93862:reg1_t)
+    
+  Symbolic branch condition (0x0040254b) t209_93863:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000
+  t210 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a5f0e20:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x85a0f1e0:reg32_t 
+   
+  t211 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a5f0e20:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a5f0e20:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t210_93864:reg1_t)
+    
+  Symbolic branch condition (0x00402583) t211_93865:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000
+  t212 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a5cb3d9:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x85a34c27:reg32_t 
+   
+  t213 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a5cb3d9:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a5cb3d9:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t212_93866:reg1_t)
+    
+  Symbolic branch condition (0x004025bb) t213_93867:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000
+  t214 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a44ec1d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x85bb13e3:reg32_t 
+   
+  t215 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a44ec1d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a44ec1d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t214_93868:reg1_t)
+    
+  Symbolic branch condition (0x004025f3) t215_93869:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000
+  t216 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a4135ef:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x85beca11:reg32_t 
+   
+  t217 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a4135ef:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a4135ef:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t216_93870:reg1_t)
+    
+  Symbolic branch condition (0x0040262b) t217_93871:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000
+  t218 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a20b55c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x85df4aa4:reg32_t 
+   
+  t219 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a20b55c:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a20b55c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t218_93872:reg1_t)
+    
+  Symbolic branch condition (0x00402663) t219_93873:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000
+  t220 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a11d322:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x85ee2cde:reg32_t 
+   
+  t221 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a11d322:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7a11d322:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t220_93874:reg1_t)
+    
+  Symbolic branch condition (0x0040269b) t221_93875:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000
+  t222 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79ed8513:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86127aed:reg32_t 
+   
+  t223 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79ed8513:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79ed8513:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t222_93876:reg1_t)
+    
+  Symbolic branch condition (0x004026d3) t223_93877:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000
+  t224 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79d70338:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8628fcc8:reg32_t 
+   
+  t225 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79d70338:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79d70338:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t224_93878:reg1_t)
+    
+  Symbolic branch condition (0x0040270b) t225_93879:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000
+  t226 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79c9774c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x863688b4:reg32_t 
+   
+  t227 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79c9774c:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79c9774c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t226_93880:reg1_t)
+    
+  Symbolic branch condition (0x00402743) t227_93881:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000
+  t228 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79baeb6f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86451491:reg32_t 
+   
+  t229 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79baeb6f:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79baeb6f:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t228_93882:reg1_t)
+    
+  Symbolic branch condition (0x0040277b) t229_93883:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000
+  t230 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79a6973e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x865968c2:reg32_t 
+   
+  t231 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79a6973e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79a6973e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t230_93884:reg1_t)
+    
+  Symbolic branch condition (0x004027b3) t231_93885:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t232 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff799e8876:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8661778a:reg32_t 
+   
+  t233 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff799e8876:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff799e8876:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t232_93886:reg1_t)
+    
+  Symbolic branch condition (0x004027eb) t233_93887:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t234 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff799a6176:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86659e8a:reg32_t 
+   
+  t235 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff799a6176:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff799a6176:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t234_93888:reg1_t)
+    
+  Symbolic branch condition (0x00402823) t235_93889:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t236 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79846010:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x867b9ff0:reg32_t 
+   
+  t237 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79846010:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79846010:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t236_93890:reg1_t)
+    
+  Symbolic branch condition (0x0040285b) t237_93891:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t238 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7966129e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8699ed62:reg32_t 
+   
+  t239 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7966129e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7966129e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t238_93892:reg1_t)
+    
+  Symbolic branch condition (0x00402893) t239_93893:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t240 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff794d9881:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86b2677f:reg32_t 
+   
+  t241 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff794d9881:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff794d9881:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t240_93894:reg1_t)
+    
+  Symbolic branch condition (0x004028cb) t241_93895:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t242 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79495c4d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86b6a3b3:reg32_t 
+   
+  t243 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79495c4d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79495c4d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t242_93896:reg1_t)
+    
+  Symbolic branch condition (0x00402903) t243_93897:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t244 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79481d49:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86b7e2b7:reg32_t 
+   
+  t245 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79481d49:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79481d49:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t244_93898:reg1_t)
+    
+  Symbolic branch condition (0x0040293b) t245_93899:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t246 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff793343a1:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86ccbc5f:reg32_t 
+   
+  t247 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff793343a1:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff793343a1:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t246_93900:reg1_t)
+    
+  Symbolic branch condition (0x00402973) t247_93901:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t248 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff791d323e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86e2cdc2:reg32_t 
+   
+  t249 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff791d323e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff791d323e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t248_93902:reg1_t)
+    
+  Symbolic branch condition (0x004029ab) t249_93903:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t250 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79198491:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86e67b6f:reg32_t 
+   
+  t251 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79198491:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79198491:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t250_93904:reg1_t)
+    
+  Symbolic branch condition (0x004029e3) t251_93905:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t252 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7914f06c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86eb0f94:reg32_t 
+   
+  t253 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7914f06c:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7914f06c:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t252_93906:reg1_t)
+    
+  Symbolic branch condition (0x00402a1b) t253_93907:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t254 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79046599:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86fb9a67:reg32_t 
+   
+  t255 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79046599:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff79046599:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t254_93908:reg1_t)
+    
+  Symbolic branch condition (0x00402a53) t255_93909:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t256 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7900acf6:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x86ff530a:reg32_t 
+   
+  t257 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7900acf6:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff7900acf6:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t256_93910:reg1_t)
+    
+  Symbolic branch condition (0x00402a8b) t257_93911:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t258 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78fc7c98:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x87038368:reg32_t 
+   
+  t259 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78fc7c98:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78fc7c98:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t258_93912:reg1_t)
+    
+  Symbolic branch condition (0x00402ac3) t259_93913:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t260 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78f04c4b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x870fb3b5:reg32_t 
+   
+  t261 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78f04c4b:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78f04c4b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t260_93914:reg1_t)
+    
+  Symbolic branch condition (0x00402afb) t261_93915:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t262 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78ef190e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8710e6f2:reg32_t 
+   
+  t263 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78ef190e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78ef190e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t262_93916:reg1_t)
+    
+  Symbolic branch condition (0x00402b33) t263_93917:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t264 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78ea011d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8715fee3:reg32_t 
+   
+  t265 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78ea011d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78ea011d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t264_93918:reg1_t)
+    
+  Symbolic branch condition (0x00402b6b) t265_93919:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t266 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78c68761:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8739789f:reg32_t 
+   
+  t267 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78c68761:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78c68761:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t266_93920:reg1_t)
+    
+  Symbolic branch condition (0x00402ba3) t267_93921:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t268 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78b65dd0:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8749a230:reg32_t 
+   
+  t269 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78b65dd0:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78b65dd0:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t268_93922:reg1_t)
+    
+  Symbolic branch condition (0x00402bdb) t269_93923:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t270 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78a6fde5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8759021b:reg32_t 
+   
+  t271 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78a6fde5:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78a6fde5:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t270_93924:reg1_t)
+    
+  Symbolic branch condition (0x00402c13) t271_93925:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t272 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff788e2cd6:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8771d32a:reg32_t 
+   
+  t273 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff788e2cd6:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff788e2cd6:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t272_93926:reg1_t)
+    
+  Symbolic branch condition (0x00402c4b) t273_93927:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t274 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff788a6be8:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x87759418:reg32_t 
+   
+  t275 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff788a6be8:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff788a6be8:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t274_93928:reg1_t)
+    
+  Symbolic branch condition (0x00402c83) t275_93929:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t276 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78819a60:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x877e65a0:reg32_t 
+   
+  t277 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78819a60:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff78819a60:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t276_93930:reg1_t)
+    
+  Symbolic branch condition (0x00402cbb) t277_93931:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t278 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff783c7fef:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x87c38011:reg32_t 
+   
+  t279 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff783c7fef:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff783c7fef:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t278_93932:reg1_t)
+    
+  Symbolic branch condition (0x00402cf3) t279_93933:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t280 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff781ecaed:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x87e13513:reg32_t 
+   
+  t281 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff781ecaed:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff781ecaed:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t280_93934:reg1_t)
+    
+  Symbolic branch condition (0x00402d2b) t281_93935:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t282 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff781caf31:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x87e350cf:reg32_t 
+   
+  t283 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff781caf31:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff781caf31:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t282_93936:reg1_t)
+    
+  Symbolic branch condition (0x00402d63) t283_93937:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t284 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77d0bf7d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x882f4083:reg32_t 
+   
+  t285 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77d0bf7d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77d0bf7d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t284_93938:reg1_t)
+    
+  Symbolic branch condition (0x00402d9b) t285_93939:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t286 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77cc9f88:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x88336078:reg32_t 
+   
+  t287 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77cc9f88:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77cc9f88:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t286_93940:reg1_t)
+    
+  Symbolic branch condition (0x00402dd3) t287_93941:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t288 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77cbdbfe:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x88342402:reg32_t 
+   
+  t289 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77cbdbfe:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77cbdbfe:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t288_93942:reg1_t)
+    
+  Symbolic branch condition (0x00402e0b) t289_93943:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t290 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77bc070d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8843f8f3:reg32_t 
+   
+  t291 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77bc070d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77bc070d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t290_93944:reg1_t)
+    
+  Symbolic branch condition (0x00402e43) t291_93945:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t292 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a9de4b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x885621b5:reg32_t 
+   
+  t293 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a9de4b:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a9de4b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t292_93946:reg1_t)
+    
+  Symbolic branch condition (0x00402e7b) t293_93947:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t294 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a74a8b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8858b575:reg32_t 
+   
+  t295 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a74a8b:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a74a8b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t294_93948:reg1_t)
+    
+  Symbolic branch condition (0x00402eb3) t295_93949:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t296 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a66dec:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x88599214:reg32_t 
+   
+  t297 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a66dec:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a66dec:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t296_93950:reg1_t)
+    
+  Symbolic branch condition (0x00402eeb) t297_93951:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t298 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a1a458:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x885e5ba8:reg32_t 
+   
+  t299 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a1a458:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff77a1a458:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t298_93952:reg1_t)
+    
+  Symbolic branch condition (0x00402f23) t299_93953:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t300 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff779fb24e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x88604db2:reg32_t 
+   
+  t301 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff779fb24e:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff779fb24e:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t300_93954:reg1_t)
+    
+  Symbolic branch condition (0x00402f5b) t301_93955:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t302 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff776fe53d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x88901ac3:reg32_t 
+   
+  t303 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff776fe53d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff776fe53d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t302_93956:reg1_t)
+    
+  Symbolic branch condition (0x00402f93) t303_93957:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t304 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff775b4f54:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x88a4b0ac:reg32_t 
+   
+  t305 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff775b4f54:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff775b4f54:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t304_93958:reg1_t)
+    
+  Symbolic branch condition (0x00402fcb) t305_93959:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t306 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff775688c8:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x88a97738:reg32_t 
+   
+  t307 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff775688c8:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff775688c8:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t306_93960:reg1_t)
+    
+  Symbolic branch condition (0x00403003) t307_93961:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t308 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff772da687:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x88d25979:reg32_t 
+   
+  t309 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff772da687:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff772da687:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t308_93962:reg1_t)
+    
+  Symbolic branch condition (0x0040303b) t309_93963:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t310 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff771066da:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x88ef9926:reg32_t 
+   
+  t311 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff771066da:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff771066da:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t310_93964:reg1_t)
+    
+  Symbolic branch condition (0x00403073) t311_93965:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t312 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff770c4059:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x88f3bfa7:reg32_t 
+   
+  t313 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff770c4059:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff770c4059:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t312_93966:reg1_t)
+    
+  Symbolic branch condition (0x004030ab) t313_93967:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t314 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76fb40fb:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x8904bf05:reg32_t 
+   
+  t315 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76fb40fb:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76fb40fb:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t314_93968:reg1_t)
+    
+  Symbolic branch condition (0x004030e3) t315_93969:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t316 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76cd9103:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x89326efd:reg32_t 
+   
+  t317 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76cd9103:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76cd9103:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t316_93970:reg1_t)
+    
+  Symbolic branch condition (0x0040311b) t317_93971:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t318 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76c7db9d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x89382463:reg32_t 
+   
+  t319 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76c7db9d:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76c7db9d:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t318_93972:reg1_t)
+    
+  Symbolic branch condition (0x00403153) t319_93973:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying true: Unsatisfiable.
+  Trying false: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t320 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76c29a3b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x893d65c5:reg32_t 
+   
+  t321 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76c29a3b:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76c29a3b:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t320_93974:reg1_t)
+    
+  Symbolic branch condition (0x0040318b) t321_93975:reg1_t
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t322 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76b33ed1:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x894cc12f:reg32_t 
+   
+  t323 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76b33ed1:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76b33ed1:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t322_93976:reg1_t)
+    
+  Symbolic branch condition (0x004031c3) t323_93977:reg1_t
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Satisfiable.
+  Trying true: Unsatisfiable.
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Current path: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  t324 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76a86f23:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x895790dd:reg32_t 
+   
+  t325 =   cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76a86f23:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+    | 
+   (cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76a86f23:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^ t324_93978:reg1_t)
+    
+  Symbolic branch condition (0x004031fb) t325_93979:reg1_t
+  Current Path String: 11110000000000000000111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
+  Current path: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
+  t326 =  cast(cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76b33ed0:reg64_t
+   )L:reg32_t)H:reg1_t
+   ^  cast(t13_93659:reg64_t)L:reg32_t <$ 0x894cc130:reg32_t 
+   
+  Symbolic branch condition (0x00403217)  cast(
+   cast(cast(t13_93659:reg64_t)L:reg32_t)U:reg64_t
+   + 0xffffffff76b33ed0:reg64_t
+   )L:reg32_t
+   == 0:reg32_t
+   
+  Current Path String: 111100000000000000001111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
+  Trying false: Unsatisfiable.
+  Trying true: Satisfiable.
+  Current Path String: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011
+  Current path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011
+  Stopping at jump to null at 0x00452281
+  Coverage increased to 27893 on 1
+  Path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011
+  Final path: 1111000000000000000011111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011
+  Satisfiable.
+  CPU time 3.664000 sec, 3.664000 total
+  Wall time 6.078047 sec, 6.078050 total
+  Final coverage: 27893
+Synthesis failure: seems the functions are not equivalent.

@@ -1,4 +1,3 @@
-#!/bin/bash
 ./tigress  \
 --Seed=3 \
 --Transform=Jit --Functions=f2  \
