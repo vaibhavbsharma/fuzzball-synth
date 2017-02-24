@@ -14,6 +14,9 @@ substitution adaptor between the BIGNUM OpenSSL structure and
 the mbedtls_mpi mbedTLS structure. 
 
 We drive the adaptor search using 'synth-bn.pl'.
+Please note that this command requires LD_LIBRARY_PATH to have the path
+to ../lib, for example, 
+  LD_LIBRARY_PATH=`pwd`/../lib/:$LD_LIBRARY_PATH
 The command to run this experiment is: 
   perl synth-bn.pl 1334 1335 1 1 -1 34
 

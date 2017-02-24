@@ -26,7 +26,14 @@ contains experiments for synthesizing adaptors between functions in the
 C library.
 
 The binary programs, 'fuzzball' and 'stp', are used throughout our 
-evaluations. The 'stp' binary program was compiled from the source 
+evaluations. 
+
+The file 'adaptor-synthesis-changes-to-fuzzball.patch' provides all 
+source level changes made by us to FuzzBALL's master branch 
+(latest commit da91da657a3ba46feb087bb8b51ce3617ac4474c) on 
+github.com, for the purposes of adaptor synthesis. 
+
+The 'stp' binary program was compiled from the source 
 available on the Bitblaze github repository 
 (https://github.com/bitblaze-fuzzball/stp).  The library files, 
 libboost_program_options.so.1.54.0 and libstp.so, are required by 
@@ -34,6 +41,3 @@ the stp binary, and are, therefore, placed into the lib directory
 with every run_experiment.sh adding the path to 'lib' into its 
 LD_LIBRARY_PATH.
 
-The file 'adaptor-synthesis-changes-to-fuzzball.diff' provides all 
-source level changes made by us to FuzzBALL's master branch on 
-github.com, for the purposes of adaptor synthesis.

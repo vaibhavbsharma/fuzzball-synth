@@ -9,6 +9,9 @@ function (f2) wraps around the implementation of Strassen's algorithm
 was taken from Intel 
 (https://software.intel.com/en-us/courseware/256200).
 
+Please note that this command requires LD_LIBRARY_PATH to have the path
+to ../lib, for example, 
+  LD_LIBRARY_PATH=`pwd`/../lib/:$LD_LIBRARY_PATH
 Command to run this experiment: 
   perl synth-mm.pl 1330 1331 1 1 -1 15
 This experiment takes about 8 minutes to finish. 

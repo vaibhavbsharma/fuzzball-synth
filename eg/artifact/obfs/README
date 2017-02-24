@@ -31,6 +31,10 @@ checking for clones 1 and 3 because the obfuscation transformations
 applied by Tigress cause different system calls to be used, 
 for example, mmap.
 
+Please note that these commands require LD_LIBRARY_PATH to have the path
+to ../lib, for example, 
+  LD_LIBRARY_PATH=`pwd`/../lib/:$LD_LIBRARY_PATH
+
 Command for running experiment with clone1:  
   perl synth-ob-clone1.pl 1332 1333 1 1 -1 15
 This experiment takes about 3 minutes to finish. 
