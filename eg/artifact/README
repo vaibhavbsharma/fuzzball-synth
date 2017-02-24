@@ -4,26 +4,29 @@ artifact.
 Evaluation for Section 4.1 is in the 'bn' directory. This experiment 
 adapts the mbedTLS function, mbedtls_mpi_read_string, to its OpenSSL
 sibling, BN_hex2bn. The directory name - bn - is used as an abbreviation
-for BIGNUM.
+for BIGNUM. The total running time of this experiment should be 
+10-30 seconds.
 
 Evaluation for Section 4.2 is in the 'obfs' directory. The experiments
 in this directory adapt obfuscated versions of the CRC32 computation
-function to their non-obfuscated version.
+function to their non-obfuscated version. The total running time of
+these experiments should be 2-6 hours.
 
 Evaluation for Section 4.3 is in the 'mm' directory. The experiment in
 this directory adapts an implementation of Strassen's algorithm for
 matrix multiplication to a naive implementation of matrix 
-multiplication.
+multiplication. This experiment should run in 10-30 minutes.
 
 Evaluation for Section 4.4 is in the 'rc4' directory, with two 
 subdirectories, one for RC4 encryption and one for RC4 key structure 
 initialization. The experiments in the 'rc4' directory synthesize
 adaptors between the RC4 key structure objects used for RC4 encryption
-and the RC4 key structure initialization functions.
+and the RC4 key structure initialization functions. The total running 
+time of these experiments should be 6-12 hours.
 
 Evaluation for Section 4.5 is in the 'glibc' directory. This directory 
 contains experiments for synthesizing adaptors between functions in the 
-C library.
+C library. These experiments should run in a total of 2-6 minutes.
 
 To start with the easier-to-understand adaptors and progress to more
 difficult ones, we recommend beginning the artifact evaluation with 
