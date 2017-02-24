@@ -18,7 +18,11 @@ All of these 9 experiments can be run as a single batch job by running
 run_experiments.sh. The log files containing the outputs of each adaptor
 synthesis can be found in the 'logs' directory.
 
-Argument substitution adaptors:
+Please note that all of the below commands require LD_LIBRARY_PATH to 
+have the path to ../lib, for example, 
+  LD_LIBRARY_PATH=`pwd`/../../lib/:$LD_LIBRARY_PATH
+
+	Argument substitution adaptors:
 Please start by changing the current working directory to simple-1 
 (cd <artifact-root>/glibc/simple-1/).
 The last line in the output of each command will contain the 
