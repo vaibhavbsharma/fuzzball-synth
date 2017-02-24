@@ -6,6 +6,11 @@ expose only the RC4 key structures from our wrapper functions.
 The implementation of our target and inner functions can be found 
 in f1 and f2.
 
+The running time reported for these two experiments are from a machine
+on which about 2 GB of RAM was required. We anticipate these experiments
+to take about 9 hours on a machine with only 2 GB of RAM and a single
+core.
+
 We describe adaptor synthesis in the two adaptor directions as follows.
 Please note that these commands requires LD_LIBRARY_PATH to have the path
 to ../lib, for example, 
