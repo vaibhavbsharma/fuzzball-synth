@@ -16,7 +16,8 @@ adaptors between functions in glibc.
 
 All of these 9 experiments can be run as a single batch job by running
 run_experiments.sh. The log files containing the outputs of each adaptor
-synthesis can be found in the 'logs' directory.
+synthesis can be found in the 'logs' directory. Each of these 
+experiments should finish in 10-30 seconds.
 
 Please note that all of the below commands require LD_LIBRARY_PATH to 
 have the path to ../lib, for example, 

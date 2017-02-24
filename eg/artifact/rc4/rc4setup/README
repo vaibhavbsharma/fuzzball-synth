@@ -16,7 +16,7 @@ to ../lib, for example,
 direction is: 
   perl synth-rc4-mo-setup.pl 1328 1329 1 1 -1 15 
 This file uses the binary 'rc4setup_m_o', the corresponding source code 
-for which is in rc4setup_m_o.c. This experiment completes in 60 to 65 
+for which is in rc4setup_m_o.c. This experiment completes in 60 to 180 
 minutes.
 We provide sample output in the file 'synth-rc4-mo-setup.log'. 
 The last line of this output is: 
@@ -41,7 +41,7 @@ structure as 256 4-byte entries with zero extension.
 direction: 
   perl synth-rc4-om-setup.pl 1329 1328 1 1 -1 15
 This file uses the binary 'rc4setup_o_m', the corresponding source code 
-for which is in rc4setup_o_m.c. This experiment finishes in 50 to 55 
+for which is in rc4setup_o_m.c. This experiment finishes in 50 to 150 
 minutes.
 We provide sample output in the file 'synth-rc4-om-setup.log'. 
 The last line of this output is:
