@@ -1,28 +1,69 @@
-These experiments correspond to 'RC4 key structure initialization' subsection of Section 4.4 of our ISSTA submission.
+These experiments correspond to 'RC4 key structure initialization' 
+subsection of Section 4.4 of our ISSTA submission.
 
-We synthesize argument substitution and memory substitution adaptors for the RC4 key structure initialization functions in OpenSSL and mbedTLS. The adaptors for the mbedTLS <- OpenSSL and OpenSSL <- mbedTLS directions are different. The target and inner function implementations can be found in f1 and f2 respectively, in each of the source files.
+We synthesize argument substitution and memory substitution adaptors 
+for the RC4 key structure initialization functions in OpenSSL and 
+mbedTLS. The adaptors for the mbedTLS <- OpenSSL and OpenSSL <- mbedTLS 
+directions are different. The target and inner function implementations 
+can be found in f1 and f2 respectively, in each of the source files.
 
-We describe adaptor synthesis in the two adaptor directions as follows:
+We describe adaptor synthesis in the two adaptor directions as follows.
+Please note that these commands require LD_LIBRARY_PATH to have the path
+to ../lib, for example, 
+  LD_LIBRARY_PATH=`pwd`/../../lib/:$LD_LIBRARY_PATH
 
-(1) The command to synthesize adaptors in the mbedTLS <- OpenSSL direction is: 
-perl synth-rc4-mo-setup.pl 1328 1329 1 1 -1 15 
-This file uses the binary 'rc4setup_m_o', the corresponding source code for which is in rc4setup_m_o.c. This experiment completes in 60 to 65 minutes.
-We provide sample output in the file 'synth-rc4-mo-setup.log'. The last line of this output is: 
+(1) The command to synthesize adaptors in the mbedTLS <- OpenSSL 
+direction is: 
+  perl synth-rc4-mo-setup.pl 1328 1329 1 1 -1 15 
+This file uses the binary 'rc4setup_m_o', the corresponding source code 
+for which is in rc4setup_m_o.c. This experiment completes in 60 to 65 
+minutes.
+We provide sample output in the file 'synth-rc4-mo-setup.log'. 
+The last line of this output is: 
 Final adaptors: arg=,,1,1,,1, ret=,, struct=f1_type=0x30000, f1_size=0x2, f1_n=0x4, f2_type=0x801070000, f2_size=0x4, f2_n=0x100,
 
 
-The argument substitution adaptor is to be read as (0,0, 1,1, 0,1) and the return value adaptor as (0,0). This means the 1st argument to f2 should be the 1st argument to f1, the 2nd argument to f2 should be the constant value 1, the 3rd argument to f2 should be the 2nd argument to f1. The return value adaptor (0,0) means that the return value should be returned as-is. 
+The argument substitution adaptor is to be read as (0,0, 1,1, 0,1) and 
+the return value adaptor as (0,0). This means the 1st argument to f2 
+should be the 1st argument to f1, the 2nd argument to f2 should be 
+the constant value 1, the 3rd argument to f2 should be the 2nd argument 
+to f1. The return value adaptor (0,0) means that the return value 
+should be returned as-is. 
 
-The memory substitution adaptor is to be interpreted as : the 1st 8 bytes of the inner structure (RC4_KEY) should be copied over from the 1st 8 bytes in the target structure (mbedtls_arc4_context) as 2 4-byte entries with zero extension. Bytes from positions 8 to 1031 in the inner structure should be copied over from bytes 8 to 263 in the target structure as 256 4-byte entries with zero extension.
+The memory substitution adaptor is to be interpreted as : the 1st 8 
+bytes of the inner structure (RC4_KEY) should be copied over from the 
+1st 8 bytes in the target structure (mbedtls_arc4_context) as 2 4-byte 
+entries with zero extension. Bytes from positions 8 to 1031 in the 
+inner structure should be copied over from bytes 8 to 263 in the target 
+structure as 256 4-byte entries with zero extension.
 
-(2) The command to synthesize adaptors in the OpenSSL <- mbedTLS direction: 
-perl synth-rc4-om-setup.pl 1329 1328 1 1 -1 15
-This file uses the binary 'rc4setup_o_m', the corresponding source code for which is in rc4setup_o_m.c. This experiment finishes in 50 to 55 minutes.
-We provide sample output in the file 'synth-rc4-om-setup.log'. The last line of this output is:
+(2) The command to synthesize adaptors in the OpenSSL <- mbedTLS 
+direction: 
+  perl synth-rc4-om-setup.pl 1329 1328 1 1 -1 15
+This file uses the binary 'rc4setup_o_m', the corresponding source code 
+for which is in rc4setup_o_m.c. This experiment finishes in 50 to 55 
+minutes.
+We provide sample output in the file 'synth-rc4-om-setup.log'. 
+The last line of this output is:
 Final adaptors: arg=,,,2,1,, ret=,2, struct=f1_type=0x30000, f1_size=0x4, f1_n=0x2, f2_type=0x804070001, f2_size=0x1, f2_n=0x100.
 
-This argument substitution adaptor is to be read as (0,0, 0,2, 1,0) and the return value adaptor as (0,2). This means that the 1st argument to f2 should be the 1st argument to f1, the 2nd argument to f2 should be the 3rd argument to f1, and the 3rd argument to f2 should be the constant value 0. This causes the keylen argument to be passed as 0 to f2 (see rc4setup_o_m.c) but it still allows the 1st entry in the key character array to be used. 
+This argument substitution adaptor is to be read as (0,0, 0,2, 1,0) and 
+the return value adaptor as (0,2). This means that the 1st argument to 
+f2 should be the 1st argument to f1, the 2nd argument to f2 should be 
+the 3rd argument to f1, and the 3rd argument to f2 should be the 
+constant value 0. This causes the keylen argument to be passed as 0 to 
+f2 (see rc4setup_o_m.c) but it still allows the 1st entry in the key 
+character array to be used. 
 
-The return value adaptor (0,2) means that the return value should be replaced by the 3rd argument to f2, which is set to the constant value of 0 by the argument substitution adaptor. However, the function f2 returns 0 anyway, so this return value adaptor, while being correct, does not affect f2's behavior. 
+The return value adaptor (0,2) means that the return value should be 
+replaced by the 3rd argument to f2, which is set to the constant value 
+of 0 by the argument substitution adaptor. However, the function f2 
+returns 0 anyway, so this return value adaptor, while being correct, 
+does not affect f2's behavior. 
 
-The memory substitution adaptor is to be interpreted as : the 1st 8 bytes of the inner structure (mbedtls_arc4_context) should be copied over from the 1st 8 bytes in the target structure (RC4_KEY) as 2 4-byte entries with zero extension. Bytes from positions 8 to 263 in the inner structure should be copied over from bytes 8 to 1031 in the target structure as 256 1-byte entries.
+The memory substitution adaptor is to be interpreted as : the 1st 8 
+bytes of the inner structure (mbedtls_arc4_context) should be copied 
+over from the 1st 8 bytes in the target structure (RC4_KEY) as 2 4-byte 
+entries with zero extension. Bytes from positions 8 to 263 in the inner 
+structure should be copied over from bytes 8 to 1031 in the target 
+structure as 256 1-byte entries.
