@@ -1,6 +1,13 @@
 These experiments correspond to results reported in Section 4.4 of 
 our ISSTA submission. 
 
+These experiments involved using OpenSSL and mbedTLS.
+We compiled OpenSSL from its github repository 
+(https://github.com/openssl/openssl.git)
+with the latest git commit id being b1837abd674f62a04f1191c68ca7e5c3101ce5a0.
+For mbedTLS, we downloaded version 2.3.0 from its website
+(https://tls.mbed.org/download).
+
 We recommend understanding the output of the RC4 encryption experiments 
 (rc4enc) first before proceeding to the RC4 key structure 
 initialization functions (rc4setup).
