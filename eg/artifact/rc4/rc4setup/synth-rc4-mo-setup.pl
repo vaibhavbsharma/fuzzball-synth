@@ -42,7 +42,7 @@ my $bin = "./rc4setup_m_o";
 
 # print "compiling binary: ";
 # #my $unused = `gcc -static -g -o $bin $bin.c`;
-# my $unused = `gcc -static rc4setup.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o rc4setup -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+# my $unused = `gcc -static rc4setup.c -Wl,-rpath,/export/scratch/xxxxxxx/opt_openssl/lib -g -o rc4setup -lcrypto -I /export/scratch/xxxxxxx/mbedtls-install/include/`;
 # my $gcc_ec = $?;
 # die "failed to compile $bin" unless $gcc_ec == 0;
 # print "gcc_ec = $gcc_ec\n";

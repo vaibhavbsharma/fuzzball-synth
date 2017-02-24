@@ -31,17 +31,17 @@ synth_struct_opt[3] = 2:2:1032
   Loading      RELRO segment from 006c0eb0 to 006c1000
   From real env., setting env. var DISPLAY to :0
   Skipping missing env. var EDITOR
-  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var HOME to /home/grad06/xxxxxxx
   From real env., setting env. var LANG to en_US.UTF-8
-  From real env., setting env. var LOGNAME to vaibhav
+  From real env., setting env. var LOGNAME to xxxxxxx
   Skipping missing env. var PAGER
-  From real env., setting env. var PATH to /home/fac05/mccamant/soft/amd64/texinfo/4.13a/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
-  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/rc4/rc4setup
+  From real env., setting env. var PATH to /home/fac05/xxxxxxxx/soft/amd64/texinfo/4.13a/bin:/home/fac05/xxxxxxxx/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/xxxxxxxx/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/exec_utils/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/stp:/export/scratch/xxxxxxx/code/dwarfdump/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/xxxxxxx/spim-install/usr/bin/spim/:/export/scratch/xxxxxxx/LLVM/build/bin:/export/scratch/xxxxxxx/solvers:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/exec_utils/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/stp:/export/scratch/xxxxxxx/code/dwarfdump/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/xxxxxxx/spim-install/usr/bin/spim/:/export/scratch/xxxxxxx/LLVM/build/bin:/export/scratch/xxxxxxx/solvers
+  From real env., setting env. var PWD to /export/scratch/xxxxxxx/fuzzball-synth/eg/artifact/rc4/rc4setup
   From real env., setting env. var SHELL to /bin/bash
   From real env., setting env. var TERM to screen
-  From real env., setting env. var USER to vaibhav
+  From real env., setting env. var USER to xxxxxxx
   Skipping missing env. var USERNAME
-  From real env., setting env. var XAUTHORITY to /home/grad06/vaibhav/.Xauthority
+  From real env., setting env. var XAUTHORITY to /home/grad06/xxxxxxx/.Xauthority
   Initial stack pointer is 0xbfffd000
   Starting address 0x00400f4e, fuzz start 0x0040150c
   Initial registers:
@@ -2365,17 +2365,17 @@ synth_struct_opt[3] = 2:2:1032
   Loading      RELRO segment from 006c0eb0 to 006c1000
   From real env., setting env. var DISPLAY to :0
   Skipping missing env. var EDITOR
-  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var HOME to /home/grad06/xxxxxxx
   From real env., setting env. var LANG to en_US.UTF-8
-  From real env., setting env. var LOGNAME to vaibhav
+  From real env., setting env. var LOGNAME to xxxxxxx
   Skipping missing env. var PAGER
-  From real env., setting env. var PATH to /home/fac05/mccamant/soft/amd64/texinfo/4.13a/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
-  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/rc4/rc4setup
+  From real env., setting env. var PATH to /home/fac05/xxxxxxxx/soft/amd64/texinfo/4.13a/bin:/home/fac05/xxxxxxxx/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/xxxxxxxx/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/exec_utils/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/stp:/export/scratch/xxxxxxx/code/dwarfdump/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/xxxxxxx/spim-install/usr/bin/spim/:/export/scratch/xxxxxxx/LLVM/build/bin:/export/scratch/xxxxxxx/solvers:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/exec_utils/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/stp:/export/scratch/xxxxxxx/code/dwarfdump/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/xxxxxxx/spim-install/usr/bin/spim/:/export/scratch/xxxxxxx/LLVM/build/bin:/export/scratch/xxxxxxx/solvers
+  From real env., setting env. var PWD to /export/scratch/xxxxxxx/fuzzball-synth/eg/artifact/rc4/rc4setup
   From real env., setting env. var SHELL to /bin/bash
   From real env., setting env. var TERM to screen
-  From real env., setting env. var USER to vaibhav
+  From real env., setting env. var USER to xxxxxxx
   Skipping missing env. var USERNAME
-  From real env., setting env. var XAUTHORITY to /home/grad06/vaibhav/.Xauthority
+  From real env., setting env. var XAUTHORITY to /home/grad06/xxxxxxx/.Xauthority
   Initial stack pointer is 0xbfffd000
   Starting address 0x00400f4e, fuzz start 0x0040150c
   Initial registers:
@@ -40099,17 +40099,17 @@ synth_struct_opt[3] = 2:2:1032
   Loading      RELRO segment from 006c0eb0 to 006c1000
   From real env., setting env. var DISPLAY to :0
   Skipping missing env. var EDITOR
-  From real env., setting env. var HOME to /home/grad06/vaibhav
+  From real env., setting env. var HOME to /home/grad06/xxxxxxx
   From real env., setting env. var LANG to en_US.UTF-8
-  From real env., setting env. var LOGNAME to vaibhav
+  From real env., setting env. var LOGNAME to xxxxxxx
   Skipping missing env. var PAGER
-  From real env., setting env. var PATH to /home/fac05/mccamant/soft/amd64/texinfo/4.13a/bin:/home/fac05/mccamant/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/mccamant/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers:/export/scratch/vaibhav/fuzzball-adaptorsynth/exec_utils/:/export/scratch/vaibhav/fuzzball-adaptorsynth/stp:/export/scratch/vaibhav/code/dwarfdump/:/export/scratch/vaibhav/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/vaibhav/spim-install/usr/bin/spim/:/export/scratch/vaibhav/LLVM/build/bin:/export/scratch/vaibhav/solvers
-  From real env., setting env. var PWD to /export/scratch/vaibhav/fuzzball-synth/eg/artifact/rc4/rc4setup
+  From real env., setting env. var PATH to /home/fac05/xxxxxxxx/soft/amd64/texinfo/4.13a/bin:/home/fac05/xxxxxxxx/soft/amd64/caml/ocaml/4.02.1/bin:/home/fac05/xxxxxxxx/soft/amd64/caml/opam/1.1.2/bin:/soft/scheme/mit-gnu/9.2/trusty64/bin:/soft/perl5.14.1/bin:/soft/jdk1.7.0_76/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/soft/netbeans-8.0.2/bin:/opt/gnu/bin:/opt/local/bin:/soft/vt-1.07:/usr/X11R6/bin:/soft/X11R6.3/bin:/soft/math8.0.1/bin:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/exec_utils/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/stp:/export/scratch/xxxxxxx/code/dwarfdump/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/xxxxxxx/spim-install/usr/bin/spim/:/export/scratch/xxxxxxx/LLVM/build/bin:/export/scratch/xxxxxxx/solvers:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/exec_utils/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/stp:/export/scratch/xxxxxxx/code/dwarfdump/:/export/scratch/xxxxxxx/fuzzball-adaptorsynth/libasmir/apps:/export/scratch/xxxxxxx/spim-install/usr/bin/spim/:/export/scratch/xxxxxxx/LLVM/build/bin:/export/scratch/xxxxxxx/solvers
+  From real env., setting env. var PWD to /export/scratch/xxxxxxx/fuzzball-synth/eg/artifact/rc4/rc4setup
   From real env., setting env. var SHELL to /bin/bash
   From real env., setting env. var TERM to screen
-  From real env., setting env. var USER to vaibhav
+  From real env., setting env. var USER to xxxxxxx
   Skipping missing env. var USERNAME
-  From real env., setting env. var XAUTHORITY to /home/grad06/vaibhav/.Xauthority
+  From real env., setting env. var XAUTHORITY to /home/grad06/xxxxxxx/.Xauthority
   Initial stack pointer is 0xbfffd000
   Starting address 0x00400f4e, fuzz start 0x0040150c
   Initial registers:

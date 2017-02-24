@@ -39,7 +39,7 @@ my $bin = "./rc4enc_mo";
 
 # print "compiling binary: ";
 # #my $unused = `gcc -static -g -o $bin $bin.c`;
-# my $unused = `gcc -static struct_adaptor.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o struct_adaptor -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+# my $unused = `gcc -static struct_adaptor.c -Wl,-rpath,/export/scratch/xxxxxxx/opt_openssl/lib -g -o struct_adaptor -lcrypto -I /export/scratch/xxxxxxx/mbedtls-install/include/`;
 # my $gcc_ec = $?;
 # die "failed to compile $bin" unless $gcc_ec == 0;
 # print "gcc_ec = $gcc_ec\n";

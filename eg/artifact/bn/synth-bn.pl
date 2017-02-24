@@ -43,8 +43,8 @@ my $bin = "./bn";
 # my $bin = "./bn_adaptor_as_in_paper";
 
 #  print "compiling binary: ";
-# #my $unused = `/export/scratch/vaibhav/obfs_build/bin/clang ob.c -o ob`;
-# my $unused = ` gcc -m64 bn.c  -I /export/scratch/vaibhav/mbedtls-2.3.0/include/  -g -o bn /export/scratch/vaibhav/openssl/libcrypto.a /export/scratch/vaibhav/mbedtls-2.3.0/library/libmbedcrypto.a  -ldl -lpthread   -std=c99`;
+# #my $unused = `/export/scratch/xxxxxxx/obfs_build/bin/clang ob.c -o ob`;
+# my $unused = ` gcc -m64 bn.c  -I /export/scratch/xxxxxxx/mbedtls-2.3.0/include/  -g -o bn /export/scratch/xxxxxxx/openssl/libcrypto.a /export/scratch/xxxxxxx/mbedtls-2.3.0/library/libmbedcrypto.a  -ldl -lpthread   -std=c99`;
 # my $gcc_ec = $?;
 # die "failed to compile $bin" unless $gcc_ec == 0;
 # print "gcc_ec = $gcc_ec\n";

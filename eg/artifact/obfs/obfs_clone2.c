@@ -1,5 +1,5 @@
 /*
- gcc -static struct_adaptor.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o struct_adaptor -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/
+ gcc -static struct_adaptor.c -Wl,-rpath,/export/scratch/xxxxxxx/opt_openssl/lib -g -o struct_adaptor -lcrypto -I /export/scratch/xxxxxxx/mbedtls-install/include/
  */
 
 #include <stdio.h>
@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <ctype.h>
 
-#include "/export/scratch/vaibhav/tigress-2.0/jitter-amd64.c"
+#include "/export/scratch/xxxxxxx/tigress-2.0/jitter-amd64.c"
 
 int old_f1(int a) {
   if(a == 0)

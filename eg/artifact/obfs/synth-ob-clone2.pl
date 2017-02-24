@@ -42,7 +42,7 @@ my $iteration_count = 0;
 my $bin = "./obfs_clone2";
 
 # print "compiling binary: ";
-# my $unused = `/export/scratch/vaibhav/obfs_build/bin/clang -static $bin.c -o $bin`;
+# my $unused = `/export/scratch/xxxxxxx/obfs_build/bin/clang -static $bin.c -o $bin`;
 # #my $unused = `gcc -static $bin.c -g -o $bin `;
 # my $gcc_ec = $?;
 # die "failed to compile $bin" unless $gcc_ec == 0;

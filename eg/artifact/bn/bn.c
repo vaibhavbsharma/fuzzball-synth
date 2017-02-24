@@ -1,5 +1,5 @@
 /*
- gcc -static bn.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o bn -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/
+ gcc -static bn.c -Wl,-rpath,/export/scratch/xxxxxxx/opt_openssl/lib -g -o bn -lcrypto -I /export/scratch/xxxxxxx/mbedtls-install/include/
  */
 
 #include <stdio.h>
