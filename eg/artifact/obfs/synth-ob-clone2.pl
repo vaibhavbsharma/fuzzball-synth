@@ -25,7 +25,7 @@ my $key_const_val = 97;
 my $N = $str_len;
 # End configurables
 
-my $max_matrix_size=8*$N; # 1st row for addrs, N rows, N cols
+my $max_matrix_size=$str_len+1; # 1st row for addrs, N rows, N cols
 my $sane_addr = $starting_sane_addr;
 my ($a_addr, $b_addr, $c_addr);
 my (@a_addrs, @b_addrs, @c_addrs);
@@ -34,7 +34,9 @@ my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 
 my $fuzzball = "../bin/fuzzball";
-my $stp = "../bin/stp-old-dynamic";
+# my $stp = "../bin/stp-old-dynamic";
+my $stp = "../bin/stp";
+# my $stp = "/export/scratch/vaibhav/fuzzball-adaptorsynth/stp/stp-lateststp";
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
@@ -63,20 +65,13 @@ sub reinitialize_matrix_addrs {
     $b_addr = $a_addr + $max_matrix_size;
     $c_addr = $b_addr + $max_matrix_size;
     @a_addrs = @b_addrs = @c_addrs = ();
-    for my $i (0 .. $N-1) {
-	push @a_addrs, "-store-long";
-	push @a_addrs,
-	sprintf("0x%x=0x%x", $a_addr+8*$i, $a_addr+8*$N+4*$N*$i);
-    }
-    for my $i (0 .. $N-1) {
-	push @b_addrs, "-store-long";
-	push @b_addrs,
-	sprintf("0x%x=0x%x", $b_addr+8*$i, $b_addr+8*$N+4*$N*$i);
-    }
-    for my $i (0 .. $N-1) {
-	push @c_addrs, "-store-long";
-	push @c_addrs,
-	sprintf("0x%x=0x%x", $c_addr+8*$i, $c_addr+8*$N+4*$N*$i);
+    my $steps = ($sane_addr - $starting_sane_addr)/$max_conc_region_size;
+    for my $i (0 .. $steps) {
+	for my $j (0 .. $str_len-1) {
+	    push @a_addrs, "-store-byte";
+	    push @a_addrs,
+	    sprintf("0x%x=0x%x", $starting_sane_addr + $max_conc_region_size*$i + $j, $key_const_val + $i);
+	}
     }
 }
  
@@ -216,12 +211,12 @@ sub check_adaptor {
 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
 	push @conc_ret_adapt, ("-extra-condition", $s);
     }
-    my @str;
-    for my $i (0 .. $str_len-1) {
-	my $tmp_addr = $a_addr + $i;
-	push @str, "-store-byte";
-	push @str, sprintf("0x%x=0x%x", $tmp_addr, $key_const_val);
-    }
+    # my @str;
+    # for my $i (0 .. $str_len-1) {
+    # 	my $tmp_addr = $a_addr + $i;
+    # 	push @str, "-store-byte";
+    # 	push @str, sprintf("0x%x=0x%x", $tmp_addr, $key_const_val);
+    # }
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -248,18 +243,18 @@ sub check_adaptor {
 		#"-trace-offset-limit",
 		"-trace-basic",
 		#"-trace-eip",
-		#"-trace-registers",
+		# "-trace-registers",
 		#"-trace-stmts",
-		#"-trace-insns",
-		#"-trace-loads",
-		#"-trace-stores",
+		# "-trace-insns",
+		# "-trace-loads",
+		# "-trace-stores",
 		"-trace-conditions",
 		"-trace-decisions",
 		#"-trace-solver",
-		@str, #"-store-byte", $tmp_str,
+		# @str, #"-store-byte", $tmp_str,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
-		@a_addrs, @b_addrs, @c_addrs,
+		@a_addrs, #@b_addrs, @c_addrs,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
 		@synth_ret_opt, @conc_ret_adapt,
 		"-disable-ce-cache",
@@ -393,8 +388,8 @@ sub check_adaptor {
     }
 
     push @fuzzball_extra_args, @a_addrs;
-    push @fuzzball_extra_args, @b_addrs;
-    push @fuzzball_extra_args, @c_addrs;
+    # push @fuzzball_extra_args, @b_addrs;
+    # push @fuzzball_extra_args, @c_addrs;
 
     $ce[0]=$a_addr;
     $ce[1]=$str_len;
@@ -555,8 +550,8 @@ if ($f1nargs==0) {
     }
 }
 
-# $adapt=[1,0, 0,0, 0,1, 1,0, 1,0, 1,0];
-# $ret_adapt = [52, 0];
+$adapt=[0,0, 0,0, 0,1, 1,0, 1,0, 1,0];
+$ret_adapt = [0, 0];
 
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();
