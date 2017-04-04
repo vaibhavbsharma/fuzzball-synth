@@ -208,12 +208,12 @@ long my_BN_hex2bn(BIGNUM *ret, const char *a) {
 }
 
 //int BN_hex2bn(BIGNUM **bn, const char *a)
-long f1(BIGNUM *ret) { //, const char *a) {
-  my_BN_hex2bn(ret, str_ce_addr);
+long f1(BIGNUM *ret, const char *a) {
+  my_BN_hex2bn(ret, a);
   return 0;
 }
 
-long f2(mbedtls_mpi *h, int radix) { //, const char *hex_str) {
+long f2(mbedtls_mpi *h, int radix, const char *hex_str) {
   //int radix=16;
   // int str_len = 32 ;
   // char hex_str[40];
@@ -228,7 +228,7 @@ long f2(mbedtls_mpi *h, int radix) { //, const char *hex_str) {
   //mbedtls_mpi_grow(&X, h->dmax);
   //for(int i=0;i<h->dmax; i++)
     //X.p[i]=h->d[i];
-  char *hex_str = (char *) str_ce_addr;
+  //char *hex_str = (char *) str_ce_addr;
   
   mbedtls_mpi_read_string(h, radix, hex_str);
   //mbedtls_mpi_mul_mpi(&X, &X, &X);
@@ -242,7 +242,7 @@ long f2(mbedtls_mpi *h, int radix) { //, const char *hex_str) {
 
 
 long wrap_f2(long a0, long a1, long a2) {
-  return f2(a0, a1);
+  return f2(a0, a1, a2);
 }
 
 int compare(long *r1p, long *r2p,
@@ -253,7 +253,7 @@ int compare(long *r1p, long *r2p,
 
   BIGNUM *h = BN_new();
   
-  long r1 = f1(a0);
+  long r1 = f1(a0, a1);
   
   printf("Completed f1\n");
   fflush(stdout);
@@ -334,11 +334,11 @@ int main(int argc, char **argv) {
 	    printf("Difference %ld vs. %ld\n", r1, r2);
 	}
     } else if (argv[3][0] == 'g') {
-      //compare(0, 0, a, b, c, d, e, f);
-      compare(0, 0,
-      	      a, global_arg1, global_arg2,
-      	      //global_arg0, global_arg1, global_arg2,
-      	      global_arg3, global_arg4, global_arg5);
+      compare(0, 0, a, b, c, d, e, f);
+      //compare(0, 0,
+      //	      a, global_arg1, global_arg2,
+      //	      //global_arg0, global_arg1, global_arg2,
+      //	      global_arg3, global_arg4, global_arg5);
     } else if (argv[3][0] == 'f') {
 	long a, b, c, d, e, f;
         if (argv[4][0] == '-' && argv[4][1] == 0) {

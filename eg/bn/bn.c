@@ -1,5 +1,5 @@
 /*
- gcc -static struct_adaptor.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o struct_adaptor -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/
+ gcc -static bn.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o bn -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/
  */
 
 #include <stdio.h>
@@ -16,11 +16,9 @@
 #include "mbedtls/bignum.h"
 
 
-
+char hex_str[40];
 long f1(BIGNUM *h, int len) {
-  int long_len = 1<<29;
-  int str_len = (len & 0x1) ? long_len : long_len-1;
-  char hex_str[(1<<29)+2];
+  int str_len = (len & 0x1) ? 32 : 31;
   for(int i=0;i<str_len;i++) 
     hex_str[i]='f';
   hex_str[str_len-2]='f';
@@ -36,12 +34,9 @@ long f1(BIGNUM *h, int len) {
   return h->d[0];
 }
 
-long f2(int radix, int len, BIGNUM *h) {
-  int long_len = 1<<29;
-  int str_len = (len & 0x1) ? long_len : long_len-1;
-  char hex_str[(1<<29)+2];
-  // int str_len = (len & 0x1) ? 39 : 31;
-  // char hex_str[40];
+long f2(BIGNUM *h, int radix, int len) {
+  int str_len = (len & 0x1) ? 32 : 31;
+  //char hex_str[40];
   for(int i=0;i<str_len;i++) 
     hex_str[i]='f';
   hex_str[str_len-2]='f';
@@ -49,10 +44,11 @@ long f2(int radix, int len, BIGNUM *h) {
   
   mbedtls_mpi X;
   mbedtls_mpi_init(&X);
-  
-  mbedtls_mpi_grow(&X, h->dmax);
-  for(int i=0;i<h->dmax; i++)
-    X.p[i]=h->d[i];
+ 
+  //Uncommenting these 3 lines produces the equally correct adaptor (0,0, 1,16, 0,0)
+  //mbedtls_mpi_grow(&X, h->dmax);
+  //for(int i=0;i<h->dmax; i++)
+  //  X.p[i]=h->d[i];
   
   mbedtls_mpi_read_string(&X, radix, hex_str);
   //mbedtls_mpi_mul_mpi(&X, &X, &X);
