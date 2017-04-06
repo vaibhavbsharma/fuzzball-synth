@@ -52,6 +52,7 @@ my $f1_completed_count = 0;
 my $iteration_count = 0;
 
 my $bin = "./two-funcs";
+my $conc_adaptor_bin = "./two-funcs-conc";
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -128,7 +129,7 @@ my @fields =
    ["f_val",      "reg64_t", "%016x"],
 );
 
-my @ret_fields = 
+my @ret_fields =  
 (
    ["ret_type",  "reg8_t", "%01x"],
    ["ret_val",   "reg64_t", "%016x"],
@@ -203,7 +204,7 @@ sub check_adaptor {
 		"-trace-sym-addrs",
 		"-trace-syscalls",
 		"-omit-pf-af",
-		"-trace-temps",
+		# "-trace-temps",
 		"-trace-regions",
 		"-trace-memory-snapshots",
 		"-trace-tables",
@@ -361,49 +362,7 @@ sub try_synth {
 	print TESTS $test_str, "\n";
     }
     close TESTS;
-    my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
-		@solver_opts, 
-		"-fuzz-start-addr", $fuzz_start_addr,
-		"-trace-temps",
-		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
-		#counter example search mode otherwise
-		"-adaptor-search-mode",
-		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
-		"-table-limit","12",
-		"-return-zero-missing-x64-syscalls",
-		@synth_opt, @const_bounds_ec,
-		@synth_ret_opt,
-		"-match-syscalls-in-addr-range",
-		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
-		"-branch-preference", "$match_jne_addr:1",
-		"-trace-conditions", "-omit-pf-af",
-		"-trace-syscalls",
-		#"-trace-decision-tree",
-		#"-save-decision-tree-interval","1",
-		"-trace-decisions",
-		"-trace-stopping",
-		"-trace-regions",
-		"-trace-binary-paths-bracketed",
-		"-trace-memory-snapshots",
-		"-trace-sym-addr-details",
-		"-trace-sym-addrs",
-		"-trace-tables",
-		#"-trace-offset-limit",
-		"-trace-basic",
-		#"-trace-eip",
-		#"-trace-registers",
-		#"-trace-stmts",
-		#"-trace-insns",
-		#"-trace-loads",
-		#"-trace-stores",
-		#"-trace-solver",
-		#"-save-solver-files", 
-		@fuzzball_extra_args,
-		"-zero-memory",
-		"-region-limit", $region_limit,
-		"-random-seed", int(rand(10000000)),
-		"--", $bin, $f1num, $f2num, "f", "tests");
-    #print "@args\n";
+    my @args = ($conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub);
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
@@ -476,6 +435,8 @@ if ($default_adaptor_pref == 1) {
 	}
     }
 }
+
+$adapt->[0]=1;
 
 # If outer function takes no arguments, then the inner function can only use constants
 if ($f1nargs==0) {

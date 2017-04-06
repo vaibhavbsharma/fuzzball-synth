@@ -7,23 +7,39 @@ my $const_ub = 7;
 my $hard_timeout = 120; #seconds
 my $rand_seed = 1;
 my $default_adaptor = 1;
+my $ifns_per_target = 5;
+my $num_of_buckets = 8;
 
-die "Usage: synth.pl <bucket number ( 1 - 16 ) <direction ( 1 or -1 )>" unless @ARGV == 2;
+die "Usage: synth.pl <bucket number ( 1 - $num_of_buckets ) <direction ( 1 or -1 )>" unless @ARGV == 2;
+
+my $bin = "./two-funcs";
+print "compiling binary: ";
+my $unused = `gcc -static two-funcs.c -g -o two-funcs -lpthread`;
+my $gcc_ec = $?;
+die "failed to compile $bin" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
+my $conc_adaptor_bin = "./two-funcs-conc";
+print "compiling concrete adaptor search binary: ";
+my $unused = `gcc $conc_adaptor_bin.c -g -o $conc_adaptor_bin -lpthread`;
+my $gcc_ec = $?;
+die "failed to compile $conc_adaptor_bin" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
 my($bucket_num, $direction) = @ARGV;
 
 my $total_fns = 1316;
 my @boundaries;
-for my $i (0 .. 16) {
-    push @boundaries, int($i * $total_fns/16);
+for my $i (0 .. $num_of_buckets) {
+    push @boundaries, int($i * $total_fns/$num_of_buckets);
 }
 $boundaries[0]=-1;
-
 my $start_lim = $boundaries[$bucket_num-1]+1;
 my $end_lim = $boundaries[$bucket_num];
 printf "start_lim = $start_lim end_lim = $end_lim number of functions = %d\n", $end_lim-$start_lim;
 
 for (my $f1num = $start_lim; $f1num <= $end_lim; $f1num++) {
-    for (my $f2_limit=1; $f2_limit <= 10; $f2_limit++) {
+    for (my $f2_limit=1; $f2_limit <= $ifns_per_target; $f2_limit++) {
 	my $f2num = $f1num + ($f2_limit * $direction);
 	if ($f2num > 1315 || $f2num < 0) {
 	    next;

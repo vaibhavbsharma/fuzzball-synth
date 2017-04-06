@@ -1,4 +1,4 @@
-#include "two-funcs.h"
+#include "two-funcs-conc.h"
 
 #define MAX_ADAPTORS 100000
 #define MAX_TESTS 100
@@ -109,12 +109,15 @@ void setup_adaptor(int index) {
 }
 
 void print_adaptor(int index) {
-  printf("Printing adaptor %d\n", index);
+  char output[200];
+  printf("Input vars: ");
   int i;
-  for(i=0; i<f2nargs; i++)
-    printf("%d_is_const = %d %d_val = %d\t", i, 
-	   all_ads[index][i].var_is_const, i, all_ads[index][i].var_val); 
+  for(i=0; i<f2nargs; i++) {
+    printf("%c_is_const=0x%x %c_val=0x%x ", 'a'+i, 
+	   all_ads[index][i].var_is_const, 'a'+i, all_ads[index][i].var_val); 
+  }
   printf("\n");
+  fflush(stdout);
 }
 
 long wrap_f2(long a, long b, long c, long d, long e, long f) {
@@ -164,7 +167,12 @@ int compare(long *r1p, long *r2p,
     for(j=0;j<num_tests; j++) is_all_match = is_all_match & is_match[j];
     if(is_all_match) break;
   }
-  if(is_all_match) print_adaptor(i);
+  if(is_all_match == 1) { 
+    printf("All tests succeeded!\n");
+    print_adaptor(i);
+  }
+  printf("is_all_match = %d\n", is_all_match);
+  fflush(stdout);
   return is_all_match;
 }
 
@@ -245,7 +253,6 @@ int main(int argc, char **argv) {
     int is_eq = compare(0, 0, a, b, c, d, e, f);
     if (!is_eq)
       exit(1);
-    printf("All tests succeeded!\n");
   } else {
     fprintf(stderr, "Unhandled command argument\n");
     exit(1);

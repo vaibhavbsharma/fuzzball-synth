@@ -148,19 +148,23 @@
 # define STRTOL_LONG_MAX LONG_MAX
 # define L_(Ch) Ch
 
-/* Equivalent with 0,00000000,0,00000000,0,00000001,1,00000001 
-int _f1(int x, unsigned y){//, int z) {
-    return (x << 1) + (y % 2);// + (z << 1);
-}*/
+/* Equivalent with 0,00000000,0,00000000,0,00000001,1,00000001  */
+//int _f1(int x, unsigned y){//, int z) {
+int _f1(int x){//, int z) {
+  return (x << 1);// + (z << 1);
+    //return (x << 1) +(y % 2);// + (z << 1);
+}
 
-int _f2(int a, int b, int c, int d) {//,int e){//, int f) {
-  return c + d + (a & b);// + e;// + f;
+///int _f2(int a, int b, int c, int d) {//,int e){//, int f) {
+int _f2(int y1, int y2) {//,int e){//, int f) {
+  return y1 << y2;// + e;// + f;
+  //return c + d + (a & b);// + e;// + f;
     //return a + b + (c & d);
 }
 
-int _f1(char *s) {
+/* int _f1(char *s) {
   return s[0]=='\0';
-}
+  } */
 
 int _isalpha(int i) {
   if( ( i < 0 ) || ( i > 127 ) ) {
@@ -1839,7 +1843,7 @@ struct func_info funcs[] = {
     /* 1313 */ {"setusershell", (func*)&setusershell, 0, 0, 1},
     /* 1314 */ {"getpass", (func*)&getpass, 1, 0, 0},
     /* 1315 */ {"ttyslot", (func*)&ttyslot, 0, 0, 0},
-    /* 1316 */ {"_f1", (func*)&_f1, 1, 0, 0},
+    /* 1316 */ {"_f1", (func*)&_f1, 2, 0, 0},
     /* 1317 */ {"_f2", (func*)&_f2, 4, 0, 0},
     /* 1318 */ {"frexpf", (func*)&frexpf, 2, 0, 0},
     /* 1319 */ {"frexp", (func*)&frexp, 2, 0, 0},
