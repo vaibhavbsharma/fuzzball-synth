@@ -206,15 +206,19 @@ void mcount(void);
 # define STRTOL_LONG_MAX LONG_MAX
 # define L_(Ch) Ch
 
+int global=0;
+
 /* Equivalent with 0,00000000,0,00000000,0,00000001,1,00000001  */
 //int _f1(int x, unsigned y){//, int z) {
 int _f1(int x){//, int z) {
+  //global = 1;
   return (x << 1);// + (z << 1);
     //return (x << 1) +(y % 2);// + (z << 1);
 }
 
 ///int _f2(int a, int b, int c, int d) {//,int e){//, int f) {
 int _f2(int y1, int y2) {//,int e){//, int f) {
+  //global = 3;
   return y1 << y2;// + e;// + f;
   //return c + d + (a & b);// + e;// + f;
     //return a + b + (c & d);
