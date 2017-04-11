@@ -32,16 +32,55 @@ typedef struct {
   int var_val;
 } argsub;
 
-argsub ad[6];
-argsub all_ads[MAX_ADAPTORS][6];
+typedef struct {
+  int ret_type;
+  int ret_val;
+} retsub;
+
+typedef struct {
+  argsub a_ad[6];
+  retsub r_ad;
+} argret;
+
+argret all_ads[MAX_ADAPTORS];
+argret ad;
 int num_adaptors=0;
 int const_lb, const_ub;
 
 void populateAdaptor() {
   int i;
   for(i=0;i<6; i++) 
-    all_ads[num_adaptors][i] = ad[i];
+    all_ads[num_adaptors].a_ad[i] = ad.a_ad[i];
+  all_ads[num_adaptors].r_ad = ad.r_ad;
   num_adaptors++;
+}
+
+void generate_ret_adaptors() {
+  int i,j;
+  int f2arg_ret_type[8] = {11, 12, 21, 22, 31, 32, 41, 42};
+  int retarg_ret_type[9] = {51, 52, 53, 61, 62, 71, 72, 81, 82};
+  switch(0) {
+  case 0: ad.r_ad.ret_type=0; populateAdaptor();
+  case 1: ad.r_ad.ret_type=1;
+    for(i=const_lb; i<= const_ub; i++) {
+      ad.r_ad.ret_val=i;
+      populateAdaptor(); 
+    }
+  case 11: case 12: case 21: case 22: case 31: case 32: case 41: case 42: 
+    for(i=0; i<8; i++) {
+      ad.r_ad.ret_type = f2arg_ret_type[i];
+      for(j=0; j < f2nargs; j++) {
+	ad.r_ad.ret_val = j;
+	populateAdaptor();
+      }
+    }
+  case 51: case 52: case 53: case 61: case 62: case 71: case 72: case 81: case 82:
+    for(i=0; i<9; i++) {
+      ad.r_ad.ret_type = retarg_ret_type[i];
+      populateAdaptor();
+    }
+    break;
+  }
 }
 
 // Sets up global list of randomly enumerated adaptors
@@ -50,36 +89,39 @@ void generate_adaptors(int argnum) {
   int i, j;
   //each inner arg can be a constant
   //each inner arg can point to a target arg
-  ad[argnum].var_is_const=1;
+  ad.a_ad[argnum].var_is_const=1;
   for(i=const_lb; i<=const_ub; i++) {
-    ad[argnum].var_val=i;
+    ad.a_ad[argnum].var_val=i;
     if(argnum < f2nargs-1) 
       generate_adaptors(argnum+1);
-    else populateAdaptor();
+    else generate_ret_adaptors(0);
   }
   
-  ad[argnum].var_is_const=0;
+  ad.a_ad[argnum].var_is_const=0;
   for(i=0; i<f1nargs; i++) {
     bool found=false;
     for(j=0; j<argnum; j++) 
-      if(ad[j].var_is_const==0 && ad[j].var_val==i) found=true; 
+      if(ad.a_ad[j].var_is_const==0 && ad.a_ad[j].var_val==i) found=true; 
     if(!found) {
-      ad[argnum].var_val=i;
+      ad.a_ad[argnum].var_val=i;
       if(argnum < f2nargs-1) 
 	generate_adaptors(argnum+1);
-      else populateAdaptor();
+      else generate_ret_adaptors(0);
     }
   }
 }
 
 void swap( int ind1, int ind2) {
-  argsub a[6];
+  argret a;
   int i;
   for(i=0;i<6; i++) {
-    a[i] = all_ads[ind1][i];
-    all_ads[ind1][i] = all_ads[ind2][i];
-    all_ads[ind2][i] = a[i];
+    a.a_ad[i] = all_ads[ind1].a_ad[i];
+    all_ads[ind1].a_ad[i] = all_ads[ind2].a_ad[i];
+    all_ads[ind2].a_ad[i] = a.a_ad[i];
   }
+  a.r_ad = all_ads[ind1].r_ad;
+  all_ads[ind1].r_ad = all_ads[ind2].r_ad;
+  all_ads[ind2].r_ad=a.r_ad;
 }
 
 //http://www.geeksforgeeks.org/shuffle-a-given-array/
@@ -105,7 +147,8 @@ void shuffle_adaptors() {
 
 void setup_adaptor(int index) {
   int i;
-  for(i=0;i<6;i++) ad[i]=all_ads[index][i];
+  for(i=0;i<6;i++) ad.a_ad[i]=all_ads[index].a_ad[i];
+  ad.r_ad = all_ads[index].r_ad;
 }
 
 void print_adaptor(int index) {
@@ -114,22 +157,89 @@ void print_adaptor(int index) {
   int i;
   for(i=0; i<f2nargs; i++) {
     printf("%c_is_const=0x%x %c_val=0x%x ", 'a'+i, 
-	   all_ads[index][i].var_is_const, 'a'+i, all_ads[index][i].var_val); 
+	   all_ads[index].a_ad[i].var_is_const, 'a'+i, all_ads[index].a_ad[i].var_val); 
   }
+  printf("ret_type=0x%d ret_val=0x%d", all_ads[index].r_ad.ret_type, all_ads[index].r_ad.ret_val);
   printf("\n");
   fflush(stdout);
 }
+
+long convert32to64s(long a) {
+  int a1=(int) a;
+  return (long) a1;
+}
+
+long convert32to64u(long a) {
+  unsigned int a1=(int) a;
+  return (unsigned long) a1;
+}
+
+long convert16to64s(long a) {
+  short a1=(short) a;
+  return (long) a1;
+}
+
+long convert16to64u(long a) {
+  unsigned short a1=(short) a;
+  return (unsigned long) a1;
+}
+
+long convert8to64s(long a) {
+  char a1=(char) a;
+  return (long) a1;
+}
+
+long convert8to64u(long a) {
+  unsigned char a1=(char) a;
+  return (unsigned long) a1;
+}
+
+long convert1to64s(long a) {
+  char a1; 
+  if( a & 1 ) a1=0xff; else a1=1;
+  return (long) a1;
+}
+
+long convert1to64u(long a) {
+  unsigned char a1=(char) a&1;
+  return (unsigned long) a1;
+}
+
+long convert64to1(long a) { return (long) a != 0; }
 
 long wrap_f2(long a, long b, long c, long d, long e, long f) {
   long f1args[6]={a, b, c, d, e, f};
   long f2args[6];
   int i;
   for(i=0;i<6; i++) {
-    if(ad[i].var_is_const==1) f2args[i]=ad[i].var_val;
-    else f2args[i]=f1args[ad[i].var_val];
+    if(ad.a_ad[i].var_is_const==1) f2args[i]=ad.a_ad[i].var_val;
+    else f2args[i]=f1args[ad.a_ad[i].var_val];
   }
-  return f2(f2args[0], f2args[1], f2args[2], 
-	    f2args[3], f2args[4], f2args[5]);
+  long ret_val = f2(f2args[0], f2args[1], f2args[2], 
+		    f2args[3], f2args[4], f2args[5]);
+  switch(ad.r_ad.ret_type) {
+  case 0: break;
+  case 1: ret_val = ad.r_ad.ret_val;
+  case 11: ret_val = convert32to64s(f2args[ad.r_ad.ret_val]);
+  case 12: ret_val = convert32to64u(f2args[ad.r_ad.ret_val]);
+  case 21: ret_val = convert16to64s(f2args[ad.r_ad.ret_val]);
+  case 22: ret_val = convert16to64u(f2args[ad.r_ad.ret_val]);
+  case 31: ret_val =  convert8to64s(f2args[ad.r_ad.ret_val]);
+  case 32: ret_val =  convert8to64u(f2args[ad.r_ad.ret_val]);
+  case 41: ret_val =  convert1to64s(f2args[ad.r_ad.ret_val]);
+  case 42: ret_val =  convert1to64u(f2args[ad.r_ad.ret_val]);
+  case 51: ret_val = convert32to64s(ret_val);
+  case 52: ret_val = convert32to64u(ret_val);
+  case 53: ret_val = convert64to1  (ret_val);
+  case 61: ret_val = convert16to64s(ret_val);
+  case 62: ret_val = convert16to64u(ret_val);
+  case 71: ret_val =  convert8to64s(ret_val);
+  case 72: ret_val =  convert8to64u(ret_val);
+  case 81: ret_val =  convert1to64s(ret_val);
+  case 82: ret_val =  convert1to64u(ret_val);
+  default: break;
+  }
+  return ret_val;
 }
 
 int compare(long *r1p, long *r2p,
@@ -158,7 +268,7 @@ int compare(long *r1p, long *r2p,
       r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
       //printf("Completed f2\n");
       //fflush(stdout);
-      if (((r1==r2) || (void_flag)) == true) {
+      if (r1==r2) {
 	//printf("Match\n");
 	is_match[j]=true;
       } 

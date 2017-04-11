@@ -48,11 +48,35 @@ if (exists $ENV{STP_LOC}) {
     $stp = "stp";
 }
 
+my $pwd = $ENV{PWD};
+
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
 my $bin = "./two-funcs";
-my $conc_adaptor_bin = "./two-funcs-conc";
+my $conc_adaptor_bin = "$pwd/two-funcs-conc";
+
+print "compiling binary: ";
+my $unused = `gcc -static two-funcs.c -g -o two-funcs -lpthread`;
+my $gcc_ec = $?;
+die "failed to compile $bin" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
+print "compiling concrete adaptor search binary: ";
+my $unused = `gcc -static $conc_adaptor_bin.c -g -o $conc_adaptor_bin -lpthread`;
+my $gcc_ec = $?;
+die "failed to compile $conc_adaptor_bin" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
+print "compiling PinMonitor: ";
+my $unused = `make`;
+my $gcc_ec = $?;
+die "failed to compile PinMonitor" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
+
+
+
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -362,7 +386,7 @@ sub try_synth {
 	print TESTS $test_str, "\n";
     }
     close TESTS;
-    my @args = ($conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub);
+    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $func_info[$f1num][2], $func_info[$f2num][2]);
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
