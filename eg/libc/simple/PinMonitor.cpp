@@ -21,7 +21,7 @@ VOID ReadsMem (ADDRINT applicationIp, ADDRINT memoryAddressRead, UINT32 memoryRe
 }
 
 map< void *, long> f1_addrs, f2_addrs;
-map< ADDRINT, bool> f1_syscalls, f2_syscalls;
+vector< ADDRINT> f1_syscalls, f2_syscalls;
 void *f1_rsp=0, *f2_rsp=0;
 UINT8 f1_ret_val, f2_ret_val;
 
@@ -45,9 +45,9 @@ VOID RecordSyscall(ADDRINT applicationIp, ADDRINT syscallnum) {
   else if(RecordF2) fname="f2: ";
   else return;
   if(RecordF1) 
-    f1_syscalls[syscallnum] = true;
+    f1_syscalls.push_back(syscallnum);
   if(RecordF2) 
-    f2_syscalls[syscallnum] = true;
+    f2_syscalls.push_back(syscallnum);
   cout<<fname<<" called syscall("<<syscallnum<<")\n";
   fflush(stdout);
 }
@@ -105,8 +105,8 @@ VOID RecordF2Begin(ADDRINT rsp_val) {
 
 long getF1Val(void *f2_addr, bool &found) {
   found=true;
-  map<void *, long> :: iterator it = f2_addrs.begin();
-  while(it!=f2_addrs.end()) {
+  map<void *, long> :: iterator it = f1_addrs.begin();
+  while(it!=f1_addrs.end()) {
     if(it->first == f2_addr) return it->second;
     ++it;
   }
@@ -130,12 +130,24 @@ void replaceRetVal(CONTEXT *ctx) {
   PIN_ExecuteAt(ctx);
 }
 
+void cleanupAfterF2() {
+  fflush(stdout);
+  f1_addrs.clear();
+  f2_addrs.clear();
+  f1_syscalls.clear();
+  f2_syscalls.clear();
+  RecordF2 = false;
+}
+
 VOID RecordF2End(CONTEXT *ctx) {
   // PIN_GetContextRegval(ctx, REG_RAX, &f2_ret_val);
   bool mismatch=false;
   f2_ret_val = PIN_GetContextReg(ctx, REG_RAX);
   printf("f2 ended with retval = %d\n",f2_ret_val);
-  RecordF2 = false;
+  if(f1_ret_val != f2_ret_val) {
+    cleanupAfterF2();
+    return;
+  }
   bool isglobal=false;
   map<void *, long> :: iterator it = f2_addrs.begin();
   while(it!=f2_addrs.end()) {
@@ -180,26 +192,22 @@ VOID RecordF2End(CONTEXT *ctx) {
     }
   }
   if(!mismatch && f1_ret_val == f2_ret_val) {
-    map <ADDRINT, bool> :: iterator it = f1_syscalls.begin();
-    while(it!=f1_syscalls.end()) {
-      if(f2_syscalls.find(it->first) == f2_syscalls.end()) {
-	printf("f1 made syscall %d, f2 did not, replacing REG_RAX\n", (int) it->first);
-	replaceRetVal(ctx);
-	mismatch = true;
-      } else f2_syscalls.erase(it->first);
-      ++it;
-    }
-    if(!mismatch && f2_syscalls.size() > 0) {
-      printf("f2 made syscall %d, f1 did not, replacing REG_RAX\n", (int) f2_syscalls.begin()->first);
+    if(f1_syscalls.size() != f2_syscalls.size()) {
+      printf("f1, f2 made unequal number of syscalls, replacing REG_RAX\n");
       replaceRetVal(ctx);
       mismatch = true;
     }
+    for(unsigned int i=0;i<f1_syscalls.size(); i++) {
+      if(f2_syscalls[i] != f1_syscalls[i]) {
+	printf("f1 made syscall(%lu), f2 made syscall(%lu), replacing REG_RAX\n",
+	       f1_syscalls[i],f2_syscalls[i]);
+	replaceRetVal(ctx);
+	mismatch = true;
+	break;
+      }
+    }
   }
-  f1_addrs.clear();
-  f2_addrs.clear();
-  f1_syscalls.clear();
-  f2_syscalls.clear();
-  fflush(stdout);
+  cleanupAfterF2();
 }
 
 VOID Image(IMG img, VOID *v) {
