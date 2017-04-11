@@ -181,7 +181,7 @@ long global_arg0, global_arg1, global_arg2,
 
 int main(int argc, char **argv) { 
   FILE *fh;
-  if (argc == 7 && argv[3][0]=='f') {
+  if (argc == 9 && argv[3][0]=='f') {
     fh = fopen(argv[4], "r");
     const_lb = atoi(argv[5]);
     const_ub = atoi(argv[6]);
@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
   if (argc < 4) {
     fprintf(stderr, "Usage: two-funcs <f1num> <f2num> a [0-6 args]\n");
     fprintf(stderr, "    or two-funcs <f1num> <f2num> g\n");
-    fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or -> <lower bound> <upper bound>\n");
+    fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or -> <lower bound> <upper bound> <f1name> <f2name>\n");
     exit(1);
   }
   f1num = atoi(argv[1]);

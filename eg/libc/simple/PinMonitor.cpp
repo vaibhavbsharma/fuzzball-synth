@@ -4,20 +4,12 @@
 #include <iostream>
 using namespace std;
 
-std::map<ADDRINT, std::string> disAssemblyMap;
-
-#define MALLOC "asdf_malloc"
-#define FREE "asdf_free"
-#define F1 "_f1"
-#define F2 "_f2"
 
 bool RecordF1 = false, RecordF2 = false;
 string ProgramImage;
+string f1Name, f2Name;
 
 VOID ReadsMem (ADDRINT applicationIp, ADDRINT memoryAddressRead, UINT32 memoryReadSize) {
-  // printf ("0x%lx %s reads %d bytes of memory at 0x%lx\n",
-  // 	  applicationIp, disAssemblyMap[applicationIp].c_str(),
-  // 	  memoryReadSize, memoryAddressRead);
 }
 
 map< void *, long> f1_addrs, f2_addrs;
@@ -30,9 +22,6 @@ VOID WritesMem (ADDRINT applicationIp, ADDRINT memoryAddressWrite, UINT32 memory
   if(RecordF1) fname="f1: ";
   else if(RecordF2) fname="f2: ";
   else return;
-  // printf ("%s0x%lx %s wrote %d bytes of memory at 0x%lx, rsp = 0x%lx\n", fname.c_str(), 
-  //  	  applicationIp, disAssemblyMap[applicationIp].c_str(),
-  //  	  memoryWriteSize, memoryAddressWrite, rsp_val);
   if(RecordF1) 
     f1_addrs[(void *) memoryAddressWrite] = 0;
   if(RecordF2) 
@@ -213,7 +202,7 @@ VOID RecordF2End(CONTEXT *ctx) {
 VOID Image(IMG img, VOID *v) {
   cout<<"IMG_Name(img) = "<<IMG_Name(img)<<endl;
   if (IMG_Name(img) == ProgramImage) {
-    RTN f1Rtn = RTN_FindByName(img, F1);
+    RTN f1Rtn = RTN_FindByName(img, f1Name.c_str());
     if (f1Rtn.is_valid()) {
       RTN_Open(f1Rtn);
       RTN_InsertCall(f1Rtn, IPOINT_BEFORE, (AFUNPTR)RecordF1Begin,
@@ -224,7 +213,7 @@ VOID Image(IMG img, VOID *v) {
         IARG_END);
       RTN_Close(f1Rtn);
     }
-    RTN f2Rtn = RTN_FindByName(img, F2);
+    RTN f2Rtn = RTN_FindByName(img, f2Name.c_str());
     if (f2Rtn.is_valid()) {
       RTN_Open(f2Rtn);
       RTN_InsertCall(f2Rtn, IPOINT_BEFORE, (AFUNPTR)RecordF2Begin,
@@ -245,6 +234,8 @@ int main(int argc, char * argv[]) {
   PIN_Init(argc, argv);
   PIN_InitSymbols();
   ProgramImage = argv[6];
+  f1Name = argv[13];
+  f2Name = argv[14];
   INS_AddInstrumentFunction(Instruction, 0);
   IMG_AddInstrumentFunction(Image, NULL);
   PIN_AddFiniFunction(Fini, NULL);
