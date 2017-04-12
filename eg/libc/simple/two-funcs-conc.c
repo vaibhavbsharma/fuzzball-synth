@@ -29,12 +29,12 @@ long f2(long a, long b, long c, long d, long e, long f) {
 
 typedef struct {
   int var_is_const;
-  int var_val;
+  long var_val;
 } argsub;
 
 typedef struct {
   int ret_type;
-  int ret_val;
+  long ret_val;
 } retsub;
 
 typedef struct {
@@ -92,7 +92,7 @@ void generate_adaptors(int argnum) {
   ad.a_ad[argnum].var_is_const=1;
   for(i=const_lb; i<=const_ub; i++) {
     ad.a_ad[argnum].var_val=i;
-    if(argnum < f2nargs-1) 
+    if(argnum+1 < f2nargs) 
       generate_adaptors(argnum+1);
     else generate_ret_adaptors(0);
   }
@@ -104,7 +104,7 @@ void generate_adaptors(int argnum) {
       if(ad.a_ad[j].var_is_const==0 && ad.a_ad[j].var_val==i) found=true; 
     if(!found) {
       ad.a_ad[argnum].var_val=i;
-      if(argnum < f2nargs-1) 
+      if(argnum+1 < f2nargs) 
 	generate_adaptors(argnum+1);
       else generate_ret_adaptors(0);
     }
@@ -156,10 +156,10 @@ void print_adaptor(int index) {
   printf("Input vars: ");
   int i;
   for(i=0; i<f2nargs; i++) {
-    printf("%c_is_const=0x%x %c_val=0x%x ", 'a'+i, 
+    printf("%c_is_const=0x%x %c_val=0x%lx ", 'a'+i, 
 	   all_ads[index].a_ad[i].var_is_const, 'a'+i, all_ads[index].a_ad[i].var_val); 
   }
-  printf("ret_type=0x%d ret_val=0x%d", all_ads[index].r_ad.ret_type, all_ads[index].r_ad.ret_val);
+  printf("ret_type=0x%x ret_val=0x%lx", all_ads[index].r_ad.ret_type, all_ads[index].r_ad.ret_val);
   printf("\n");
   fflush(stdout);
 }
@@ -265,6 +265,9 @@ int compare(long *r1p, long *r2p,
       //printf("Starting f2\n");
       //fflush(stdout);
       setup_adaptor(i);
+      fflush(stdout);
+      printf("Trying adaptor: ");
+      print_adaptor(i);
       r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
       //printf("Completed f2\n");
       //fflush(stdout);
@@ -296,10 +299,6 @@ int main(int argc, char **argv) {
     const_lb = atoi(argv[5]);
     const_ub = atoi(argv[6]);
   }
-  generate_adaptors(0);
-  shuffle_adaptors();
-  int i;
-  //for(i=0;i<num_adaptors;i++) print_adaptor(i);
   if (argc < 4) {
     fprintf(stderr, "Usage: two-funcs <f1num> <f2num> a [0-6 args]\n");
     fprintf(stderr, "    or two-funcs <f1num> <f2num> g\n");
@@ -319,6 +318,13 @@ int main(int argc, char **argv) {
   }
   f1nargs = funcs[f1num].num_args;
   f2nargs = funcs[f2num].num_args;
+  generate_adaptors(0);
+  shuffle_adaptors();
+  int i;
+  // printf("Printing %d adaptors\n", num_adaptors);
+  // for(i=0;i<num_adaptors;i++) print_adaptor(i);
+  // printf("Finished printing all adaptors\n\n");
+  // fflush(stdout);
   if (argv[3][0] == 'a') {
     long args[6] = {0, 0, 0, 0, 0, 0};
     long r1, r2;
