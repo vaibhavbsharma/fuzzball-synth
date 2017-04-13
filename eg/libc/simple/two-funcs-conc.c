@@ -10,6 +10,8 @@ typedef struct { int a,b,c,d,e,f} test;
 test tests[MAX_TESTS];
 int num_tests=0;
 
+long sideEffectsEqual;
+
 void addTest(long a, long b, long c, long d, long e, long f) {
   tests[num_tests].a=a;
   tests[num_tests].b=b;
@@ -196,7 +198,7 @@ long convert8to64u(long a) {
 
 long convert1to64s(long a) {
   char a1; 
-  if( a & 1 ) a1=0xff; else a1=1;
+  if( a & 1 ) a1=0xff; else a1=0;
   return (long) a1;
 }
 
@@ -219,24 +221,24 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
 		    f2args[3], f2args[4], f2args[5]);
   switch(ad.r_ad.ret_type) {
   case 0: break;
-  case 1: ret_val = ad.r_ad.ret_val;
-  case 11: ret_val = convert32to64s(f2args[ad.r_ad.ret_val]);
-  case 12: ret_val = convert32to64u(f2args[ad.r_ad.ret_val]);
-  case 21: ret_val = convert16to64s(f2args[ad.r_ad.ret_val]);
-  case 22: ret_val = convert16to64u(f2args[ad.r_ad.ret_val]);
-  case 31: ret_val =  convert8to64s(f2args[ad.r_ad.ret_val]);
-  case 32: ret_val =  convert8to64u(f2args[ad.r_ad.ret_val]);
-  case 41: ret_val =  convert1to64s(f2args[ad.r_ad.ret_val]);
-  case 42: ret_val =  convert1to64u(f2args[ad.r_ad.ret_val]);
-  case 51: ret_val = convert32to64s(ret_val);
-  case 52: ret_val = convert32to64u(ret_val);
-  case 53: ret_val = convert64to1  (ret_val);
-  case 61: ret_val = convert16to64s(ret_val);
-  case 62: ret_val = convert16to64u(ret_val);
-  case 71: ret_val =  convert8to64s(ret_val);
-  case 72: ret_val =  convert8to64u(ret_val);
-  case 81: ret_val =  convert1to64s(ret_val);
-  case 82: ret_val =  convert1to64u(ret_val);
+  case 1: ret_val = ad.r_ad.ret_val; break;
+  case 11: ret_val = convert32to64s(f2args[ad.r_ad.ret_val]); break;
+  case 12: ret_val = convert32to64u(f2args[ad.r_ad.ret_val]); break;
+  case 21: ret_val = convert16to64s(f2args[ad.r_ad.ret_val]); break;
+  case 22: ret_val = convert16to64u(f2args[ad.r_ad.ret_val]); break;
+  case 31: ret_val =  convert8to64s(f2args[ad.r_ad.ret_val]); break;
+  case 32: ret_val =  convert8to64u(f2args[ad.r_ad.ret_val]); break;
+  case 41: ret_val =  convert1to64s(f2args[ad.r_ad.ret_val]); break;
+  case 42: ret_val =  convert1to64u(f2args[ad.r_ad.ret_val]); break;
+  case 51: ret_val = convert32to64s(ret_val); break;
+  case 52: ret_val = convert32to64u(ret_val); break;
+  case 53: ret_val = convert64to1  (ret_val); break;
+  case 61: ret_val = convert16to64s(ret_val); break;
+  case 62: ret_val = convert16to64u(ret_val); break;
+  case 71: ret_val =  convert8to64s(ret_val); break;
+  case 72: ret_val =  convert8to64u(ret_val); break;
+  case 81: ret_val =  convert1to64s(ret_val); break;
+  case 82: ret_val =  convert1to64u(ret_val); break;
   default: break;
   }
   return ret_val;
@@ -249,6 +251,7 @@ int compare(long *r1p, long *r2p,
   for(i=0;i<num_adaptors; i++) {
     bool is_match[MAX_TESTS];
     for(j=0; j<MAX_TESTS; j++) is_match[j]=false;
+    sideEffectsEqual=1;
     for(j=0; j<num_tests; j++) {
       a0=tests[j].a;
       a1=tests[j].b;
@@ -265,14 +268,11 @@ int compare(long *r1p, long *r2p,
       //printf("Starting f2\n");
       //fflush(stdout);
       setup_adaptor(i);
-      fflush(stdout);
-      printf("Trying adaptor: ");
-      print_adaptor(i);
       r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
       //printf("Completed f2\n");
       //fflush(stdout);
-      if (r1==r2) {
-	//printf("Match\n");
+      if (r1==r2 && sideEffectsEqual) {
+	printf("Match\n");
 	is_match[j]=true;
       } 
     }
@@ -282,10 +282,10 @@ int compare(long *r1p, long *r2p,
   }
   if(is_all_match == 1) { 
     printf("All tests succeeded!\n");
+    fflush(stdout);
     print_adaptor(i);
+    fflush(stdout);
   }
-  printf("is_all_match = %d\n", is_all_match);
-  fflush(stdout);
   return is_all_match;
 }
 
@@ -294,7 +294,7 @@ long global_arg0, global_arg1, global_arg2,
 
 int main(int argc, char **argv) { 
   FILE *fh;
-  if (argc == 9 && argv[3][0]=='f') {
+  if (argc == 8 && argv[3][0]=='f') {
     fh = fopen(argv[4], "r");
     const_lb = atoi(argv[5]);
     const_ub = atoi(argv[6]);
@@ -302,7 +302,7 @@ int main(int argc, char **argv) {
   if (argc < 4) {
     fprintf(stderr, "Usage: two-funcs <f1num> <f2num> a [0-6 args]\n");
     fprintf(stderr, "    or two-funcs <f1num> <f2num> g\n");
-    fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or -> <lower bound> <upper bound> <f1name> <f2name>\n");
+    fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or -> <lower bound> <upper bound> \n<sideEffectsEqual's address>");
     exit(1);
   }
   f1num = atoi(argv[1]);

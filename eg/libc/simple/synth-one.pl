@@ -93,6 +93,8 @@ close F;
 # matching the output of "nm" and "objdump". Not the most robust
 # possible approach.
 
+my $side_effects_equal_addr = "0x" . substr(`nm $conc_adaptor_bin | fgrep " B sideEffectsEqual"`, 0, 16);
+
 my $fuzz_start_addr = "0x" . substr(`nm $bin | fgrep " T fuzz_start"`, 0, 16);
 
 my $f1_addr = "0x" . substr(`nm $bin | fgrep " T f1"`, 0, 16);
@@ -228,7 +230,7 @@ sub check_adaptor {
 		"-trace-sym-addrs",
 		"-trace-syscalls",
 		"-omit-pf-af",
-		# "-trace-temps",
+		"-trace-temps",
 		"-trace-regions",
 		"-trace-memory-snapshots",
 		"-trace-tables",
@@ -386,7 +388,8 @@ sub try_synth {
 	print TESTS $test_str, "\n";
     }
     close TESTS;
-    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $func_info[$f1num][2], $func_info[$f2num][2]);
+    # my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $func_info[$f1num][2], $func_info[$f2num][2]);
+    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr);
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
