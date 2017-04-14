@@ -487,7 +487,7 @@ while (!$done) {
 	print "Success!\n";
 	print "Final test set:\n";
 	for my $tr (@tests) {
-	    print " $tr->[0], $tr->[1]\n";
+	    print " $tr->[0], $tr->[1], $tr->[2] $tr->[3] $tr->[4] $tr->[5]\n";
 	}
 	my $verified="partial";
 	if ($f1_completed_count == $iteration_count) {

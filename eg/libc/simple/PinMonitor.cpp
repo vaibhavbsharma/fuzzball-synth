@@ -4,6 +4,7 @@
 #include <iostream>
 #include "PinMonitor.h"
 #include <sys/stat.h>
+#include <sys/syscall.h>
 using namespace std;
 
 
@@ -27,6 +28,7 @@ vector< syscallArgs > f1_syscall_args, f2_syscall_args;
 long f1_rsp=0, f2_rsp=0;
 UINT8 f1_ret_val, f2_ret_val;
 map < int, bool> noopSyscalls;
+int savedSyscallNum=-1;
 
 bool isGlobalAddr(long addr, long rsp) {
   //long int li = (long int) addr;
@@ -52,6 +54,23 @@ VOID WritesMem (ADDRINT applicationIp, ADDRINT memoryAddressWrite, UINT32 memory
   fprintf(trace, "WritesMem: %s0x%lx\n", fname.c_str(), memoryAddressWrite);
 }
 
+
+bool isNoopSyscallNum( int num) {
+  return noopSyscalls.find(num) != noopSyscalls.end();
+}
+
+
+VOID SyscallExit(THREADID t, CONTEXT *ctx, SYSCALL_STANDARD std, VOID *v) {
+  fprintf(trace, "SyscallExit called for syscall(%d)\n", savedSyscallNum);
+  if(savedSyscallNum != -1 && isNoopSyscallNum(savedSyscallNum)) {
+    UINT8 t=0;
+    PIN_SetContextRegval(ctx, REG_RAX, &t);
+    fprintf(trace, "SyscallExit: replacing RAX for syscall(%d)\n", savedSyscallNum);
+    //PIN_ExecuteAt(ctx);
+  }
+}
+
+
 VOID RecordSyscall(CONTEXT *ctx, ADDRINT ip, ADDRINT num, ADDRINT arg0, ADDRINT arg1, ADDRINT arg2, ADDRINT arg3, ADDRINT arg4, ADDRINT arg5) {
   fprintf(trace, "starting RecordSyscall(%ld)\n", num);
   fflush(trace);
@@ -62,6 +81,10 @@ VOID RecordSyscall(CONTEXT *ctx, ADDRINT ip, ADDRINT num, ADDRINT arg0, ADDRINT 
   for(int i=0;i<6; i++) { sa.args[i] = argsVector[i]; }
   sa.numArgs = args;
   sa.syscallNum = num;
+
+  if(isNoopSyscallNum(num) && (RecordF1 || RecordF2))
+    savedSyscallNum = num;
+  else savedSyscallNum = -1;
 
   if(RecordF1) fname="f1: ";
   else if(RecordF2) fname="f2: ";
@@ -321,7 +344,12 @@ void setupNoopSyscalls() {
   ifstream fin("noop_syscalls.lst");
   if(!fin.good()) return;
   int num;
-  while(fin>>num) noopSyscalls[num]=true;
+  while(fin>>num) {
+    if(noopSyscalls.find(num) == noopSyscalls.end()) {
+      noopSyscalls[num]=true;
+      fprintf(trace, "noop syscall(%d)\n", num);
+    }
+  }
 }
 
 char *getUniqueLogFileName(char *fileName) {
@@ -350,6 +378,8 @@ int main(int argc, char * argv[]) {
   setupNoopSyscalls();
   INS_AddInstrumentFunction(Instruction, 0);
   IMG_AddInstrumentFunction(Image, NULL);
+  //PIN_AddSyscallEntryFunction(SyscallEntry, 0);
+  PIN_AddSyscallExitFunction(SyscallExit, 0);
   PIN_AddFiniFunction(Fini, NULL);
   PIN_StartProgram();
 }
