@@ -1,6 +1,7 @@
 #include "two-funcs-conc.h"
+#include <assert.h>
 
-#define MAX_ADAPTORS 100000
+#define MAX_ADAPTORS 10000000
 #define MAX_TESTS 100
 int f1num, f2num;
 int f1nargs=1, f2nargs=2;
@@ -55,6 +56,7 @@ void populateAdaptor() {
     all_ads[num_adaptors].a_ad[i] = ad.a_ad[i];
   all_ads[num_adaptors].r_ad = ad.r_ad;
   num_adaptors++;
+  assert(num_adaptors <= MAX_ADAPTORS);
 }
 
 void generate_ret_adaptors() {
