@@ -7,7 +7,7 @@ int f1num, f2num;
 int f1nargs=1, f2nargs=2;
 bool void_flag=false;
 
-typedef struct { int a,b,c,d,e,f} test; 
+typedef struct { long a,b,c,d,e,f} test; 
 test tests[MAX_TESTS];
 int num_tests=0;
 
