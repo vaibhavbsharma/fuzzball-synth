@@ -1,6 +1,8 @@
 #include "two-funcs-conc.h"
 #include <assert.h>
 
+#define REGION_LIMIT 2
+#define SANE_ADDR 0x42420000
 #define MAX_ADAPTORS 10000000
 #define MAX_TESTS 100
 int f1num, f2num;
@@ -13,6 +15,30 @@ int num_tests=0;
 
 long sideEffectsEqual;
 
+void sanitize(long a, long *aS, char *fname, int numTest) {
+  int i;
+  char *p;
+  char newfname[100];
+  sprintf(newfname, "%s_%d", fname, numTest);
+  if((a&SANE_ADDR) == SANE_ADDR) {
+    FILE *f = fopen(newfname, "r");
+    if(f) {
+      p = (char *) malloc(REGION_LIMIT);
+      for(i=0; i<REGION_LIMIT; i++) p[i]=0;
+      size_t count = fread(p, 1, REGION_LIMIT, f);
+      // if(count<REGION_LIMIT) {
+      // 	printf("Failed to read %d bytes from %s\n", REGION_LIMIT, fname);
+      // 	free(aS);
+      // 	*aS = a;
+      // 	return;
+      // }
+      *aS = (long) p;
+      fclose(f);
+    } else { *aS = a; printf("failed to open %s\n", newfname); }
+  } else { printf("%lx need not be sanitized\n", a); *aS = a; }
+  fflush(stdout);
+}
+
 void addTest(long a, long b, long c, long d, long e, long f) {
   tests[num_tests].a=a;
   tests[num_tests].b=b;
@@ -22,11 +48,30 @@ void addTest(long a, long b, long c, long d, long e, long f) {
   tests[num_tests].f=f;
   num_tests++;
 }
+
+bool isSaneAddr(long a) { return a > 4096; }
+
 long f1(long a, long b, long c, long d, long e, long f) {
+  if((f1num == 663 || f1num == 664 || f1num == 707 || f1num == 1323) && !isSaneAddr(a)) {
+    sideEffectsEqual=0;
+    return -1;
+  }
+  if( (f1num == 707 || f1num == 1323) && (!isSaneAddr(b) || (b!=0)) ) {
+    sideEffectsEqual=0;
+    return -1;
+  } 
   return (funcs[f1num].fptr)(a, b, c, d, e, f);
 }
 
 long f2(long a, long b, long c, long d, long e, long f) {
+  if((f2num == 663 || f2num == 664 || f2num == 707 || f2num == 1323) && !isSaneAddr(a)) { 
+    sideEffectsEqual=0;
+    return -1;
+  } 
+  if( (f2num == 707 || f2num == 1323) && (!isSaneAddr(b) && (b!=0)) ) {
+    sideEffectsEqual=0;
+    return -1;
+  } 
   return (funcs[f2num].fptr)(a, b, c, d, e, f);
 }
 
@@ -253,8 +298,8 @@ int compare(long *r1p, long *r2p,
   for(i=0;i<num_adaptors; i++) {
     bool is_match[MAX_TESTS];
     for(j=0; j<MAX_TESTS; j++) is_match[j]=false;
-    sideEffectsEqual=1;
     for(j=0; j<num_tests; j++) {
+      sideEffectsEqual=1;
       a0=tests[j].a;
       a1=tests[j].b;
       a2=tests[j].c;
@@ -295,6 +340,7 @@ long global_arg0, global_arg1, global_arg2,
     global_arg3, global_arg4, global_arg5;
 
 int main(int argc, char **argv) { 
+  int numTests=0;
   FILE *fh;
   if (argc == 8 && argv[3][0]=='f') {
     fh = fopen(argv[4], "r");
@@ -366,7 +412,17 @@ int main(int argc, char **argv) {
 		  &a, &b, &c, &d, &e, &f) != EOF) {
       printf("read a test\n");
       fflush(stdout);
-      addTest(a, b, c, d, e, f);
+      long aS, bS, cS, dS, eS, fS;
+      sanitize(a, &aS, "str_arg1", numTests);
+      //printf("0x%lx sanitized to 0x%lx, string = %s\n", a, aS, (char *)aS);
+      sanitize(b, &bS, "str_arg2", numTests);
+      sanitize(c, &cS, "str_arg3", numTests);
+      sanitize(d, &dS, "str_arg4", numTests);
+      sanitize(e, &eS, "str_arg5", numTests);
+      sanitize(f, &fS, "str_arg6", numTests);
+      addTest(aS, bS, cS, dS, eS, fS);
+      numTests++;
+      //addTest(a, b, c, d, e, f);
     }
     int is_eq = compare(0, 0, a, b, c, d, e, f);
     if (!is_eq)

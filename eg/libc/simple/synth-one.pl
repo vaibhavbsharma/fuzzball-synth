@@ -11,12 +11,12 @@ srand($rand_seed);
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
-my $region_limit = 936;
+my $region_limit = 2;
 
 my $sane_addr = 0x42420000;
 
 my @fuzzball_extra_args_arr;
-
+my $numTests=0;
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
 my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
@@ -198,6 +198,23 @@ if($const_lb != $const_ub) {
 
 #print "const_bounds_ec = @const_bounds_ec\n";
 
+# http://stackoverflow.com/questions/17860976/how-do-i-output-a-string-of-hex-values-into-a-binary-file-in-perl
+sub generate_new_file
+{
+    my $fname = shift(@_);
+    my $aref = shift(@_);
+
+    open(BIN, ">", $fname) or die;
+    binmode(BIN);
+
+    for (my $i = 0; $i < @$aref; $i += 2)
+    {
+	my ($hi, $lo) = @$aref[$i, $i+1];
+	print BIN pack "H*", $hi.$lo;
+    }
+    close(BIN);
+}
+
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
@@ -332,13 +349,21 @@ sub check_adaptor {
 		}
 	    }
 	    for my $i (1 .. $#region_contents) {
+		my $str_arg_contents="";
 		for my $j (1 .. $#{$region_contents[$i]}) {
+		    my $byte="0x00";
 		    if($region_contents[$i][0] == 1) {
 			push @fuzzball_extra_args, "-store-byte";
 			push @fuzzball_extra_args, 
 			sprintf("0x%x=%s", $regnum_to_saneaddr[$i]+$j-1, $region_contents[$i][$j]);
+			$str_arg_contents .= substr $region_contents[$i][$j], 2;
+		    } else { 
+			$str_arg_contents .= "00";
 		    }
 		}
+		printf("str_arg_contents = $str_arg_contents\n");;
+		my @data_ary = split //, $str_arg_contents;
+		generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
 	    $this_ce = 0;
 	    print "  $_";
@@ -365,6 +390,7 @@ sub check_adaptor {
     if ($matches == 0 and $fails == 0) {
 	die "Missing results from check run";
     }
+    $numTests++;
     if ($fails == 0) {
 	return 1;
     } else {
@@ -478,6 +504,7 @@ if ($f1nargs==0) {
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();
 my $done = 0;
+`rm str_arg*`;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
