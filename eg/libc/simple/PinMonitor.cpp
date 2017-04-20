@@ -8,7 +8,7 @@
 using namespace std;
 
 
-bool logfile=true;
+bool logfile=false;
 
 #define STACK_CONST 0x7ff000000000
 
@@ -204,7 +204,7 @@ VOID RecordF2End(CONTEXT *ctx) {
     int f1_val = getF1Val(it->first, found);
     int f2_val = (int) *(long *)(it->first);
     fprintf(trace, "f2write: mem[%p] = %x ;", it->first, f2_val);
-    if(!found || (found && (f1_val != f2_val)) ) { 
+    if( (!found && (f2_val!=0)) || (found && (f1_val != f2_val) ) ) { 
       fprintf(trace, "unequal values written, 0x%x, 0x%x, ", f1_val, f2_val);
       if(f1_ret_val == f2_ret_val) {
 	fprintf(trace, "replacing REG_RAX\n");

@@ -504,12 +504,23 @@ if ($f1nargs==0) {
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();
 my $done = 0;
+my $start_time = time();
+my $reset_time = time();
+my $total_ce_time = 0;
+my $total_as_time = 0;
+my $diff;
+my $diff1;
 `rm str_arg*`;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
     my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt,$ret_adapt);
+    $diff = time() - $start_time;
+    $diff1 = time() - $reset_time;
+    print "elapsed time = $diff, last CE search time = $diff1\n";
+    $total_ce_time += $diff1;
+    $reset_time = time();
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
@@ -521,6 +532,7 @@ while (!$done) {
 	    $verified="complete";
 	}
 	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
+	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
 	$done = 1;
 	last;
     } else {
@@ -533,4 +545,9 @@ while (!$done) {
     ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
     print "Synthesized arg adaptor ".join(",",@$adapt).
 	" and return adaptor ".join(",",@$ret_adapt)."\n";
+    $diff = time() - $start_time;
+    $diff1 = time() - $reset_time;
+    print "elapsed time = $diff, last AS search time = $diff1\n";
+    $total_as_time += $diff1;
+    $reset_time = time();
 }
