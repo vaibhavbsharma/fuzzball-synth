@@ -1,4 +1,5 @@
 #include "two-funcs-conc.h"
+#include "SignalHandlers.h"
 #include <assert.h>
 
 #define REGION_LIMIT 2
@@ -340,6 +341,31 @@ long global_arg0, global_arg1, global_arg2,
     global_arg3, global_arg4, global_arg5;
 
 int main(int argc, char **argv) { 
+  struct sigaction sSigaction;
+  /* Register the signal hander using the siginfo interface*/
+  sSigaction.sa_sigaction = div0_signal_handler;
+  sSigaction.sa_flags = SA_SIGINFO;
+  /* mask all other signals */
+  sigfillset(&sSigaction.sa_mask);
+  int ret = sigaction(SIGFPE, &sSigaction, NULL);
+  if(ret) {
+    perror("ERROR, sigaction failed");
+    exit(-1);
+  }
+
+  struct sigaction sSigaction1;
+  /* Register the signal hander using the siginfo interface*/
+  sSigaction1.sa_sigaction = segv_signal_handler;
+  sSigaction1.sa_flags = SA_SIGINFO;
+  /* mask all other signals */
+  sigfillset(&sSigaction1.sa_mask);
+  ret = sigaction(SIGSEGV, &sSigaction1, NULL);
+  if(ret) {
+    perror("ERROR, sigaction failed");
+    exit(-1);
+  }
+
+
   int numTests=0;
   FILE *fh;
   if (argc == 8 && argv[3][0]=='f') {
