@@ -485,7 +485,7 @@ if ($f1nargs==0) {
 }
 
 # Set these to test a specific adaptor
-#  $adapt->[0]=0;
+$adapt->[0]=1;
 #  $adapt->[1]=0;
 #  $adapt->[2]=1;
 #  $adapt->[3]=0;

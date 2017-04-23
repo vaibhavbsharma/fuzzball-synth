@@ -4,7 +4,7 @@
 
 #define REGION_LIMIT 2
 #define SANE_ADDR 0x42420000
-#define MAX_ADAPTORS 10000000
+#define MAX_ADAPTORS 1000000
 #define MAX_TESTS 100
 
 
@@ -13,7 +13,7 @@
 jmp_buf  JumpBuffer;                    /* a jump buffer            */
 
 int f1num, f2num;
-int f1nargs=1, f2nargs=2;
+int f1nargs=6, f2nargs=6;
 bool void_flag=false;
 
 typedef struct { long a,b,c,d,e,f} test; 
@@ -196,7 +196,7 @@ void generate_typeconv_adaptors(int argnum) {
     }
   }
   int typeconv_op[9] = {11, 12, 21, 22, 31, 32, 41, 42, 43};
-  for(l=0; l<1; l++) {
+  for(l=0; l<9; l++) {
     ad.a_ad[argnum].var_is_const=typeconv_op[l];
     for(i=0; i<f1nargs; i++) {
       bool found=false;
