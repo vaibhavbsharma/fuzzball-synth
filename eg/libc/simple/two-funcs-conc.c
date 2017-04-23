@@ -6,6 +6,12 @@
 #define SANE_ADDR 0x42420000
 #define MAX_ADAPTORS 10000000
 #define MAX_TESTS 100
+
+
+#include  <setjmp.h>
+
+jmp_buf  JumpBuffer;                    /* a jump buffer            */
+
 int f1num, f2num;
 int f1nargs=1, f2nargs=2;
 bool void_flag=false;
@@ -53,26 +59,26 @@ void addTest(long a, long b, long c, long d, long e, long f) {
 bool isSaneAddr(long a) { return a > 4096; }
 
 long f1(long a, long b, long c, long d, long e, long f) {
-  if((f1num == 663 || f1num == 664 || f1num == 707 || f1num == 1323) && !isSaneAddr(a)) {
-    sideEffectsEqual=0;
-    return -1;
-  }
-  if( (f1num == 707 || f1num == 1323) && (!isSaneAddr(b) || (b!=0)) ) {
-    sideEffectsEqual=0;
-    return -1;
-  } 
+  //if((f1num == 663 || f1num == 664 || f1num == 707 || f1num == 1323) && !isSaneAddr(a)) {
+  //  sideEffectsEqual=0;
+  //  return -1;
+  //}
+  //if( (f1num == 707 || f1num == 1323) && (!isSaneAddr(b) || (b!=0)) ) {
+  //  sideEffectsEqual=0;
+  //  return -1;
+  //} 
   return (funcs[f1num].fptr)(a, b, c, d, e, f);
 }
 
 long f2(long a, long b, long c, long d, long e, long f) {
-  if((f2num == 663 || f2num == 664 || f2num == 707 || f2num == 1323) && !isSaneAddr(a)) { 
-    sideEffectsEqual=0;
-    return -1;
-  } 
-  if( (f2num == 707 || f2num == 1323) && (!isSaneAddr(b) && (b!=0)) ) {
-    sideEffectsEqual=0;
-    return -1;
-  } 
+  //if((f2num == 663 || f2num == 664 || f2num == 707 || f2num == 1323) && !isSaneAddr(a)) { 
+  //  sideEffectsEqual=0;
+  //  return -1;
+  //} 
+  //if( (f2num == 707 || f2num == 1323) && (!isSaneAddr(b) && (b!=0)) ) {
+  //  sideEffectsEqual=0;
+  //  return -1;
+  //} 
   return (funcs[f2num].fptr)(a, b, c, d, e, f);
 }
 
@@ -294,11 +300,11 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
 
 int compare(long *r1p, long *r2p,
 	    long a0, long a1, long a2, long a3, long a4, long a5) {
-  int i, j;
+  int i, j, k;
   bool is_all_match;
   for(i=0;i<num_adaptors; i++) {
     bool is_match[MAX_TESTS];
-    for(j=0; j<MAX_TESTS; j++) is_match[j]=false;
+    for(k=0; k<MAX_TESTS; k++) is_match[k]=false;
     for(j=0; j<num_tests; j++) {
       sideEffectsEqual=1;
       a0=tests[j].a;
@@ -307,18 +313,26 @@ int compare(long *r1p, long *r2p,
       a3=tests[j].d;
       a4=tests[j].e;
       a5=tests[j].f;
-      //printf("Starting f1\n");  
-      //fflush(stdout);
+      printf("Starting f1, i=%d, j=%d\n", i, j);  
+      fflush(stdout);
       long r1, r2;
+      if (sigsetjmp(JumpBuffer, 1) != 0) {     /* set a return mark   */
+      	printf("returning from longjmp, i=%d, j=%d\n", i, j);
+      	fflush(stdout);
+      	is_match[j]=false;
+	break;
+      	continue;
+      } else printf("setjmp setup\n");
+      fflush(stdout);
       r1 = f1(a0, a1, a2, a3, a4, a5);
-      //printf("Completed f1\n");
-      //fflush(stdout);
-      //printf("Starting f2\n");
-      //fflush(stdout);
+      printf("Completed f1\n");
+      fflush(stdout);
+      printf("Starting f2\n");
+      fflush(stdout);
       setup_adaptor(i);
       r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
-      //printf("Completed f2\n");
-      //fflush(stdout);
+      printf("Completed f2\n");
+      fflush(stdout);
       if (r1==r2 && sideEffectsEqual) {
 	printf("Match\n");
 	is_match[j]=true;

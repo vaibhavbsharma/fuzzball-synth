@@ -5,6 +5,7 @@
 #include "PinMonitor.h"
 #include <sys/stat.h>
 #include <sys/syscall.h>
+#include <signal.h>
 using namespace std;
 
 
@@ -40,25 +41,31 @@ bool isGlobalAddr(long addr, long rsp) {
   return labs(addr-rsp) > 65536;
 }
 
-VOID WritesMem (ADDRINT applicationIp, ADDRINT memoryAddressWrite, UINT32 memoryWriteSize, ADDRINT rsp_val) {
+bool segv;
+VOID WritesMem (ADDRINT applicationIp, ADDRINT memoryAddressWrite) {
   string fname;
+  //printf("blah1\n"); fflush(stdout);
   if(RecordF1) fname="f1: ";
   else if(RecordF2) fname="f2: ";
   else return;
-  if(RecordF1 && isGlobalAddr(memoryAddressWrite, f1_rsp)) 
-    if(f1_addrs.find((long *)memoryAddressWrite) == f1_addrs.end())
+  fprintf(trace, "WritesMem: %s0x%lx @ 0x%lx\n", fname.c_str(), memoryAddressWrite, applicationIp);
+  if(memoryAddressWrite < 4096 || memoryAddressWrite == 0xffffffffffffffff) return;
+  if(RecordF1 && isGlobalAddr(memoryAddressWrite, f1_rsp)) { 
+    if(f1_addrs.find((long *)memoryAddressWrite) == f1_addrs.end()) {
       f1_addrs[(long *) memoryAddressWrite] = (int) *(long *) memoryAddressWrite;
-  if(RecordF2 && isGlobalAddr(memoryAddressWrite, f2_rsp)) 
-    if(f2_addrs.find((long *)memoryAddressWrite) == f2_addrs.end())
+    }
+  }
+  if(RecordF2 && isGlobalAddr(memoryAddressWrite, f2_rsp)) { 
+    if(f2_addrs.find((long *)memoryAddressWrite) == f2_addrs.end()) { 
       f2_addrs[(long *) memoryAddressWrite] = (int) *(long *) memoryAddressWrite;
-  fprintf(trace, "WritesMem: %s0x%lx\n", fname.c_str(), memoryAddressWrite);
+    }
+  }
 }
 
 
 bool isNoopSyscallNum( int num) {
   return noopSyscalls.find(num) != noopSyscalls.end();
 }
-
 
 VOID SyscallExit(THREADID t, CONTEXT *ctx, SYSCALL_STANDARD std, VOID *v) {
   fprintf(trace, "SyscallExit called for syscall(%d)\n", savedSyscallNum);
@@ -105,13 +112,11 @@ VOID RecordSyscall(CONTEXT *ctx, ADDRINT ip, ADDRINT num, ADDRINT arg0, ADDRINT 
 }
 
 VOID Instruction(INS ins, void * v) {// Jitting time routine
-  if (INS_IsMemoryWrite(ins) ) {
+  if (!segv && INS_IsMemoryWrite(ins) ) {
     INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR) WritesMem,
-		   IARG_INST_PTR,// application IP
-		   IARG_MEMORYWRITE_EA,
-		   IARG_MEMORYWRITE_SIZE,
-		   IARG_REG_VALUE, REG_STACK_PTR, 
-		   IARG_END);
+  		   IARG_INST_PTR,// application IP
+  		   IARG_MEMORYWRITE_EA,
+  		   IARG_END);
   }
   if (INS_IsSyscall(ins)) {
     INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(RecordSyscall),
@@ -128,6 +133,7 @@ VOID RecordF1Begin(ADDRINT rsp_val) {
   fprintf(trace, "f1 began, rsp_val = 0x%lx\n",rsp_val);
   RecordF1 = true;
   if(f1_rsp == 0) f1_rsp = (long ) rsp_val;
+  segv=false;
 }
 
 VOID RecordF1End(CONTEXT *ctx) {
@@ -185,6 +191,8 @@ void cleanupAfterF2() {
   f1_syscall_args.clear();
   f2_syscall_args.clear();
   RecordF2 = false;
+  RecordF1 = false;
+  f1_rsp=f2_rsp=0;
 }
 
 VOID RecordF2End(CONTEXT *ctx) {
@@ -330,8 +338,6 @@ VOID Image(IMG img, VOID *v) {
 }
 
 VOID Fini(INT32 code, VOID *v) {
-  //::fprintf(trace,"#eof\n");
-  fclose(stdout);
 }
 
 // http://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exist-using-standard-c-c11-c
@@ -350,6 +356,25 @@ void setupNoopSyscalls() {
       fprintf(trace, "noop syscall(%d)\n", num);
     }
   }
+}
+
+static BOOL SigFunc(THREADID tid, INT32 sig, CONTEXT *ctxt, BOOL hasHandler,
+    const EXCEPTION_INFO *exception, void *)
+{
+    cout << "Thread " << std::dec << tid << ": Tool got signal ";
+    if (sig == SIGSEGV)
+        cout << "SIGSEGV";
+    else
+        cout << "<signal " << std::dec << sig << ">";
+    cout << " at PC 0x" << std::hex << PIN_GetContextReg(ctxt, REG_INST_PTR) << std::endl;
+
+    if (exception)
+        cout << "Signal is an exception" << std::endl;
+    if (hasHandler)
+        cout << "Application has a handler for this signal" << std::endl;
+    cleanupAfterF2();
+    segv=true;
+    return TRUE;
 }
 
 char *getUniqueLogFileName(char *fileName) {
@@ -378,8 +403,8 @@ int main(int argc, char * argv[]) {
   setupNoopSyscalls();
   INS_AddInstrumentFunction(Instruction, 0);
   IMG_AddInstrumentFunction(Image, NULL);
-  //PIN_AddSyscallEntryFunction(SyscallEntry, 0);
   PIN_AddSyscallExitFunction(SyscallExit, 0);
+  PIN_InterceptSignal(SIGSEGV, SigFunc, 0);
   PIN_AddFiniFunction(Fini, NULL);
   PIN_StartProgram();
 }

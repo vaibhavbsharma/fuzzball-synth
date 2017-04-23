@@ -80,6 +80,7 @@ int DivideByZero()
 #define IS_DISP32_MODE(modrmByte) ((modrmByte & MODRM_DISP32) == MODRM_DISP32)
 
 extern long sideEffectsEqual;
+extern jmp_buf  JumpBuffer;
 
 void div0_signal_handler(int signum, siginfo_t *siginfo, void *uctxt) 
 {
@@ -115,36 +116,48 @@ void div0_signal_handler(int signum, siginfo_t *siginfo, void *uctxt)
     exit(-1);
 }
 
-void segv_signal_handler(int signum, siginfo_t *siginfo, void *uctxt) 
-{
-  printf("Inside segv handler\n");
+void segv_signal_handler(int signum, siginfo_t *siginfo, void *uctxt) {
   ucontext_t *frameContext = (ucontext_t *)uctxt;
+  printf("Inside segv handler: 0x%lx\n", (unsigned long)frameContext->uc_mcontext.gregs[REG_IP]);
+  fflush(stdout);
+  siglongjmp(JumpBuffer, -1);       /* return to the setjmp mark*/
   
-  unsigned char *bytes = (unsigned char *)frameContext->uc_mcontext.gregs[REG_IP];
-  int opcode_ind=bytes[0]==DIV_OPCODE ? 0 : (bytes[1]==DIV_OPCODE ? 1 : -1);
-  //if (bytes[0] == DIV_OPCODE)
-  if (opcode_ind != -1) {
-    sideEffectsEqual=0;
-    if (IS_REG_MODE(bytes[opcode_ind+1])) {
-      printf("div %reg instruction\n");
-      // set IP pointing to the next instruction
-      frameContext->uc_mcontext.gregs[REG_IP] += 2;
-      return;
-    }
-    if (IS_DISP8_MODE(bytes[opcode_ind+1])) {
-      printf("div mem8 instruction\n");
-      // set IP pointing to the next instruction
-      frameContext->uc_mcontext.gregs[REG_IP] += 3;
-      return;
-    }
-    if (IS_DISP32_MODE(bytes[opcode_ind+1])) {
-      printf("div mem32 instruction\n");
-      // set IP pointing to the next instruction
-      frameContext->uc_mcontext.gregs[REG_IP] += 6;
-      return;
-    }            
-  }
-    printf("Unexpected instruction at address 0x%lx\n", (unsigned long)frameContext->uc_mcontext.gregs[REG_IP]);
-    printf("bytes[0,1,2] = [0x%x, 0x%x, 0x%x]\n", bytes[0], bytes[1], bytes[2]);
-    exit(-1);
+  // unsigned char *bytes = (unsigned char *)frameContext->uc_mcontext.gregs[REG_IP];
+  // int opcode_ind;
+  // if(bytes[0]==0x0f && bytes[1]==0xb6) opcode_ind=1;
+  // else if(bytes[1]==0x0f && bytes[2]==0xb6) opcode_ind=2;
+  // //signal(SIGSEGV, segv_signal_handler);   /* reinstall before return  */
+  // if (opcode_ind != -1) {
+  //   sideEffectsEqual=0;
+  //   //siglongjmp(JumpBuffer, -1);       /* return to the setjmp mark*/
+  //   // if (IS_REG_MODE(bytes[opcode_ind+1])) {
+  //   //   printf("movzx %reg instruction\n");
+  //   //   fflush(stdout);
+  //   //   // set IP pointing to the next instruction
+  //   //   frameContext->uc_mcontext.gregs[REG_IP] += 2;
+  //   //   return;
+  //   // }
+  //   // // if (IS_DISP8_MODE(bytes[opcode_ind+1])) {
+  //   // //   printf("movzx mem8 instruction\n");
+  //   // //   fflush(stdout);
+  //   // //   // set IP pointing to the next instruction
+  //   // //   frameContext->uc_mcontext.gregs[REG_IP] += 3;
+  //   // //   return;
+  //   // // }
+  //   // if (IS_DISP32_MODE(bytes[opcode_ind+1])) {
+  //   //   printf("movzx mem32 instruction\n");
+  //   //   fflush(stdout);
+  //   //   // set IP pointing to the next instruction
+  //   //   frameContext->uc_mcontext.gregs[REG_IP] += 6;
+  //   //   return;
+  //   // }           
+  //   // printf("dont know movzx instruction, guessing IP+5\n");
+  //   // fflush(stdout);
+  //   // frameContext->uc_mcontext.gregs[REG_IP] += 5;
+  //   // return;
+  // }
+  // printf("Unexpected instruction at address 0x%lx\n", (unsigned long)frameContext->uc_mcontext.gregs[REG_IP]);
+  // printf("bytes[0,1,2] = [0x%x, 0x%x, 0x%x]\n", bytes[0], bytes[1], bytes[2]);
+  // fflush(stdout);
+  // exit(-1);
 }
