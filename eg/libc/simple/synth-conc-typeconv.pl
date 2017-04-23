@@ -142,17 +142,17 @@ my($fields_addr);
 # Field [2]: printf format for the string form
 
 my @fields =
-  (["a_is_const",  "reg1_t", "%01x"],
+  (["a_type",  "reg8_t", "%01x"],
    ["a_val",      "reg64_t", "%016x"],
-   ["b_is_const",  "reg1_t", "%01x"],
+   ["b_type",  "reg8_t", "%01x"],
    ["b_val",      "reg64_t", "%016x"],
-   ["c_is_const",  "reg1_t", "%01x"],
+   ["c_type",  "reg8_t", "%01x"],
    ["c_val",      "reg64_t", "%016x"],
-   ["d_is_const",  "reg1_t", "%01x"],
+   ["d_type",  "reg8_t", "%01x"],
    ["d_val",      "reg64_t", "%016x"],
-   ["e_is_const",  "reg1_t", "%01x"],
+   ["e_type",  "reg8_t", "%01x"],
    ["e_val",      "reg64_t", "%016x"],
-   ["f_is_const",  "reg1_t", "%01x"],
+   ["f_type",  "reg8_t", "%01x"],
    ["f_val",      "reg64_t", "%016x"],
 );
 
@@ -174,7 +174,7 @@ my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
     );
 
 my @synth_opt = ("-synthesize-adaptor",
-		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
+		 join(":", "typeconv", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
 
 my @synth_ret_opt = ("-synthesize-return-adaptor",
 		 join(":", "return-typeconv", $f2_addr, $post_f2_call, $f2nargs));
@@ -187,8 +187,8 @@ if($const_lb != $const_ub) {
 	my $s1='';
 	my $s2='';
 	if($f1nargs != 0) {
-	    $s1 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg64_t>=\$0x%Lx:reg64_t",$n,$n,$const_lb);
-	    $s2 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg64_t<=\$0x%Lx:reg64_t",$n,$n,$const_ub);
+	    $s1 = sprintf("%s_type:reg8_t==0:reg8_t | %s_val:reg64_t>=\$0x%Lx:reg64_t",$n,$n,$const_lb);
+	    $s2 = sprintf("%s_type:reg8_t==0:reg8_t | %s_val:reg64_t<=\$0x%Lx:reg64_t",$n,$n,$const_ub);
 	}
 	else {
 	    $s1 = sprintf("%s_val:reg64_t>=\$0x%016x:reg64_t",$n,$const_lb);
@@ -499,7 +499,7 @@ $adapt->[0]=1;
 # If outer function takes no arguments, then the inner function can only use constants
 if ($f1nargs==0) {
     for my $i (0 .. $#$adapt) {
-	if ($i%2 == 0) { # X_is_const field
+	if ($i%2 == 0) { # X_type field
 	    $adapt->[$i] = 1;
 	    $adapt->[$i+1] = 1;
 	}

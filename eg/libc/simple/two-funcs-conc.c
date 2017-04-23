@@ -108,6 +108,7 @@ void populateAdaptor() {
   for(i=0;i<6; i++) 
     all_ads[num_adaptors].a_ad[i] = ad.a_ad[i];
   all_ads[num_adaptors].r_ad = ad.r_ad;
+  //print_adaptor(num_adaptors);
   num_adaptors++;
   assert(num_adaptors <= MAX_ADAPTORS);
 }
@@ -152,7 +153,7 @@ void generate_adaptors(int argnum) {
     ad.a_ad[argnum].var_val=i;
     if(argnum+1 < f2nargs) 
       generate_adaptors(argnum+1);
-    else generate_ret_adaptors(0);
+    else generate_ret_adaptors();
   }
   
   ad.a_ad[argnum].var_is_const=0;
@@ -164,13 +165,13 @@ void generate_adaptors(int argnum) {
       ad.a_ad[argnum].var_val=i;
       if(argnum+1 < f2nargs) 
 	generate_adaptors(argnum+1);
-      else generate_ret_adaptors(0);
+      else generate_ret_adaptors();
     }
   }
 }
 
 void generate_typeconv_adaptors(int argnum) {
-  int i, j;
+  int i, j, l;
   assert(adaptor_family==2);
   //each inner arg can be a constant
   //each inner arg can point to a target arg
@@ -179,7 +180,7 @@ void generate_typeconv_adaptors(int argnum) {
     ad.a_ad[argnum].var_val=i;
     if(argnum+1 < f2nargs) 
       generate_typeconv_adaptors(argnum+1);
-    else generate_ret_adaptors(0);
+    else generate_ret_adaptors();
   }
   
   ad.a_ad[argnum].var_is_const=0;
@@ -191,12 +192,12 @@ void generate_typeconv_adaptors(int argnum) {
       ad.a_ad[argnum].var_val=i;
       if(argnum+1 < f2nargs) 
 	generate_typeconv_adaptors(argnum+1);
-      else generate_ret_adaptors(0);
+      else generate_ret_adaptors();
     }
   }
   int typeconv_op[9] = {11, 12, 21, 22, 31, 32, 41, 42, 43};
-  for(i=0; i<9; i++) {
-    ad.a_ad[argnum].var_is_const=typeconv_op[i];
+  for(l=0; l<1; l++) {
+    ad.a_ad[argnum].var_is_const=typeconv_op[l];
     for(i=0; i<f1nargs; i++) {
       bool found=false;
       for(j=0; j<argnum; j++) 
@@ -205,7 +206,7 @@ void generate_typeconv_adaptors(int argnum) {
 	ad.a_ad[argnum].var_val=i;
 	if(argnum+1 < f2nargs) 
 	  generate_typeconv_adaptors(argnum+1);
-	else generate_ret_adaptors(0);
+	else generate_ret_adaptors();
       }
     }
   }
@@ -255,8 +256,12 @@ void print_adaptor(int index) {
   char output[200];
   printf("Input vars: ");
   int i;
+  char type_varname[10];
+  if(adaptor_family==1) sprintf(type_varname,"_is_const");
+  else if(adaptor_family==2) sprintf(type_varname, "_type");
+  else printf("undefined adaptor_family\n");
   for(i=0; i<f2nargs; i++) {
-    printf("%c_is_const=0x%x %c_val=0x%lx ", 'a'+i, 
+    printf("%c%s=0x%x %c_val=0x%lx ", 'a'+i, type_varname,  
 	   all_ads[index].a_ad[i].var_is_const, 'a'+i, all_ads[index].a_ad[i].var_val); 
   }
   printf("ret_type=0x%x ret_val=0x%lx", all_ads[index].r_ad.ret_type, all_ads[index].r_ad.ret_val);
@@ -321,7 +326,9 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
     case 22: f2args[i] = convert16to64u(f1args[ad.a_ad[i].var_val]); break;
     case 31: f2args[i] =  convert8to64s(f1args[ad.a_ad[i].var_val]); break;
     case 32: f2args[i] =  convert8to64u(f1args[ad.a_ad[i].var_val]); break;
-    case 53: f2args[i] =   convert64to1(f1args[ad.a_ad[i].var_val]); break;
+    case 41: f2args[i] =  convert1to64s(f1args[ad.a_ad[i].var_val]); break;
+    case 42: f2args[i] =  convert1to64u(f1args[ad.a_ad[i].var_val]); break;
+    case 43: f2args[i] =   convert64to1(f1args[ad.a_ad[i].var_val]); break;
     default: break;
     }
   }
@@ -352,10 +359,10 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
   return ret_val;
 }
 
-int compare(long *r1p, long *r2p,
-	    long a0, long a1, long a2, long a3, long a4, long a5) {
+int compare() {
   int i, j, k;
   bool is_all_match;
+  long a0, a1, a2, a3, a4, a5;
   for(i=0;i<num_adaptors; i++) {
     bool is_match[MAX_TESTS];
     for(k=0; k<MAX_TESTS; k++) is_match[k]=false;
@@ -471,34 +478,11 @@ int main(int argc, char **argv) {
   }
   shuffle_adaptors();
   int i;
-  // printf("Printing %d adaptors\n", num_adaptors);
+  printf("Number of adaptors = %d\n", num_adaptors);
   // for(i=0;i<num_adaptors;i++) print_adaptor(i);
   // printf("Finished printing all adaptors\n\n");
   // fflush(stdout);
-  if (argv[3][0] == 'a') {
-    long args[6] = {0, 0, 0, 0, 0, 0};
-    long r1, r2;
-    int i;
-    for (i = 0; i < 6 && i + 4 < argc; i++) {
-      char *s = argv[i + 4];
-      if (isdigit(s[0])) {
-	args[i] = atol(s);
-      } else {
-	args[i] = (long)s;
-      }
-    }
-    compare(&r1, &r2,
-	    args[0], args[1], args[2], args[3], args[4], args[5]);
-    if (r1 == r2) {
-      printf("Both %ld\n", r1);
-    } else {
-      printf("Difference %ld vs. %ld\n", r1, r2);
-    }
-  } else if (argv[3][0] == 'g') {
-    compare(0, 0,
-	    global_arg0, global_arg1, global_arg2,
-	    global_arg3, global_arg4, global_arg5);
-  } else if (argv[3][0] == 'f') {
+  if (argv[3][0] == 'f') {
     long a, b, c, d, e, f;
     if (argv[4][0] == '-' && argv[4][1] == 0) {
       fh = stdin;
@@ -525,7 +509,7 @@ int main(int argc, char **argv) {
       addTest(aS, bS, cS, dS, eS, fS);
       numTests++;
     }
-    int is_eq = compare(0, 0, a, b, c, d, e, f);
+    int is_eq = compare();
     if (!is_eq)
       exit(1);
   } else {
