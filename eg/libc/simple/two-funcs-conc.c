@@ -101,6 +101,7 @@ argret all_ads[MAX_ADAPTORS];
 argret ad;
 int num_adaptors=0;
 int const_lb, const_ub;
+int adaptor_family;
 
 void populateAdaptor() {
   int i;
@@ -143,6 +144,7 @@ void generate_ret_adaptors() {
 // with total number in num_adaptors global
 void generate_adaptors(int argnum) {
   int i, j;
+  assert(adaptor_family==1);
   //each inner arg can be a constant
   //each inner arg can point to a target arg
   ad.a_ad[argnum].var_is_const=1;
@@ -163,6 +165,48 @@ void generate_adaptors(int argnum) {
       if(argnum+1 < f2nargs) 
 	generate_adaptors(argnum+1);
       else generate_ret_adaptors(0);
+    }
+  }
+}
+
+void generate_typeconv_adaptors(int argnum) {
+  int i, j;
+  assert(adaptor_family==2);
+  //each inner arg can be a constant
+  //each inner arg can point to a target arg
+  ad.a_ad[argnum].var_is_const=1;
+  for(i=const_lb; i<=const_ub; i++) {
+    ad.a_ad[argnum].var_val=i;
+    if(argnum+1 < f2nargs) 
+      generate_typeconv_adaptors(argnum+1);
+    else generate_ret_adaptors(0);
+  }
+  
+  ad.a_ad[argnum].var_is_const=0;
+  for(i=0; i<f1nargs; i++) {
+    bool found=false;
+    for(j=0; j<argnum; j++) 
+      if(ad.a_ad[j].var_is_const==0 && ad.a_ad[j].var_val==i) found=true; 
+    if(!found) {
+      ad.a_ad[argnum].var_val=i;
+      if(argnum+1 < f2nargs) 
+	generate_typeconv_adaptors(argnum+1);
+      else generate_ret_adaptors(0);
+    }
+  }
+  int typeconv_op[9] = {11, 12, 21, 22, 31, 32, 41, 42, 43};
+  for(i=0; i<9; i++) {
+    ad.a_ad[argnum].var_is_const=typeconv_op[i];
+    for(i=0; i<f1nargs; i++) {
+      bool found=false;
+      for(j=0; j<argnum; j++) 
+	if(ad.a_ad[j].var_is_const!=1 && ad.a_ad[j].var_val==i) found=true; 
+      if(!found) {
+	ad.a_ad[argnum].var_val=i;
+	if(argnum+1 < f2nargs) 
+	  generate_typeconv_adaptors(argnum+1);
+	else generate_ret_adaptors(0);
+      }
     }
   }
 }
@@ -268,8 +312,18 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
   long f2args[6];
   int i;
   for(i=0;i<6; i++) {
-    if(ad.a_ad[i].var_is_const==1) f2args[i]=ad.a_ad[i].var_val;
-    else f2args[i]=f1args[ad.a_ad[i].var_val];
+    switch(ad.a_ad[i].var_is_const) {
+    case 1: f2args[i]=ad.a_ad[i].var_val; break;
+    case 0: f2args[i]=f1args[ad.a_ad[i].var_val] ; break;
+    case 11: f2args[i] = convert32to64s(f1args[ad.a_ad[i].var_val]); break;
+    case 12: f2args[i] = convert32to64u(f1args[ad.a_ad[i].var_val]); break;
+    case 21: f2args[i] = convert16to64s(f1args[ad.a_ad[i].var_val]); break;
+    case 22: f2args[i] = convert16to64u(f1args[ad.a_ad[i].var_val]); break;
+    case 31: f2args[i] =  convert8to64s(f1args[ad.a_ad[i].var_val]); break;
+    case 32: f2args[i] =  convert8to64u(f1args[ad.a_ad[i].var_val]); break;
+    case 53: f2args[i] =   convert64to1(f1args[ad.a_ad[i].var_val]); break;
+    default: break;
+    }
   }
   long ret_val = f2(f2args[0], f2args[1], f2args[2], 
 		    f2args[3], f2args[4], f2args[5]);
@@ -336,7 +390,7 @@ int compare(long *r1p, long *r2p,
       if (r1==r2 && sideEffectsEqual) {
 	printf("Match\n");
 	is_match[j]=true;
-      } 
+      } else break; 
     }
     is_all_match=true;
     for(j=0;j<num_tests; j++) is_all_match = is_all_match & is_match[j];
@@ -382,15 +436,16 @@ int main(int argc, char **argv) {
 
   int numTests=0;
   FILE *fh;
-  if (argc == 8 && argv[3][0]=='f') {
+  if (argc == 9 && argv[3][0]=='f') {
     fh = fopen(argv[4], "r");
     const_lb = atoi(argv[5]);
     const_ub = atoi(argv[6]);
+    adaptor_family = atoi(argv[8]);
   }
   if (argc < 4) {
     fprintf(stderr, "Usage: two-funcs <f1num> <f2num> a [0-6 args]\n");
     fprintf(stderr, "    or two-funcs <f1num> <f2num> g\n");
-    fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or -> <lower bound> <upper bound> \n<sideEffectsEqual's address>");
+    fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or -> <lower bound> <upper bound> \n<sideEffectsEqual's address> <argsub=1, typeconv=2>");
     exit(1);
   }
   f1num = atoi(argv[1]);
@@ -406,7 +461,14 @@ int main(int argc, char **argv) {
   }
   f1nargs = funcs[f1num].num_args;
   f2nargs = funcs[f2num].num_args;
-  generate_adaptors(0);
+  if(adaptor_family==1)
+    generate_adaptors(0);
+  else if(adaptor_family==2)
+    generate_typeconv_adaptors(0);
+  else {
+    printf("unknown adaptor family\n");
+    exit(1);
+  }
   shuffle_adaptors();
   int i;
   // printf("Printing %d adaptors\n", num_adaptors);
@@ -462,7 +524,6 @@ int main(int argc, char **argv) {
       sanitize(f, &fS, "str_arg6", numTests);
       addTest(aS, bS, cS, dS, eS, fS);
       numTests++;
-      //addTest(a, b, c, d, e, f);
     }
     int is_eq = compare(0, 0, a, b, c, d, e, f);
     if (!is_eq)

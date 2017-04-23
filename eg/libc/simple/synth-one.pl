@@ -419,7 +419,7 @@ sub try_synth {
     }
     close TESTS;
     # my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $func_info[$f1num][2], $func_info[$f2num][2]);
-    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr);
+    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, "1");
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {

@@ -62,7 +62,6 @@ VOID WritesMem (ADDRINT applicationIp, ADDRINT memoryAddressWrite) {
   }
 }
 
-
 bool isNoopSyscallNum( int num) {
   return noopSyscalls.find(num) != noopSyscalls.end();
 }
@@ -209,9 +208,9 @@ VOID RecordF2End(CONTEXT *ctx) {
   map<long *, int> :: iterator it = f2_addrs.begin();
   while(it!=f2_addrs.end()) {
     bool found;
-    int f1_val = getF1Val(it->first, found);
-    int f2_val = (int) *(long *)(it->first);
-    fprintf(trace, "f2write: mem[%p] = %x ;", it->first, f2_val);
+    int f1_val = (unsigned char) getF1Val(it->first, found);
+    int f2_val = (unsigned char) *(long *)(it->first);
+    fprintf(trace, "f2write: mem[%p] = 0x%x ;", it->first, f2_val);
     if( (!found && (f2_val!=0)) || (found && (f1_val != f2_val) ) ) { 
       fprintf(trace, "unequal values written, 0x%x, 0x%x, ", f1_val, f2_val);
       if(f1_ret_val == f2_ret_val) {
@@ -236,7 +235,7 @@ VOID RecordF2End(CONTEXT *ctx) {
     while(it!=f1_addrs.end()) { 
       if(it->second!=0) {
 	addr=it->first;
-	if( *addr == it->second) {
+	if( ((unsigned char) *addr) == ((unsigned char) it->second)) {
 	  ++it;
 	  continue;
 	}
