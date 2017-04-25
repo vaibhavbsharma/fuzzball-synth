@@ -9,7 +9,7 @@
 using namespace std;
 
 
-bool logfile=false;
+bool logfile=true;
 
 #define STACK_CONST 0x7ff000000000
 

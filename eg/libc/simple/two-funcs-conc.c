@@ -277,9 +277,9 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
   long f1args[6]={a, b, c, d, e, f};
   long f2args[6];
   
-  char str[ADAPTOR_STR_LEN];
-  printf("trying adaptor: %s\n", get_adaptor_string(str, ad));
-  fflush(stdout);
+  // char str[ADAPTOR_STR_LEN];
+  // printf("trying adaptor: %s\n", get_adaptor_string(str, ad));
+  // fflush(stdout);
   
   int i;
   for(i=0;i<6; i++) {
@@ -343,7 +343,7 @@ int compare() {
     a3=tests[j].d;
     a4=tests[j].e;
     a5=tests[j].f;
-    printf("Starting f1, j=%d\n", j);  
+    //printf("Starting f1, j=%d\n", j);  
     fflush(stdout);
     long r1, r2;
     if (sigsetjmp(JumpBuffer, 1) != 0) {     /* set a return mark   */
@@ -352,16 +352,16 @@ int compare() {
       is_match[j]=false;
       break;
       continue;
-    } else printf("setjmp setup\n");
+    } // else printf("setjmp setup\n");
     fflush(stdout);
     r1 = f1(a0, a1, a2, a3, a4, a5);
-    printf("Completed f1\n");
-    fflush(stdout);
-    printf("Starting f2\n");
-    fflush(stdout);
+    // printf("Completed f1\n");
+    // fflush(stdout);
+    // printf("Starting f2\n");
+    // fflush(stdout);
     r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
-    printf("Completed f2\n");
-    fflush(stdout);
+    // printf("Completed f2\n");
+    // fflush(stdout);
     if (r1==r2 && sideEffectsEqual) {
       printf("Match\n");
       is_match[j]=true;
