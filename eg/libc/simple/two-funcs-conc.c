@@ -1,5 +1,6 @@
 #include "two-funcs-conc.h"
 #include "SignalHandlers.h"
+#include "generate_adaptors.h"
 #include <assert.h>
 
 #define REGION_LIMIT 2
@@ -15,6 +16,8 @@ jmp_buf  JumpBuffer;                    /* a jump buffer            */
 int f1num, f2num;
 int f1nargs=6, f2nargs=6;
 bool void_flag=false;
+bool calculating = true;
+unsigned long num_adaptors_g = 1;
 
 typedef struct { long a,b,c,d,e,f} test; 
 test tests[MAX_TESTS];
@@ -81,21 +84,6 @@ long f2(long a, long b, long c, long d, long e, long f) {
   //} 
   return (funcs[f2num].fptr)(a, b, c, d, e, f);
 }
-
-typedef struct {
-  int var_is_const;
-  long var_val;
-} argsub;
-
-typedef struct {
-  int ret_type;
-  long ret_val;
-} retsub;
-
-typedef struct {
-  argsub a_ad[6];
-  retsub r_ad;
-} argret;
 
 argret all_ads[MAX_ADAPTORS];
 argret ad;
@@ -225,34 +213,7 @@ void swap( int ind1, int ind2) {
   all_ads[ind2].r_ad=a.r_ad;
 }
 
-//http://www.geeksforgeeks.org/shuffle-a-given-array/
-// A function to generate a random permutation of arr[]
-void shuffle_adaptors() {
-  int n = num_adaptors;
-  int i,j;
-  // Use a different seed value so that we don't get same
-  // result each time we run this program
-  srand ( time(NULL) );
- 
-  // Start from the last element and swap one by one. We don't
-  // need to run for the first element that's why i > 0
-  for (i = n-1; i > 0; i--)
-    {
-      // Pick a random index from 0 to i
-      j = rand() % (i+1);
- 
-      // Swap all_ads[i] with the element at random index
-      swap(i, j);
-    }
-}
-
-void setup_adaptor(int index) {
-  int i;
-  for(i=0;i<6;i++) ad.a_ad[i]=all_ads[index].a_ad[i];
-  ad.r_ad = all_ads[index].r_ad;
-}
-
-void print_adaptor(int index) {
+void print_adaptor() {
   char output[200];
   printf("Input vars: ");
   int i;
@@ -262,9 +223,9 @@ void print_adaptor(int index) {
   else printf("undefined adaptor_family\n");
   for(i=0; i<f2nargs; i++) {
     printf("%c%s=0x%x %c_val=0x%lx ", 'a'+i, type_varname,  
-	   all_ads[index].a_ad[i].var_is_const, 'a'+i, all_ads[index].a_ad[i].var_val); 
+	   ad.a_ad[i].var_is_const, 'a'+i, ad.a_ad[i].var_val); 
   }
-  printf("ret_type=0x%x ret_val=0x%lx", all_ads[index].r_ad.ret_type, all_ads[index].r_ad.ret_val);
+  printf("ret_type=0x%x ret_val=0x%lx", ad.r_ad.ret_type, ad.r_ad.ret_val);
   printf("\n");
   fflush(stdout);
 }
@@ -315,6 +276,11 @@ long convert64to1(long a) { return (long) a != 0; }
 long wrap_f2(long a, long b, long c, long d, long e, long f) {
   long f1args[6]={a, b, c, d, e, f};
   long f2args[6];
+  
+  char str[ADAPTOR_STR_LEN];
+  printf("trying adaptor: %s\n", get_adaptor_string(str, ad));
+  fflush(stdout);
+  
   int i;
   for(i=0;i<6; i++) {
     switch(ad.a_ad[i].var_is_const) {
@@ -360,53 +326,53 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
 }
 
 int compare() {
-  int i, j, k;
+  int j, k;
   bool is_all_match;
   long a0, a1, a2, a3, a4, a5;
-  for(i=0;i<num_adaptors; i++) {
-    bool is_match[MAX_TESTS];
-    for(k=0; k<MAX_TESTS; k++) is_match[k]=false;
-    for(j=0; j<num_tests; j++) {
-      sideEffectsEqual=1;
-      a0=tests[j].a;
-      a1=tests[j].b;
-      a2=tests[j].c;
-      a3=tests[j].d;
-      a4=tests[j].e;
-      a5=tests[j].f;
-      printf("Starting f1, i=%d, j=%d\n", i, j);  
-      fflush(stdout);
-      long r1, r2;
-      if (sigsetjmp(JumpBuffer, 1) != 0) {     /* set a return mark   */
-      	printf("returning from longjmp, i=%d, j=%d\n", i, j);
-      	fflush(stdout);
-      	is_match[j]=false;
-	break;
-      	continue;
-      } else printf("setjmp setup\n");
-      fflush(stdout);
-      r1 = f1(a0, a1, a2, a3, a4, a5);
-      printf("Completed f1\n");
-      fflush(stdout);
-      printf("Starting f2\n");
-      fflush(stdout);
-      setup_adaptor(i);
-      r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
-      printf("Completed f2\n");
-      fflush(stdout);
-      if (r1==r2 && sideEffectsEqual) {
-	printf("Match\n");
-	is_match[j]=true;
-      } else break; 
-    }
-    is_all_match=true;
-    for(j=0;j<num_tests; j++) is_all_match = is_all_match & is_match[j];
-    if(is_all_match) break;
+  bool is_match[MAX_TESTS];
+  if(calculating) {
+    printf("Number of adaptors = %ld\n", num_adaptors_g);
+    calculating=false;
   }
+  for(k=0; k<MAX_TESTS; k++) is_match[k]=false;
+  for(j=0; j<num_tests; j++) {
+    sideEffectsEqual=1;
+    a0=tests[j].a;
+    a1=tests[j].b;
+    a2=tests[j].c;
+    a3=tests[j].d;
+    a4=tests[j].e;
+    a5=tests[j].f;
+    printf("Starting f1, j=%d\n", j);  
+    fflush(stdout);
+    long r1, r2;
+    if (sigsetjmp(JumpBuffer, 1) != 0) {     /* set a return mark   */
+      printf("returning from longjmp, j=%d\n", j);
+      fflush(stdout);
+      is_match[j]=false;
+      break;
+      continue;
+    } else printf("setjmp setup\n");
+    fflush(stdout);
+    r1 = f1(a0, a1, a2, a3, a4, a5);
+    printf("Completed f1\n");
+    fflush(stdout);
+    printf("Starting f2\n");
+    fflush(stdout);
+    r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
+    printf("Completed f2\n");
+    fflush(stdout);
+    if (r1==r2 && sideEffectsEqual) {
+      printf("Match\n");
+      is_match[j]=true;
+    } else break; 
+  }
+  is_all_match=true;
+  for(j=0;j<num_tests; j++) is_all_match = is_all_match & is_match[j];
   if(is_all_match == 1) { 
     printf("All tests succeeded!\n");
     fflush(stdout);
-    print_adaptor(i);
+    print_adaptor();
     fflush(stdout);
   }
   return is_all_match;
@@ -468,20 +434,7 @@ int main(int argc, char **argv) {
   }
   f1nargs = funcs[f1num].num_args;
   f2nargs = funcs[f2num].num_args;
-  if(adaptor_family==1)
-    generate_adaptors(0);
-  else if(adaptor_family==2)
-    generate_typeconv_adaptors(0);
-  else {
-    printf("unknown adaptor family\n");
-    exit(1);
-  }
-  shuffle_adaptors();
   int i;
-  printf("Number of adaptors = %d\n", num_adaptors);
-  // for(i=0;i<num_adaptors;i++) print_adaptor(i);
-  // printf("Finished printing all adaptors\n\n");
-  // fflush(stdout);
   if (argv[3][0] == 'f') {
     long a, b, c, d, e, f;
     if (argv[4][0] == '-' && argv[4][1] == 0) {
@@ -509,9 +462,17 @@ int main(int argc, char **argv) {
       addTest(aS, bS, cS, dS, eS, fS);
       numTests++;
     }
-    int is_eq = compare();
-    if (!is_eq)
+    if(adaptor_family==1)
+      generate_adaptors_randomized(0);
+    else if(adaptor_family==2)
+      generate_typeconv_adaptors_randomized(0);
+    else {
+      printf("unknown adaptor family\n");
       exit(1);
+    }
+    //int is_eq = compare();
+    //if (!is_eq)
+    //  exit(1);
   } else {
     fprintf(stderr, "Unhandled command argument\n");
     exit(1);

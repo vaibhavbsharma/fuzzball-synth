@@ -8,7 +8,7 @@ die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identi
 my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
 srand($rand_seed);
-my $adaptor_grammar = 2;
+my $adaptor_grammar = 1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
