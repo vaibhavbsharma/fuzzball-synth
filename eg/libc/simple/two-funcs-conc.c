@@ -18,6 +18,9 @@ int f1nargs=6, f2nargs=6;
 bool void_flag=false;
 bool calculating = true;
 unsigned long num_adaptors_g = 1;
+bool find_all_correct_adaptors=false;
+unsigned long number_of_adaptors_tried=0;
+unsigned long number_of_correct_adaptors=0;
 
 typedef struct { long a,b,c,d,e,f} test; 
 test tests[MAX_TESTS];
@@ -369,7 +372,8 @@ int compare() {
   }
   is_all_match=true;
   for(j=0;j<num_tests; j++) is_all_match = is_all_match & is_match[j];
-  if(is_all_match == 1) { 
+  if(is_all_match == 1 && !find_all_correct_adaptors) { 
+    printf("Number of adaptors tried = %ld\n", number_of_adaptors_tried);
     printf("All tests succeeded!\n");
     fflush(stdout);
     print_adaptor();
@@ -409,16 +413,19 @@ int main(int argc, char **argv) {
 
   int numTests=0;
   FILE *fh;
-  if (argc == 9 && argv[3][0]=='f') {
+  if (argc == 10 && argv[3][0]=='f') {
     fh = fopen(argv[4], "r");
     const_lb = atoi(argv[5]);
     const_ub = atoi(argv[6]);
     adaptor_family = atoi(argv[8]);
+    if(atoi(argv[9])==1) {
+      find_all_correct_adaptors=false;
+    } else find_all_correct_adaptors=true;
   }
   if (argc < 4) {
     fprintf(stderr, "Usage: two-funcs <f1num> <f2num> a [0-6 args]\n");
     fprintf(stderr, "    or two-funcs <f1num> <f2num> g\n");
-    fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or -> <lower bound> <upper bound> \n<sideEffectsEqual's address> <argsub=1, typeconv=2>");
+    fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or -> <lower bound> <upper bound> \n<sideEffectsEqual's address> <argsub=1, typeconv=2> <1=find one correct adaptor, 0=find all correct adaptors>");
     exit(1);
   }
   f1num = atoi(argv[1]);
@@ -476,6 +483,12 @@ int main(int argc, char **argv) {
   } else {
     fprintf(stderr, "Unhandled command argument\n");
     exit(1);
+  }
+  if(find_all_correct_adaptors) {
+    fflush(stdout);
+    printf("\n\nNumber of adaptors tried = %ld\n", number_of_adaptors_tried);
+    printf("Number of correct adaptors = %ld\n", number_of_correct_adaptors);
+    fflush(stdout);
   }
   return 0;
 }

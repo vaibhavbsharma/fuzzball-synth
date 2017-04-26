@@ -9,6 +9,9 @@ extern argret ad;
 extern const_lb, const_ub;
 extern unsigned long num_adaptors_g;
 extern bool calculating;
+extern unsigned long number_of_adaptors_tried;
+extern bool find_all_correct_adaptors;
+extern unsigned long number_of_correct_adaptors;
 
 bool generated_adaptors[6]={0,0,0,0,0,0};
 argsub ads[6][PER_ARG_LIM];
@@ -187,7 +190,11 @@ void generate_ret_adaptors_randomized() {
   for(i=0; i<ret_ads_ind; i++) {
     ad.r_ad.ret_type=ret_ads[i].ret_type;
     ad.r_ad.ret_val=ret_ads[i].ret_val;
-    if(compare()) exit(0);
+    number_of_adaptors_tried++;
+    if(compare()) {
+      if(!find_all_correct_adaptors) exit(0);
+      else number_of_correct_adaptors++;
+    }
   }
 }
 

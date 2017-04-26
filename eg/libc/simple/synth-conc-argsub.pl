@@ -8,7 +8,7 @@ die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identi
 my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
 srand($rand_seed);
-my $adaptor_grammar = 1;
+my $adaptor_family = 1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
@@ -420,7 +420,7 @@ sub try_synth {
     }
     close TESTS;
     # my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $func_info[$f1num][2], $func_info[$f2num][2]);
-    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_grammar);
+    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, "1");
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
@@ -466,6 +466,24 @@ sub try_synth {
 	#print "try_synth: pushing $fr->[0] = $fields{$fr->[0]}\n";
     }
     return ([@afields],[@bfields]);
+}
+
+sub find_all_adaptors {
+    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, "0");
+    my @printable;
+    for my $a (@args) {
+	if ($a =~ /[\s|<>]/) {
+	    push @printable, "'$a'";
+	} else {
+	    push @printable, $a;
+	}
+    }
+    print "@printable\n";
+    open(LOG, "-|", @args);
+    while (<LOG>) {
+	print "  $_"
+    }
+    close LOG;
 }
 
 # Set these to test a specific adaptor
@@ -539,6 +557,10 @@ while (!$done) {
 	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
 	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
 	$done = 1;
+	$reset_time = time();
+	find_all_adaptors();
+	$diff1 = time() - $reset_time;
+	print "find-all-adaptors took $diff1 seconds\n";
 	last;
     } else {
 	push @fuzzball_extra_args_arr, @{ $_fuzzball_extra_args };
