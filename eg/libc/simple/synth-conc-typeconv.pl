@@ -554,10 +554,13 @@ while (!$done) {
 	if ($f1_completed_count == $iteration_count) {
 	    $verified="complete";
 	}
+	$done = 1;
+	$reset_time = time();
+	find_all_adaptors();
+	$diff1 = time() - $reset_time;
 	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
 	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
-	$done = 1;
-	find_all_adaptors();
+	print "find-all-adaptors took $diff1 seconds\n";
 	last;
     } else {
 	push @fuzzball_extra_args_arr, @{ $_fuzzball_extra_args };

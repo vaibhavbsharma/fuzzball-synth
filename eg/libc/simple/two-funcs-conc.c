@@ -1,6 +1,7 @@
 #include "two-funcs-conc.h"
 #include "SignalHandlers.h"
 #include "generate_adaptors.h"
+#include "calc_num_adaptors.h"
 #include <assert.h>
 
 #define REGION_LIMIT 2
@@ -334,7 +335,7 @@ int compare() {
   long a0, a1, a2, a3, a4, a5;
   bool is_match[MAX_TESTS];
   if(calculating) {
-    printf("Number of adaptors = %ld\n", num_adaptors_g);
+    printf("Loose upper bound on number of adaptors = %ld\n", num_adaptors_g);
     calculating=false;
   }
   for(k=0; k<MAX_TESTS; k++) is_match[k]=false;
@@ -454,6 +455,10 @@ int main(int argc, char **argv) {
 	return 1;
       }
     }
+    if(adaptor_family == 1)
+      printf("Tight upper bound on number of adaptors = %ld\n", calc_total_adaptor_num_argsub());
+    else if(adaptor_family == 2)
+      printf("Tight upper bound on number of adaptors = %ld\n", calc_total_adaptor_num_typeconv());
     while (fscanf(fh, "%lx %lx %lx %lx %lx %lx",
 		  &a, &b, &c, &d, &e, &f) != EOF) {
       printf("read a test\n");
