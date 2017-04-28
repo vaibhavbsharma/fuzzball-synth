@@ -135,21 +135,21 @@ let print_adaptor () =
 (*** FUZZBall command line arguments ***)
 
 (* hardcoded path for the fevis repository *)
-let fuzzball = "../../../../../tools/fuzzball/exec_utils/fuzzball"
+let fuzzball = "fuzzball"
 
 (* STP is the default for the integer adaptor; Z3 is required for floating 
    point operations (specify the path via the SOLVER environment variable) *)
 let solver, solver_type, wrapper = 
   if adaptor_type = "int"
   (*then "stp", "stp", "./stp-wrapper"*)
-  then "../../../../../tools/fuzzball/stp/stp", "stp", "../../../../../tools/fuzzball/stp/stp"
+  then "stp", "stp", "stp"
   else try Sys.getenv "SOLVER", "z3", "./z3-wrapper"
        with Not_found -> 
          failwith "Set the location of the solver with 'export SOLVER=...'"
 
 let main_addr = 
   match syscall ("nm " ^ bin ^ " | fgrep ' T main'") with
-  | [str] -> "0x" ^ String.sub str 0 16
+  | [str] -> "0x" ^ String.sub str 0 8
   | _ -> failwith "Unexpected main address format"
 
 let input_addr =
@@ -161,7 +161,7 @@ let input_addr =
                then printf "Unexpected number of strtoul calls; something may have gone wrong\n%!" 
                else ()); []
       | (h::t) -> let x = String.make 1 (Char.chr ((Char.code 'a') + n)) in
-                  ("-symbolic-word 0x0" ^ (String.sub h 0 16) ^ "=" ^ x)
+                  ("-symbolic-word 0x0" ^ (String.sub h 0 8) ^ "=" ^ x)
                   :: (loop t (n+1))
     in loop (syscall ("nm " ^ bin ^ " | fgrep \" B global_arg\" ")) 0
   else
@@ -171,13 +171,13 @@ let input_addr =
       if n = outer_nargs
       then []
       else let x = String.make 1 (Char.chr ((Char.code 'a') + n)) in
-           ("-symbolic-word 0x0" ^ (String.sub (List.hd l) 0 16) ^ "=" ^ x) 
+           ("-symbolic-word 0x0" ^ (String.sub (List.hd l) 0 8) ^ "=" ^ x) 
              :: (loop (List.tl l) (n+1))
     in loop (syscall ("nm " ^ bin ^ " | grep ' B [a-z]$'")) 0
 
 let (outer_call1_addr,outer_call_addr) =
   match syscall ("objdump -dr " ^ bin ^ " | grep 'call.*<f1>'") with
-  | [str1; str2] -> (("0x0" ^ String.sub str1 2 6),("0x0" ^ String.sub str2 2 6))
+  | [str1; str2] -> (("0x0" ^ String.sub str1 1 7),("0x0" ^ String.sub str2 1 7))
   | _ -> failwith "Unexpected function call address formats"
 
 let post_outer_call1_addr = (Printf.sprintf "0x%x" ((int_of_string outer_call1_addr)+5))
@@ -186,12 +186,12 @@ let post_outer_call_addr = (Printf.sprintf "0x%x" ((int_of_string outer_call_add
 
 let inner_func_addr = 
   match syscall ("nm " ^ bin ^ " | fgrep ' T f2'") with
-  | [str] -> "0x" ^ String.sub str 0 16
+  | [str] -> "0x" ^ String.sub str 0 8
   | _ -> failwith "Unexpected inner function format"
 
 let match_jne_addr =
   match syscall ("objdump -dr " ^ bin ^ " | grep 'jne.*<compare+'") with
-  | [str] -> "0x" ^ String.sub str 2 6
+  | [str] -> "0x" ^ String.sub str 1 7
   | _ -> 
       if adaptor_type = "int" 
       then failwith "Unexpected jne address format"
@@ -230,7 +230,7 @@ let iteration_limit = 4000
      inputs to either check it, or produce a counterexample ***)
 let check_adaptor () = 
   let cmd = 
-    [fuzzball; "-linux-syscalls"; "-arch x64"; bin;
+    [fuzzball; "-linux-syscalls"; bin;
      solver_opts; "-solver-path"; solver;
      "-fuzz-start-addr"; main_addr]
     @ input_addr
@@ -251,7 +251,7 @@ let check_adaptor () =
        "--"; bin; string_of_int f1num;
        string_of_int f2num; "g"]
   in
-  (*let _ = printf "%s\n%!" (String.concat " " cmd) in*)
+  let _ = printf "%s\n%!" (String.concat " " cmd) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
   let ce = ref (Array.make 6 (*outer_nargs*) 0) in
   (* read_results : string list -> (int * int) -> bool -> (bool * (int * int))
@@ -322,7 +322,7 @@ let try_synth () =
   let _ = output_string testc test_str in
   let _ = close_out testc in
   let cmd = 
-    [fuzzball; "-linux-syscalls"; "-arch x64"; bin;
+    [fuzzball; "-linux-syscalls"; bin;
      solver_opts; "-solver-path"; wrapper;
      "-fuzz-start-addr"; main_addr]
     @ (if adaptor_type = "int"

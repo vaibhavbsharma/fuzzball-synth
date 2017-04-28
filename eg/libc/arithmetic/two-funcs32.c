@@ -170,6 +170,21 @@ int _f2(int x) {
     return x;
 }
 
+int my_isupper(long c) {
+  //  if((c >= 0) && (c <= 127)) {
+    if(isupper(c)) return 1;
+    else return 0;
+    //} else return 0;
+}
+
+int my_islower(long c) {
+  //if((c >= 0) && (c <= 127)) {
+    if(islower(c)) return 1;
+    else return 0;
+    //} else return 0;
+}
+
+
 int arch_prctl(int, unsigned long);
 caddr_t create_module(const char *, size_t);
 int delete_module(const char *, int);
@@ -329,7 +344,7 @@ struct func_info funcs[] = {
     /*   83 */ {"eventfd_read", (func*)&eventfd_read, 2, 0, 0},
     /*   84 */ {"eventfd_write", (func*)&eventfd_write, 2, 0, 0},
     /*   85 */ {"prlimit", (func*)&prlimit, 4, 0, 0},
-    /*   86 */ {"arch_prctl", (func*)&arch_prctl, 2, 0, 0},
+    /*   86 */ {"arch_prctl", (func*)&my_islower, 2, 0, 0},
     /*   87 */ {"modify_ldt", (func*)&modify_ldt, 3, 0, 0},
     /*   88 */ {"fanotify_mark", (func*)&fanotify_mark, 5, 0, 0},
     /*   89 */ {"adjtimex", (func*)&adjtimex, 1, 0, 0},
@@ -828,12 +843,12 @@ struct func_info funcs[] = {
     /*  582 */ {"isalpha", (func*)&isalpha, 1, 0, 0},
     /*  583 */ {"iscntrl", (func*)&iscntrl, 1, 0, 0},
     /*  584 */ {"isdigit", (func*)&isdigit, 1, 0, 0},
-    /*  585 */ {"islower", (func*)&islower, 1, 0, 0},
+    /*  585 */ {"islower", (func*)&my_islower, 1, 0, 0},
     /*  586 */ {"isgraph", (func*)&isgraph, 1, 0, 0},
     /*  587 */ {"isprint", (func*)&isprint, 1, 0, 0},
     /*  588 */ {"ispunct", (func*)&ispunct, 1, 0, 0},
     /*  589 */ {"isspace", (func*)&isspace, 1, 0, 0},
-    /*  590 */ {"isupper", (func*)&isupper, 1, 0, 0},
+    /*  590 */ {"isupper", (func*)&my_isupper, 1, 0, 0},
     /*  591 */ {"isxdigit", (func*)&isxdigit, 1, 0, 0},
     /*  592 */ {"tolower", (func*)&tolower, 1, 0, 0},
     /*  593 */ {"toupper", (func*)&toupper, 1, 0, 0},

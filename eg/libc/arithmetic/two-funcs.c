@@ -170,6 +170,22 @@ int _f2(int x) {
     return x;
 }
 
+int my_isupper(int c) {
+  //if((c >= 0) && (c <= 127)) {
+  //  if(isupper(c)) return 1;
+  //  else return 0;
+  //} else return 0;
+  return (unsigned)c-'A' < 26;
+}
+
+int my_islower(int c) {
+  //if((c >= 0) && (c <= 127)) {
+  //  if(islower(c)) return 1;
+  //  else return 0;
+  //} else return 0;
+  return (unsigned)c-'a' < 26;
+}
+
 int _killpg(__pid_t pgrp, int sig) {
   return killpg(abs(pgrp), sig);
 }
@@ -832,12 +848,12 @@ struct func_info funcs[] = {
     /*  582 */ {"isalpha", (func*)&isalpha, 1, 0, 0},
     /*  583 */ {"iscntrl", (func*)&iscntrl, 1, 0, 0},
     /*  584 */ {"isdigit", (func*)&isdigit, 1, 0, 0},
-    /*  585 */ {"islower", (func*)&islower, 1, 0, 0},
+    /*  585 */ {"islower", (func*)&my_islower, 1, 0, 0},
     /*  586 */ {"isgraph", (func*)&isgraph, 1, 0, 0},
     /*  587 */ {"isprint", (func*)&isprint, 1, 0, 0},
     /*  588 */ {"ispunct", (func*)&ispunct, 1, 0, 0},
     /*  589 */ {"isspace", (func*)&isspace, 1, 0, 0},
-    /*  590 */ {"isupper", (func*)&isupper, 1, 0, 0},
+    /*  590 */ {"isupper", (func*)&my_isupper, 1, 0, 0},
     /*  591 */ {"isxdigit", (func*)&isxdigit, 1, 0, 0},
     /*  592 */ {"tolower", (func*)&tolower, 1, 0, 0},
     /*  593 */ {"toupper", (func*)&toupper, 1, 0, 0},
