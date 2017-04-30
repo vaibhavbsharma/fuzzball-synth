@@ -171,23 +171,27 @@ int _f2(int x) {
 }
 
 int my_isupper(int c) {
-  //if((c >= 0) && (c <= 127)) {
-  //  if(isupper(c)) return 1;
-  //  else return 0;
-  //} else return 0;
-  return (unsigned)c-'A' < 26;
+  if((c >= 0) && (c <= 127)) {
+    if(isupper(c)) return 1;
+    else return 0;
+  } else return 0;
+  //return (unsigned)c-'A' < 26;
 }
 
 int my_islower(int c) {
-  //if((c >= 0) && (c <= 127)) {
-  //  if(islower(c)) return 1;
-  //  else return 0;
-  //} else return 0;
-  return (unsigned)c-'a' < 26;
+  if((c >= 0) && (c <= 127)) {
+    if(islower(c)) return 1;
+    else return 0;
+  } else return 0;
+  //return (unsigned)c-'a' < 26;
 }
 
-int _killpg(__pid_t pgrp, int sig) {
-  return killpg(abs(pgrp), sig);
+int _killpg(int pgrp, int sig) {
+  return killpg(pgrp, sig);
+}
+
+int _kill(int pgrp, int sig) {
+  return kill(pgrp, sig);
 }
 
 int arch_prctl(int, unsigned long);
@@ -894,10 +898,10 @@ struct func_info funcs[] = {
     /*  628 */ {"longjmp", (func*)&longjmp, 2, 0, 1},
     /*  629 */ {"signal", (func*)&signal, 2, 0, 0},
     /*  630 */ {"raise", (func*)&raise, 1, 0, 0},
-    /*  631 */ {"killpg", (func*)&killpg, 2, 0, 0},
+    /*  631 */ {"killpg", (func*)&_killpg, 2, 0, 0},
     /*  632 */ {"sigaction", (func*)&sigaction, 3, 0, 0},
     /*  633 */ {"sigprocmask", (func*)&sigprocmask, 3, 0, 0},
-    /*  634 */ {"kill", (func*)&kill, 2, 0, 0},
+    /*  634 */ {"kill", (func*)&_kill, 2, 0, 0},
     /*  635 */ {"sigpending", (func*)&sigpending, 1, 0, 0},
     /*  636 */ {"sigsuspend", (func*)&sigsuspend, 1, 0, 0},
     /*  637 */ {"sigwait", (func*)&sigwait, 2, 0, 0},

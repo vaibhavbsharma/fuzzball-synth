@@ -75,7 +75,7 @@ let create_adapt num_args =
     else let x = String.make 1 (Char.chr ((Char.code 'a') + (n-1))) in 
            (create_tree tree_depth "R" x) @ (main_loop (n-1))
   in main_loop num_args
-let adapt = ref (create_adapt inner_nargs) 
+let adapt = ref (create_adapt inner_nargs)
 (* let adapt = ref ["-extra-condition"; "a_type_R:reg8_t==2:reg8_t";
 		 "-extra-condition"; "a_val_R:reg64_t==0:reg64_t";
 		 "-extra-condition"; "a_type_R0:reg8_t==1:reg8_t";
@@ -195,7 +195,7 @@ let match_jne_addr =
       else "" (* again, not great error handling here *)
 
 let solver_opts = 
-  "-solver smtlib-batch -save-solver-files -smtlib-solver-type " ^ solver_type
+  "-solver smtlib-batch -smtlib-solver-type " ^ solver_type
 
 let fields = 
   let rec create_tree d base var_name =
@@ -244,13 +244,17 @@ let check_adaptor () =
     @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
     @ [(*"-table-limit 8";*)
       "-zero-memory";
-      (* "-trace-temps";
-      "-trace-assigns";
+      (* "-trace-temps"; 
       "-trace-solver";
+      "-trace-sym-addrs";
+      "-trace-sym-addr-details";
+      "-trace-insns";
+      "-trace-registers"; *)
+      "-trace-assigns";
       "-trace-decisions";
       "-trace-conditions";
       "-trace-binary-paths";
-      "-trace-tables"; *)
+      "-trace-tables"; 
        "-random-seed"; string_of_int (Random.int 10000000); 
        "-trace-stopping";
        "--"; bin; string_of_int f1num; 
@@ -336,7 +340,10 @@ let try_synth () =
     @ ["-match-syscalls-in-addr-range";
        outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
          outer_call_addr ^ ":" ^ post_outer_call_addr;
-      "-return-zero-missing-x64-syscalls";
+       "-return-zero-missing-x64-syscalls";
+       "-adaptor-search-mode";
+       "-trace-sym-addrs";
+       "-trace-sym-addr-details";
       "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
       "-no-fail-on-huer"; (* not the right way to make strange term failures go away
 			  but it works for now, TODO: fix this in the near future *)
