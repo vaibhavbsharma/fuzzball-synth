@@ -141,59 +141,6 @@
 #undef RETURN
 #undef ERROR
 
-/* Equivalent with 0,00000000,0,00000000,0,00000001,1,00000001 */
-/*int _f1(int x, unsigned y){//, int z) {
-    return (x << 1) + (y % 2);// + (z << 1);
-}
-
-int _f2(int a, int b, int c, int d,int e){//, int f) {
-    return c + d + (a & b) + e;// + f;
-    //return a + b + (c & d);
-    }*/
-
-int _f1(int a) {
-    int i;
-    
-    if (a == 0) {
-        return a;
-    }
-    
-    for (i = 0; i < 8 * sizeof(a); i++) {
-        if (a & (1 << i)) {
-            break;
-        }
-    }
-    return a ^= (1 << i);
-}
-
-int _f2(int x) {
-    return x;
-}
-
-int my_isupper(int c) {
-  if((c >= 0) && (c <= 127)) {
-    if(isupper(c)) return 1;
-    else return 0;
-  } else return 0;
-  //return (unsigned)c-'A' < 26;
-}
-
-int my_islower(int c) {
-  if((c >= 0) && (c <= 127)) {
-    if(islower(c)) return 1;
-    else return 0;
-  } else return 0;
-  //return (unsigned)c-'a' < 26;
-}
-
-int _killpg(__pid_t pgrp, int sig) {
-  return sig + killpg(pgrp, 0);
-}
-
-int _kill(__pid_t pgrp, int sig) {
-  return sig + kill(pgrp, 0); 
-}
-
 int arch_prctl(int, unsigned long);
 caddr_t create_module(const char *, size_t);
 int delete_module(const char *, int);
@@ -255,16 +202,369 @@ int stty(int fd, const struct sgttyb *);
 
 /* Defined only in assembly on x86_64: */
 void mcount(void);
+# define STRTOL_LONG_MIN LONG_MIN
+# define STRTOL_LONG_MAX LONG_MAX
+# define L_(Ch) Ch
+
+int global=0;
+
+/* Equivalent with 0,00000000,0,00000000,0,00000001,1,00000001  */
+//int _f1(int x, unsigned y){//, int z) {
+// int _f1(int x){//, int z) {
+//   global = 3;
+//   printf("aa");
+//   fflush(stdout);
+//   getuid();
+//   return (x << 1);// + (z << 1);
+//     //return (x << 1) +(y % 2);// + (z << 1);
+// }
+// 
+// ///int _f2(int a, int b, int c, int d) {//,int e){//, int f) {
+// int _f2(int y1, int y2) {//,int e){//, int f) {
+//   global = 3;
+//   printf("bb");
+//   fflush(stdout);
+//   getuid();
+//   return y1 << y2;// + e;// + f;
+//   //return c + d + (a & b);// + e;// + f;
+//     //return a + b + (c & d);
+// }
+
+int _f1(int x, unsigned y, int z) {
+//int _f1(int x){//, int z) {
+  //return (x << 1);// + (z << 1);
+  return (x << 1) + (y % 2);
+}
+
+int _f2(int a, int b) {//, int c, int d) {//,int e){//, int f) {
+//int _f2(int y1, int y2) {//,int e){//, int f) {
+  //return y1 << y2;// + e;// + f;
+  //return c + d + (a & b);// + e;// + f;
+    //return a + b + (c & d);
+  return (a & 1) + (b * 2);
+}
+
+/* int _f1(char *s) {
+  return s[0]=='\0';
+  } */
+
+int my_isupper(int c) {
+  if((c >= 0) && (c <= 127)) {
+    if(isupper(c)) return 1;
+    else return 0;
+  } else return 0;
+  //return (unsigned)c-'A' < 26;
+}
+
+int my_islower(int c) {
+  if((c >= 0) && (c <= 127)) {
+    if(islower(c)) return 1;
+    else return 0;
+  } else return 0;
+  //return (unsigned)c-'a' < 26;
+}
+
+int _isalpha(int i) {
+  if( ( i < 0 ) || ( i > 127 ) ) {
+    return 0;
+  }
+  if(isalpha(i)!=0) return 1;
+  else return 0;
+}
+
+int _isdigit(int i) {
+  if( ( i < 0 ) || ( i > 127 ) ) {
+    return 0;
+  }
+  return (isdigit(i)!=0 || isalpha(i)!=0);
+}
+
+int _isalnum(int i) {
+  if( ( i < 0 ) || ( i > 127 ) ) {
+    return 0;
+  }
+  return isalnum(i);
+  //if(isalnum(i)!=0) return 1;
+  //else return 0;
+}
+
+int _seteuid(uid_t uid) {
+  if(uid == (uid_t) ~0) {
+    return 0;
+  }
+  return seteuid(uid);
+}
+
+int _killpg(__pid_t pgrp, int sig) {
+  return sig + killpg(pgrp, 0);
+}
+
+int _kill(__pid_t pgrp, int sig) {
+  return sig + kill(pgrp, 0); 
+}
+
+long int mystrtol_1(char *nptr, char **endptr, int base) 
+{
+  int negative;
+  unsigned long int cutoff;
+  unsigned long int i;
+  const char *s;
+  unsigned char c;
+  const char *save, *end;
+
+  if (base < 0 || base == 1 || base > 36)
+    {
+      return 0;
+    }
+
+  save = s = nptr;
+
+  /* Skip white space.  */
+  while (isspace (*s))
+    ++s;
+  if (__builtin_expect (*s == L_('\0'), 0))
+    goto noconv;
+
+  /* Check for a sign.  */
+  negative = 0;
+  if (*s == L_('-'))
+    {
+      negative = 1;
+      ++s;
+    }
+  else if (*s == L_('+'))
+  ++s;
+
+  /* Recognize number prefix and if BASE is zero, figure it out ourselves.  */
+  if (*s == L_('0'))
+    {
+      if ((base == 0 || base == 16) && toupper (s[1]) == L_('X'))
+	{
+	  s += 2;
+	  base = 16;
+	}
+      else if (base == 0)
+	base = 8;
+    }
+  else if (base == 0)
+    base = 10;
+
+  /* Save the pointer so we can check later if anything happened.  */
+  save = s;
+
+    end = NULL;
+
+  i = 0;
+  c = *s;
+  for (;c != L_('\0'); c = *++s)
+    {
+      if (s == end)
+	break;
+      if (c >= L_('0') && c <= L_('9'))
+	c -= L_('0');
+      else if (isalpha (c))
+	c = toupper (c) - L_('A') + 10;
+	else
+	  break;
+      if ((int) c >= base)
+	break;
+      i *= (unsigned long int) base;
+      i += c;
+    }
+
+  /* Check if anything actually happened.  */
+  if (s == save)
+    goto noconv;
+
+  /* Store in ENDPTR the address of one character
+     past the last character we converted.  */
+  if (endptr != NULL)
+    *endptr = (char *) s;
+
+  /* Return the result of the appropriate sign.  */
+  return negative ? -i : i;
+
+noconv:
+  /* We must handle a special case here: the base is 0 or 16 and the
+     first two characters are '0' and 'x', but the rest are no
+     hexadecimal digits.  This is no error case.  We return 0 and
+     ENDPTR points to the `x`.  */
+  if (endptr != NULL)
+    {
+      if (save - nptr >= 2 && toupper (save[-1]) == L_('X')
+	  && save[-2] == L_('0'))
+	*endptr = (char *) &save[-1];
+      else
+	/*  There was no number to convert.  */
+	*endptr = (char *) nptr;
+    }
+
+  return 0L;
+}
+
+long int myatol(char *nptr) {
+  return mystrtol_1(nptr, (char **) NULL, 10);
+}
+
+long int mystrtol(char *nptr, char **endptr, int base) 
+{
+  int negative;
+  unsigned long int cutoff;
+  //unsigned int cutlim;
+  unsigned long int i;
+  const char *s;
+  unsigned char c;
+  const char *save, *end;
+  //int overflow;
+
+  if (base < 0 || base == 1 || base > 36)
+    {
+      return 0;
+    }
+
+  save = s = nptr;
+
+  /* Skip white space.  */
+  while (isspace (*s))
+    ++s;
+  if (__builtin_expect (*s == L_('\0'), 0))
+    goto noconv;
+
+  /* Check for a sign.  */
+  negative = 0;
+  if (*s == L_('-'))
+    {
+      negative = 1;
+      ++s;
+    }
+  else if (*s == L_('+'))
+  ++s;
+
+  /* Recognize number prefix and if BASE is zero, figure it out ourselves.  */
+  if (*s == L_('0'))
+    {
+      if ((base == 0 || base == 16) && toupper (s[1]) == L_('X'))
+	{
+	  s += 2;
+	  base = 16;
+	}
+      else if (base == 0)
+	base = 8;
+    }
+  else if (base == 0)
+    base = 10;
+
+  /* Save the pointer so we can check later if anything happened.  */
+  save = s;
+
+    end = NULL;
+
+  /* Avoid runtime division; lookup cutoff and limit.  */
+  /*cutoff = cutoff_tab[base - 2];
+    cutlim = cutlim_tab[base - 2];*/
+
+  //overflow = 0;
+  i = 0;
+  c = *s;
+  /*if (sizeof (long int) != sizeof (long int))
+    {
+      unsigned long int j = 0;
+      //unsigned long int jmax = jmax_tab[base - 2];
+
+      for (;c != L_('\0'); c = *++s)
+	{
+	  if (s == end)
+	    break;
+	  if (c >= L_('0') && c <= L_('9'))
+	    c -= L_('0');
+	  else if (isalpha (c))
+	    c = toupper (c) - L_('A') + 10;
+	  else
+	    break;
+	  if ((int) c >= base)
+	    break;
+	  //else if (j >= jmax)
+	  //  {
+	  //    i = (unsigned long int) j;
+	  //    goto use_long;
+	  //  }
+	  else
+	    j = j * (unsigned long int) base + c;
+	}
+
+      i = (unsigned long int) j;
+    }
+    else*/
+  for (;c != L_('\0'); c = *++s)
+    {
+      if (s == end)
+	break;
+      if (c >= L_('0') && c <= L_('9'))
+	c -= L_('0');
+      else if (isalpha (c))
+	c = toupper (c) - L_('A') + 10;
+	else
+	  break;
+      if ((int) c >= base)
+	break;
+      /* Check for overflow.  */
+      //if (i > cutoff || (i == cutoff && c > cutlim))
+      //	overflow = 1;
+      //	else
+      //	{
+      //    use_long:
+      i *= (unsigned long int) base;
+      i += c;
+      //}
+    }
+
+  /* Check if anything actually happened.  */
+  if (s == save)
+    goto noconv;
+
+  /* Store in ENDPTR the address of one character
+     past the last character we converted.  */
+  if (endptr != NULL)
+    *endptr = (char *) s;
+
+
+  //if (__builtin_expect (overflow, 0))
+  //  {
+  //    //__set_errno (ERANGE);
+  //    return negative ? STRTOL_LONG_MIN : STRTOL_LONG_MAX;
+  //  }
+
+  /* Return the result of the appropriate sign.  */
+  return negative ? -i : i;
+
+noconv:
+  /* We must handle a special case here: the base is 0 or 16 and the
+     first two characters are '0' and 'x', but the rest are no
+     hexadecimal digits.  This is no error case.  We return 0 and
+     ENDPTR points to the `x`.  */
+  if (endptr != NULL)
+    {
+      if (save - nptr >= 2 && toupper (save[-1]) == L_('X')
+	  && save[-2] == L_('0'))
+	*endptr = (char *) &save[-1];
+      else
+	/*  There was no number to convert.  */
+	*endptr = (char *) nptr;
+    }
+
+  return 0L;
+}
 
 typedef long (func)(long, long, long, long, long, long);
 
 struct func_info {
-    const char *fname;
-    func *fptr;
-    int num_args;
+  const char *fname;
+  func *fptr;
+  int num_args;
   int is_varargs;
   int is_voidret;
 };
+
 
 struct func_info funcs[] = {
     /*    0 */ {"syslog", (func*)&syslog, 2, 1, 1},
@@ -272,7 +572,7 @@ struct func_info funcs[] = {
     /*    2 */ {"openlog", (func*)&openlog, 3, 0, 1},
     /*    3 */ {"closelog", (func*)&closelog, 0, 0, 1},
     /*    4 */ {"setlogmask", (func*)&setlogmask, 1, 0, 0},
-    /*    5 */ {"syscall", (func*)&syscall, 1, 1, 0},
+    /*    5 */ {"syscall", (func*)&syscall, 1, 1, 0}, //**NOTE: Maybe this function should be blacklisted
     /*    6 */ {"daemon", (func*)&daemon, 2, 0, 0},
     /*    7 */ {"mmap", (func*)&mmap, 6, 0, 0},
     /*    8 */ {"munmap", (func*)&munmap, 2, 0, 0},
@@ -1583,119 +1883,14 @@ struct func_info funcs[] = {
     /* 1313 */ {"setusershell", (func*)&setusershell, 0, 0, 1},
     /* 1314 */ {"getpass", (func*)&getpass, 1, 0, 0},
     /* 1315 */ {"ttyslot", (func*)&ttyslot, 0, 0, 0},
-    /* 1316 */ {"_f1", (func*)&_f1, 1, 0, 0},
-    /* 1317 */ {"_f2", (func*)&_f2, 1, 0, 0},
+    /* 1316 */ {"_f1", (func*)&_f1, 3, 0, 0},
+    /* 1317 */ {"_f2", (func*)&_f2, 2, 0, 0},
     /* 1318 */ {"frexpf", (func*)&frexpf, 2, 0, 0},
-    /* 1319 */ {"frexp", (func*)&frexpf, 2, 0, 0},
+    /* 1319 */ {"frexp", (func*)&frexp, 2, 0, 0},
+    /* 1320 */ {"_isalpha", (func*)&_isalpha, 1, 0, 0},
+    /* 1321 */ {"_isdigit", (func*)&_isdigit, 1, 0, 0},
+    /* 1322 */ {"_isalnum", (func*)&_isalnum, 1, 0, 0},
+    /* 1323 */ {"strtoll", (func*)&strtoll, 3, 0, 0},
+    /* 1324 */ {"myatol", (func*)&myatol, 1, 0, 0},
+    /* 1325 */ {"mystrtol_1", (func*)&mystrtol_1, 3, 0, 0},
 };
-
-
-int f1num, f2num;
-bool void_flag=false;
-
-long f1(long a, long b, long c, long d, long e, long f) {
-    return (funcs[f1num].fptr)(a, b, c, d, e, f);
-}
-
-long f2(long a, long b, long c, long d, long e, long f) {
-  return (funcs[f2num].fptr)(a, b, c, d, e, f);
-}
-
-long wrap_f2(long a, long b, long c, long d, long e, long f) {
-    return f2(a, b, c, d, e, f);
-}
-
-int compare(long *r1p, long *r2p,
-	    long a0, long a1, long a2, long a3, long a4, long a5) {
-  printf("Starting f1\n");  
-  fflush(stdout);
-  long r1 = f1(a0, a1, a2, a3, a4, a5);
-  printf("Completed f1\n");
-  fflush(stdout);
-  printf("Starting f2\n");
-  fflush(stdout);
-  long r2 = f1(a0, a1, a2, a3, a4, a5);
-  printf("Completed f2\n");
-  fflush(stdout);
-  if (((r1==r2) || (void_flag)) == true) {
-    printf("Match\n");
-  } else {
-    printf("Mismatch\n");
-  }
-  if (r1p)
-    *r1p = r1;
-  if (r2p)
-    *r2p = r2;
-  return r1 == r2;
-}
-
-long global_arg0, global_arg1, global_arg2,
-    global_arg3, global_arg4, global_arg5;
-
-int main(int argc, char **argv) {
-    if (argc < 4) {
-	fprintf(stderr, "Usage: two-funcs <f1num> <f2num> a [0-6 args]\n");
-	fprintf(stderr, "    or two-funcs <f1num> <f2num> g\n");
-	fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or ->\n");
-	exit(1);
-    }
-    f1num = atoi(argv[1]);
-    if (f1num < 0 || f1num >= sizeof(funcs)/sizeof(struct func_info)) {
-	fprintf(stderr, "Error: f1num %d out of range\n", f1num);
-    }
-    f2num = atoi(argv[2]);
-    if (f2num < 0 || f2num >= sizeof(funcs)/sizeof(struct func_info)) {
-	fprintf(stderr, "Error: f2num %d out of range\n", f2num);
-    }
-    if((funcs[f1num].is_voidret==1) || (funcs[f2num].is_voidret==1) ) {
-      void_flag=true;
-    }
-    if (argv[3][0] == 'a') {
-	long args[6] = {0, 0, 0, 0, 0, 0};
-	long r1, r2;
-	int i;
-	for (i = 0; i < 6 && i + 4 < argc; i++) {
-	    char *s = argv[i + 4];
-	    if (isdigit(s[0])) {
-		args[i] = atol(s);
-	    } else {
-		args[i] = (long)s;
-	    }
-	}
-	compare(&r1, &r2,
-		args[0], args[1], args[2], args[3], args[4], args[5]);
-	if (r1 == r2) {
-	    printf("Both %ld\n", r1);
-	} else {
-	    printf("Difference %ld vs. %ld\n", r1, r2);
-	}
-    } else if (argv[3][0] == 'g') {
-	compare(0, 0,
-		global_arg0, global_arg1, global_arg2,
-		global_arg3, global_arg4, global_arg5);
-    } else if (argv[3][0] == 'f') {
-	FILE *fh;
-	long a, b, c, d, e, f;
-        if (argv[4][0] == '-' && argv[4][1] == 0) {
-            fh = stdin;
-        } else {
-            fh = fopen(argv[4], "r");
-            if (!fh) {
-                fprintf(stderr, "Failed to open %s for reading: %s\n",
-                        argv[4], strerror(errno));
-                return 1;
-            }
-        }
-	while (fscanf(fh, "%lx %lx %lx %lx %lx %lx",
-		      &a, &b, &c, &d, &e, &f) != EOF) {
-	    int is_eq = compare(0, 0, a, b, c, d, e, f);
-	    if (!is_eq)
-		exit(1);
-	}
-	printf("All tests succeeded!\n");
-    } else {
-	fprintf(stderr, "Unhandled command argument\n");
-	exit(1);
-    }
-    return 0;
-}
