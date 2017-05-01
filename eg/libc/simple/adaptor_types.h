@@ -12,4 +12,3 @@ typedef struct {
   argsub a_ad[6];
   retsub r_ad;
 } argret;
-

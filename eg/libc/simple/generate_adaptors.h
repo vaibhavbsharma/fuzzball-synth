@@ -193,7 +193,15 @@ void generate_ret_adaptors_randomized() {
     number_of_adaptors_tried++;
     if(compare()) {
       if(!find_all_correct_adaptors) exit(0);
-      else number_of_correct_adaptors++;
+      else {
+	char str[ADAPTOR_STR_LEN];
+	printf("Number of adaptors tried = %ld\n", number_of_adaptors_tried);
+	printf("Correct adaptor %d = %s\n", number_of_correct_adaptors, get_adaptor_string(str, ad));
+	fflush(stdout);
+	print_adaptor();
+	fflush(stdout);
+	number_of_correct_adaptors++;
+      }
     }
   }
 }
