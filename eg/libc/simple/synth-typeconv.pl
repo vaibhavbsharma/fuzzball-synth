@@ -54,6 +54,12 @@ my $iteration_count = 0;
 
 my $bin = "./two-funcs";
 
+print "compiling concrete adaptor search binary: ";
+my $unused = `gcc -static $bin.c -g -o $bin -lpthread`;
+my $gcc_ec = $?;
+die "failed to compile $bin" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
 while (<F>) {
