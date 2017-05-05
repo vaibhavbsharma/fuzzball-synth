@@ -13,31 +13,35 @@ my $unused_1=`ulimit -s unlimited`;
 die "failed to set ulimit" unless $unused_1== 0;
 # Configurables
 my $split_target_formulas=1;
+my $adaptor_family = 4;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
 my $adaptor_ivc = 1;
 
 my $n_fields = 2;
-my $arr_len = 4;
+my $arr_len = 1;
 my $starting_sane_addr = 0x42420000;
 
 my $max_steps = 1000;
 my $key_const_val = 97;
 # End configurables
 
-my $max_struct_size=2*4 + $arr_len*4;
+my $max_struct_size=16; #2*4 + $arr_len*4;
 my $sane_addr = $starting_sane_addr;
 my $string_addr = $starting_sane_addr + $max_struct_size*$max_steps;
 my $output_addr = $string_addr + $max_struct_size;
 my $max_conc_region_size = $max_struct_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
+my $numTests=0;
 
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
 my $fuzzball="fuzzball";
 my $stp="stp"; #="./stp-wrapper";
+
+my $pwd = $ENV{PWD};
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
@@ -50,6 +54,20 @@ my $unused = `gcc -static struct_adaptor.c -Wl,-rpath,/export/scratch/vaibhav/op
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
+
+my $conc_adaptor_bin = "$pwd/two-funcs-conc";
+print "compiling concrete adaptor search binary: ";
+my $unused = `gcc -static $conc_adaptor_bin.c -g -o $conc_adaptor_bin -lpthread`;
+my $gcc_ec = $?;
+die "failed to compile $conc_adaptor_bin" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
+print "compiling PinMonitor: ";
+my $unused = `make`;
+my $gcc_ec = $?;
+die "failed to compile PinMonitor" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -65,6 +83,8 @@ close F;
 # Try to figure out the code and data addresses we need based on
 # matching the output of "nm" and "objdump". Not the most robust
 # possible approach.
+
+my $side_effects_equal_addr = "0x" . substr(`nm $conc_adaptor_bin | fgrep " B sideEffectsEqual"`, 0, 16);
 
 my $fuzz_start_addr = "0x" . substr(`nm $bin | fgrep " T fuzz_start"`, 0, 16);
 
@@ -219,6 +239,23 @@ if($const_lb != $const_ub) {
 }
 
 #print "const_bounds_ec = @const_bounds_ec\n";
+
+# http://stackoverflow.com/questions/17860976/how-do-i-output-a-string-of-hex-values-into-a-binary-file-in-perl
+sub generate_new_file
+{
+    my $fname = shift(@_);
+    my $aref = shift(@_);
+
+    open(BIN, ">", $fname) or die;
+    binmode(BIN);
+
+    for (my $i = 0; $i < @$aref; $i += 2)
+    {
+	my ($hi, $lo) = @$aref[$i, $i+1];
+	print BIN pack "H*", $hi.$lo;
+    }
+    close(BIN);
+}
 
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
@@ -385,7 +422,6 @@ sub check_adaptor {
 	    for my $i (1 .. $#region_contents) {
 		my $str_arg_contents="";
 		for my $j (1 .. $#{$region_contents[$i]}) {
-		    my $byte="0x00";
 		    if($region_contents[$i][0] == 1) {
 			push @fuzzball_extra_args, "-store-byte";
 			push @fuzzball_extra_args, 
@@ -424,12 +460,17 @@ sub check_adaptor {
     }
     close LOG;
 
+    my $ce_arg_contents="";
     for my $addr (keys %ce_mem_bytes) {
 	push @fuzzball_extra_args, "-store-byte";
 	push @fuzzball_extra_args,
 	sprintf("0x%x=0x%x", $addr, $ce_mem_bytes{$addr});
+	$ce_arg_contents .= sprintf("%s", $ce_mem_bytes{$addr});
 	#printf("found memory assignment in CE search: $addr = $ce_mem_bytes{$addr}\n");
     }
+    printf("ce_arg_contents = $ce_arg_contents\n");;
+    my @data_ary = split //, $ce_arg_contents;
+    generate_new_file("ce_arg0_$numTests", \@data_ary);
 
     push @fuzzball_extra_args, "-store-byte";
     push @fuzzball_extra_args,sprintf("0x%x=0x%x", $string_addr, $key_const_val);
@@ -442,6 +483,7 @@ sub check_adaptor {
     if ($matches == 0 and $fails == 0) {
 	die "Missing results from check run";
     }
+    $numTests++;
     if ($fails == 0) {
 	return 1;
     } else {
@@ -467,52 +509,7 @@ sub try_synth {
     }
     close TESTS;
     reinitialize_synth_struct_opt(0);
-    my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
-		@solver_opts, 
-		"-fuzz-start-addr", $fuzz_start_addr,
-		"-trace-temps",
-		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
-		#counter example search mode otherwise
-		"-adaptor-search-mode",
-		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
-		"-table-limit","12",
-		"-return-zero-missing-x64-syscalls",
-		"-disable-ce-cache",
-		@synth_opt, @const_bounds_ec,
-		@synth_ret_opt,
-		@synth_struct_opt,
-		"-match-syscalls-in-addr-range",
-		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
-		"-branch-preference", "$match_jne_addr:1",
-		"-trace-conditions", "-omit-pf-af",
-		"-trace-syscalls",
-		# "-trace-struct-adaptor",
-		# "-time-stats",
-		#"-trace-decision-tree",
-		#"-save-decision-tree-interval","1",
-		"-trace-decisions",
-		"-trace-stopping",
-		"-trace-regions",
-		"-trace-binary-paths-bracketed",
-		"-trace-memory-snapshots",
-		"-trace-sym-addr-details",
-		"-trace-sym-addrs",
-		"-trace-tables",
-		#"-trace-offset-limit",
-		"-trace-basic",
-		#"-trace-eip",
-		#"-trace-registers",
-		#"-trace-stmts",
-		#"-trace-insns",
-		#"-trace-loads",
-		#"-trace-stores",
-		#"-trace-solver",
-		"-zero-memory",
-		@fuzzball_extra_args,
-		"-region-limit", $region_limit,
-		"-random-seed", int(rand(10000000)),
-		"--", $bin, $f1num, $f2num, "f", "tests");
-    #print "@args\n";
+    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, $region_limit, $n_fields, "1");
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {

@@ -1,3 +1,8 @@
+#ifndef _ADAPTOR_TYPES_H
+#define _ADAPTOR_TYPES_H
+
+#define PER_ARG_LIM 200
+#define ADAPTOR_STR_LEN 400
 typedef struct {
   int var_is_const;
   long var_val;
@@ -14,7 +19,9 @@ typedef struct {
 } argret;
 
 typedef struct {
-  int type;
+  unsigned long long int type;
   int size;
   int n;
 } fieldsub;
+
+#endif

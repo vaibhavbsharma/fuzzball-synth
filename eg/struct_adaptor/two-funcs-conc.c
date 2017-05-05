@@ -1,3 +1,6 @@
+#include "two-funcs-conc.h"
+#include "generate_struct_adaptors.h"
+#include "generate_adaptors.h"
 #include "functions.h"
 #include "SignalHandlers.h"
 #include "generate_adaptors.h"
@@ -9,10 +12,8 @@
 #define MAX_ADAPTORS 1000000
 #define MAX_TESTS 100
 
-#define MAX_FIELDS 6
 fieldsub m[MAX_FIELDS];
 
-argret all_ads[MAX_ADAPTORS];
 argret ad;
 int num_adaptors=0;
 int const_lb, const_ub;
@@ -29,6 +30,7 @@ bool find_all_correct_adaptors=false;
 unsigned long number_of_adaptors_tried=0;
 unsigned long number_of_correct_adaptors=0;
 unsigned long region_limit=0;
+unsigned int number_of_fields=0;
 unsigned long memsub_addr=-1;
 
 typedef struct { long a,b,c,d,e,f} test; 
@@ -82,29 +84,6 @@ long f2(long a, long b, long c, long d, long e, long f) {
   return f2_sf(a); //(funcs[f2num].fptr)(a, b, c, d, e, f);
 }
 
-void populateAdaptor() {
-  int i;
-  for(i=0;i<6; i++) 
-    all_ads[num_adaptors].a_ad[i] = ad.a_ad[i];
-  all_ads[num_adaptors].r_ad = ad.r_ad;
-  //print_adaptor(num_adaptors);
-  num_adaptors++;
-  assert(num_adaptors <= MAX_ADAPTORS);
-}
-
-void swap( int ind1, int ind2) {
-  argret a;
-  int i;
-  for(i=0;i<6; i++) {
-    a.a_ad[i] = all_ads[ind1].a_ad[i];
-    all_ads[ind1].a_ad[i] = all_ads[ind2].a_ad[i];
-    all_ads[ind2].a_ad[i] = a.a_ad[i];
-  }
-  a.r_ad = all_ads[ind1].r_ad;
-  all_ads[ind1].r_ad = all_ads[ind2].r_ad;
-  all_ads[ind2].r_ad=a.r_ad;
-}
-
 void print_adaptor() {
   char output[200];
   printf("Input vars: ");
@@ -112,8 +91,12 @@ void print_adaptor() {
   char type_varname[10];
   if(adaptor_family==1) sprintf(type_varname,"_is_const");
   else if(adaptor_family==2) sprintf(type_varname, "_type");
+  else if(adaptor_family==4) {
+    char str[400];
+    printf("%s ",get_struct_adaptor_string(str, m, ad)); 
+  }
   else printf("undefined adaptor_family\n");
-  for(i=0; i<f2nargs; i++) {
+  for(i=0; i<f2nargs && adaptor_family != 4; i++) {
     printf("%c%s=0x%x %c_val=0x%lx ", 'a'+i, type_varname,  
 	   ad.a_ad[i].var_is_const, 'a'+i, ad.a_ad[i].var_val); 
   }
@@ -166,12 +149,9 @@ long convert1to64u(long a) {
 long convert64to1(long a) { return (long) a != 0; }
 
 long wrap_f2(long a, long b, long c, long d, long e, long f) {
-  long f1args[6]={a, b, c, d, e, f};
-  long f2args[6];
+  long f1args[6] = {a, b, c, d, e, f};
+  long f2args[6] = {0, 0, 0, 0, 0, 0};
   
-  // char str[ADAPTOR_STR_LEN];
-  // printf("trying adaptor: %s\n", get_adaptor_string(str, ad));
-  // fflush(stdout);
   
   int i;
   for(i=0;i<6; i++) {
@@ -181,27 +161,32 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
     default: break;
     }
   }
-
-  if(memsub_addr != -1) {
+  
+  if(memsub_addr != -1 && adaptor_family==4) {
     unsigned long f1s = memsub_addr;
     unsigned long f2s = (unsigned long) malloc(region_limit);
+    char str[ADAPTOR_STR_LEN];
+    printf("trying adaptor: %s\n", get_struct_adaptor_string(str, m, ad));
+    fflush(stdout);
+    f2args[0] = f2s;
     for(i=0; i<region_limit; i++) *((unsigned long *)(f2s + i))=(unsigned char)0;
     int f2_offset=0;
     for(f=0; f<number_of_fields; f++) {
-      int start_b = m[f].type>>32;
+      int start_b = (m[f].type>>32);
       int end_b = 65535 & (m[f].type >> 16);
       int total_b = end_b - start_b + 1;
       int sign_ex = m[f].type & 1;
-      assert(total_b % n == 0);
-      assert(total_b % sz == 0);
-      assert((total_b/n == 1) || (total_b/n)==2 || 
-	     (total_b/n == 4) || (total_b/n)==8);
       int n = m[f].n;
       int f1_sz = total_b/n;
       int f2_sz = m[f].size;
       int w=0; // indicates widening(1) or narrowing(-1)
+      assert(total_b % n == 0);
+      assert(total_b % f1_sz == 0);
+      assert((total_b/n == 1) || (total_b/n)==2 || 
+	     (total_b/n == 4) || (total_b/n)==8);
       if(f1_sz == f2_sz) {
-	memcpy(f2s + f2_offset, f1s + start_b, n);
+	memcpy(f2s + f2_offset, f1s + start_b, n*f2_sz);
+	f2_offset += total_b;
 	continue;
       } else if(f1_sz > f2_sz) w=-1;
       else w=1;
@@ -310,12 +295,15 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
 	  default: printf("f2_sz = %d when widening\n", f2_sz); assert(0);
 	  }
 	} // end narrowing/widening
+	assert(f2_offset <= region_limit);
       } // end for i = 0 to n (number of entries in this field)
+      assert(f2_offset <= region_limit);
     }// end for f = 0 to number_of_fields
   }// end if memsub_addr != -1
-
+  
+  
   long ret_val = f2(f2args[0], f2args[1], f2args[2], 
-		    f2args[3], f2args[4], f2args[5]);
+  		    f2args[3], f2args[4], f2args[5]);
   switch(ad.r_ad.ret_type) {
   case 0: break;
   case 1: ret_val = ad.r_ad.ret_val; break;
@@ -378,6 +366,7 @@ int compare() {
     r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
     // printf("Completed f2\n");
     // fflush(stdout);
+    printf("r1 = 0x%lx, r2 = 0x%lx\n", r1, r2);
     if (r1==r2 && sideEffectsEqual) {
       printf("Match\n");
       is_match[j]=true;
@@ -471,20 +460,20 @@ int main(int argc, char **argv) {
       printf("read a test\n");
       fflush(stdout);
       long aS, bS, cS, dS, eS, fS;
-      sanitize(a, &aS, "str_arg1", numTests);
+      sanitize(a, &aS, "ce_arg0", numTests);
       //printf("0x%lx sanitized to 0x%lx, string = %s\n", a, aS, (char *)aS);
-      sanitize(b, &bS, "str_arg2", numTests);
-      sanitize(c, &cS, "str_arg3", numTests);
-      sanitize(d, &dS, "str_arg4", numTests);
-      sanitize(e, &eS, "str_arg5", numTests);
-      sanitize(f, &fS, "str_arg6", numTests);
+      sanitize(b, &bS, "ce_arg1", numTests);
+      sanitize(c, &cS, "ce_arg2", numTests);
+      sanitize(d, &dS, "ce_arg3", numTests);
+      sanitize(e, &eS, "ce_arg4", numTests);
+      sanitize(f, &fS, "ce_arg5", numTests);
       addTest(aS, bS, cS, dS, eS, fS);
       numTests++;
     }
     if(adaptor_family==1)
       generate_adaptors_randomized(0);
-    else if(adaptor_family==2)
-      generate_typeconv_adaptors_randomized(0);
+    else if(adaptor_family==4) 
+      generate_struct_adaptors_randomized(0, 0);
     else {
       printf("unknown adaptor family\n");
       exit(1);
