@@ -86,6 +86,11 @@ char *get_adaptor_string(char *str, argret a) {
   return str;
 }
 
+char *get_return_adaptor_string(char *str, retsub r_ad) {
+  sprintf(str, "ret_type=0x%x retval=0x%x", r_ad.ret_type, r_ad.ret_val);
+  return str;
+}
+
 void generate_ret_adaptors_randomized() {
   int i,j;
   int f2arg_ret_type[8] = {11, 12, 21, 22, 31, 32, 41, 42};

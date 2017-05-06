@@ -20,21 +20,29 @@ my $iteration_limit = 4000;
 my $adaptor_ivc = 1;
 
 my $n_fields = 2;
-my $arr_len = 2;
+my $arr_len = 1;
 my $starting_sane_addr = 0x42420000;
 
+my $max_steps = 1000;
+my $key_const_val = 97;
 # End configurables
 
-my $max_struct_size=2*4 + $arr_len*4;
+my $max_struct_size=16; #2*4 + $arr_len*4;
 my $sane_addr = $starting_sane_addr;
+my $string_addr = $starting_sane_addr + $max_struct_size*$max_steps;
+my $output_addr = $string_addr + $max_struct_size;
 my $max_conc_region_size = $max_struct_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 my $numTests=0;
 
-my $fuzzball="fuzzball"; #"../../bin/fuzzball";
-my $stp="stp"; #"../../bin/stp-old-dynamic";
+# Paths to binaries: these probably differ on your system. You can add
+# your locations to the list, or set the environment variable.
+my $fuzzball="fuzzball";
+my $stp="stp"; #="./stp-wrapper";
+
 my $pwd = $ENV{PWD};
+
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
@@ -42,14 +50,14 @@ my $bin = "./struct_adaptor";
 
 print "compiling binary: ";
 #my $unused = `gcc -static -g -o $bin $bin.c`;
-my $unused = `gcc -static $bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o $bin -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+my $unused = `gcc -static struct_adaptor.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o struct_adaptor -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
 
 my $conc_adaptor_bin = "$pwd/two-funcs-conc";
 print "compiling concrete adaptor search binary: ";
-my $unused = `gcc -static $conc_adaptor_bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib  -g -o $conc_adaptor_bin -lpthread -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+my $unused = `gcc -static $conc_adaptor_bin.c -g -o $conc_adaptor_bin -lpthread`;
 my $gcc_ec = $?;
 die "failed to compile $conc_adaptor_bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
@@ -59,6 +67,7 @@ my $unused = `make`;
 my $gcc_ec = $?;
 die "failed to compile PinMonitor" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
+
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -76,14 +85,6 @@ close F;
 # possible approach.
 
 my $side_effects_equal_addr = "0x" . substr(`nm $conc_adaptor_bin | fgrep " B sideEffectsEqual"`, 0, 16);
-
-open(ADDRS_FILE, ">f_addrs");
-my $f1s_addr = substr(`nm $conc_adaptor_bin | fgrep " B f1s"`, 8, 8);
-my $f2s_addr = substr(`nm $conc_adaptor_bin | fgrep " B f2s"`, 8, 8);
-printf("f1s_addr = $f1s_addr f2s_addr = $f2s_addr\n");
-print ADDRS_FILE $f1s_addr, " ";
-print ADDRS_FILE $f2s_addr;
-close ADDRS_FILE;
 
 my $fuzz_start_addr = "0x" . substr(`nm $bin | fgrep " T fuzz_start"`, 0, 16);
 
@@ -186,23 +187,6 @@ print "synth_ret_opt = @synth_ret_opt\n";
 
 my @synth_struct_opt;
 
-# http://stackoverflow.com/questions/17860976/how-do-i-output-a-string-of-hex-values-into-a-binary-file-in-perl
-sub generate_new_file
-{
-    my $fname = shift(@_);
-    my $aref = shift(@_);
-
-    open(BIN, ">", $fname) or die;
-    binmode(BIN);
-
-    for (my $i = 0; $i < @$aref; $i += 2)
-    {
-	my ($hi, $lo) = @$aref[$i, $i+1];
-	print BIN pack "H*", $hi.$lo;
-    }
-    close(BIN);
-}
-
 sub reinitialize_synth_struct_opt  {
     my($is_ce) = (@_);
     my $steps = ($sane_addr - $starting_sane_addr)/$max_conc_region_size;
@@ -256,6 +240,23 @@ if($const_lb != $const_ub) {
 
 #print "const_bounds_ec = @const_bounds_ec\n";
 
+# http://stackoverflow.com/questions/17860976/how-do-i-output-a-string-of-hex-values-into-a-binary-file-in-perl
+sub generate_new_file
+{
+    my $fname = shift(@_);
+    my $aref = shift(@_);
+
+    open(BIN, ">", $fname) or die;
+    binmode(BIN);
+
+    for (my $i = 0; $i < @$aref; $i += 2)
+    {
+	my ($hi, $lo) = @$aref[$i, $i+1];
+	print BIN pack "H*", $hi.$lo;
+    }
+    close(BIN);
+}
+
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
@@ -263,6 +264,7 @@ sub check_adaptor {
 
     open(TESTS, ">ceinputs");
     my @vals = ($sane_addr, 0, 0, 0, 0, 0);
+    # my @vals = ($sane_addr, 1, $string_addr, $output_addr, 0, 0);
     splice(@vals, 6);
     my $test_str = join(" ", map(sprintf("0x%x", $_), @vals));
     print TESTS $test_str, "\n";
@@ -292,6 +294,7 @@ sub check_adaptor {
 	push @conc_struct_adapt, ("-extra-condition", $s);
     }
     reinitialize_synth_struct_opt(1);
+    # my $tmp_str = sprintf("0x%x=0x%x", $string_addr, $key_const_val);
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -301,17 +304,13 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		# "-extra-condition", "m1_arith:reg64_t==1:reg64_t",
-		# "-extra-condition", "c1_arith:reg64_t==0:reg64_t",
-		# "-extra-condition", "m2_arith:reg64_t==1:reg64_t",
-		# "-extra-condition", "c2_arith:reg64_t==0:reg64_t",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
 		"-trace-syscalls",
 		"-omit-pf-af",
 		"-trace-temps",
 		"-trace-regions",
-		"-trace-struct-adaptor",
+		# "-trace-struct-adaptor",
 		# "-time-stats",
 		"-trace-memory-snapshots",
 		"-trace-tables",
@@ -331,6 +330,7 @@ sub check_adaptor {
 		"-trace-conditions",
 		"-trace-decisions",
 		#"-trace-solver",
+		# "-store-byte", $tmp_str,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
@@ -420,14 +420,22 @@ sub check_adaptor {
 		}
 	    }
 	    for my $i (1 .. $#region_contents) {
+		my $str_arg_contents="";
 		for my $j (1 .. $#{$region_contents[$i]}) {
 		    if($region_contents[$i][0] == 1) {
 			push @fuzzball_extra_args, "-store-byte";
 			push @fuzzball_extra_args, 
 			sprintf("0x%x=%s", $regnum_to_saneaddr[$i]+$j-1, $region_contents[$i][$j]);
+			$str_arg_contents .= substr $region_contents[$i][$j], 2;
+		    } else { 
+			$str_arg_contents .= "00";
 		    }
 		}
+		printf("str_arg_contents = $str_arg_contents\n");;
+		my @data_ary = split //, $str_arg_contents;
+		generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
+	    
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
@@ -453,18 +461,23 @@ sub check_adaptor {
     close LOG;
 
     my $ce_arg_contents="";
-    for my $addr (sort (keys %ce_mem_bytes)) {
+    for my $addr (keys %ce_mem_bytes) {
 	push @fuzzball_extra_args, "-store-byte";
 	push @fuzzball_extra_args,
 	sprintf("0x%x=0x%x", $addr, $ce_mem_bytes{$addr});
-	$ce_arg_contents .= sprintf("%02x", $ce_mem_bytes{$addr});
-	# printf("found memory assignment in CE search: $addr = $ce_mem_bytes{$addr}\n");
+	$ce_arg_contents .= sprintf("%s", $ce_mem_bytes{$addr});
+	#printf("found memory assignment in CE search: $addr = $ce_mem_bytes{$addr}\n");
     }
     printf("ce_arg_contents = $ce_arg_contents\n");;
     my @data_ary = split //, $ce_arg_contents;
     generate_new_file("ce_arg0_$numTests", \@data_ary);
 
+    push @fuzzball_extra_args, "-store-byte";
+    push @fuzzball_extra_args,sprintf("0x%x=0x%x", $string_addr, $key_const_val);
     $ce[0]=$sane_addr;
+    # $ce[1]=1;
+    # $ce[2]=$string_addr;
+    # $ce[3]=$output_addr;
     $sane_addr = $sane_addr + $max_conc_region_size;
 
     if ($matches == 0 and $fails == 0) {
@@ -569,13 +582,10 @@ for(my $i=0; $i< $n_fields; $i++) {
 # $struct_adapt->[2]=0x400070000;
 # $struct_adapt->[4]=0x000030000;
 # 
-# correct adaptor is:
-#  arg=,, ret=72,, 
-#  struct=f1_type=0x70000, f1_size=0x1, f1_n=0x8, f2_type=0x801070000, f2_size=0x4, f2_n=0x100
-#$struct_adapt = [0x70000, 0x1, 0x8, 0x801070000, 0x4, 0x100];
-
-# $struct_adapt = [0x400070001, 0x4, 0x1, 0x30001, 0x4, 0x1];
-# $ret_adapt = [51, 0];
+# $struct_adapt->[1] = $struct_adapt->[3] = $struct_adapt->[5] = 4;
+#my $struct_adapt = [441, 40, 8, 8];
+# $struct_adapt = [0x70001, 0x4, 0x2, 0x800090000, 0x4, 0x2];
+# $ret_adapt = [72, 0];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {

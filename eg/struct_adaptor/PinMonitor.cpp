@@ -30,6 +30,8 @@ long f1_rsp=0, f2_rsp=0;
 UINT8 f1_ret_val, f2_ret_val;
 map < int, bool> noopSyscalls;
 int savedSyscallNum=-1;
+unsigned long f1s_addr, f2s_addr;
+int region_limit=0;
 
 bool isGlobalAddr(long addr, long rsp) {
   //long int li = (long int) addr;
@@ -41,6 +43,22 @@ bool isGlobalAddr(long addr, long rsp) {
   return labs(addr-rsp) > 65536;
 }
 
+bool isF1RegionWrite(ADDRINT a) {
+  fprintf(trace, "f1s = 0x%lx, f1s+region_limit = 0x%lx, a = 0x%lx\n", 
+	 (*((unsigned long *) f1s_addr)), 
+	  (*((unsigned long *) (f1s_addr))) + region_limit, a);
+  return ( (*((unsigned long *) f1s_addr)) <= a ) &&
+    ( ( (*((unsigned long *) (f1s_addr))) + region_limit ) >= a );
+}
+
+bool isF2RegionWrite(ADDRINT a) {
+  fprintf(trace, "f2s = 0x%lx, f2s+region_limit = 0x%lx, a= 0x%lx\n", 
+	 (*((unsigned long *) f2s_addr)), 
+	  (*((unsigned long *) (f2s_addr))) + region_limit, a);
+  return ( (*((unsigned long *) f2s_addr)) <= a ) &&
+    ( ( (*((unsigned long *) (f2s_addr))) + region_limit ) >= a );
+}
+
 bool segv;
 VOID WritesMem (ADDRINT applicationIp, ADDRINT memoryAddressWrite) {
   string fname;
@@ -50,7 +68,7 @@ VOID WritesMem (ADDRINT applicationIp, ADDRINT memoryAddressWrite) {
   else return;
   fprintf(trace, "WritesMem: %s0x%lx @ 0x%lx\n", fname.c_str(), memoryAddressWrite, applicationIp);
   if(memoryAddressWrite < 4096 || memoryAddressWrite == 0xffffffffffffffff) return;
-  if(RecordF1 && isGlobalAddr(memoryAddressWrite, f1_rsp)) { 
+  if(RecordF1 && isGlobalAddr(memoryAddressWrite, f1_rsp)) {
     if(f1_addrs.find((long *)memoryAddressWrite) == f1_addrs.end()) {
       f1_addrs[(long *) memoryAddressWrite] = (int) *(long *) memoryAddressWrite;
     }
@@ -210,6 +228,11 @@ VOID RecordF2End(CONTEXT *ctx) {
     bool found;
     int f1_val = (unsigned char) getF1Val(it->first, found);
     int f2_val = (unsigned char) *(long *)(it->first);
+    //Ignore region writes by f2 for now
+    if(isF2RegionWrite((unsigned long int) it->first)) {
+      ++it;
+      continue;
+    }
     fprintf(trace, "f2write: mem[%p] = 0x%x ;", it->first, f2_val);
     if( (!found && (f2_val!=0)) || (found && (f1_val != f2_val) ) ) { 
       fprintf(trace, "unequal values written, 0x%x, 0x%x, ", f1_val, f2_val);
@@ -235,6 +258,8 @@ VOID RecordF2End(CONTEXT *ctx) {
     while(it!=f1_addrs.end()) { 
       if(it->second!=0) {
 	addr=it->first;
+	//Ignore region writes by f1 for now
+	if(isF1RegionWrite((unsigned long int) addr)) { ++it; continue; }
 	if( ((unsigned char) *addr) == ((unsigned char) it->second)) {
 	  ++it;
 	  continue;
@@ -244,7 +269,7 @@ VOID RecordF2End(CONTEXT *ctx) {
       } 
       ++it;
     }
-    if(f1_ret_val == f2_ret_val && addr != NULL) {
+    if(f1_ret_val == f2_ret_val && addr != NULL && it != f1_addrs.end()) {
       fprintf(trace, "f1 wrote to %p (val=0x%lx), f2 did not (val=0x%lx), ", 
 	      addr, val, *addr);
       fprintf(trace, "replacing REG_RAX\n");
@@ -357,6 +382,18 @@ void setupNoopSyscalls() {
   }
 }
 
+void setupFAddrs() {
+  ifstream fin("f_addrs");
+  if(!fin.good()) {
+    fprintf(trace, "failed to find f_addrs file\n");
+    return;
+  }
+  string line;
+  getline(fin, line);
+  sscanf(line.c_str(),"%lx %lx ", &f1s_addr, &f2s_addr);
+  fprintf(trace, "f1s_addr = 0x%lx f2s_addr = 0x%lx, region_limit = %d\n", f1s_addr, f2s_addr, region_limit);
+}
+
 static BOOL SigFunc(THREADID tid, INT32 sig, CONTEXT *ctxt, BOOL hasHandler,
     const EXCEPTION_INFO *exception, void *)
 {
@@ -395,11 +432,13 @@ int main(int argc, char * argv[]) {
   PIN_InitSymbols();
   ProgramImage = argv[6];
   sscanf(argv[13], "0x%p", &sideEffectsEqualAddr);
+  sscanf(argv[15], "%d", &region_limit);
   //f1Name = argv[13];
   //f2Name = argv[14];
   ////fprintf(trace, "f1Name = %s f2Name = %s\n", f1Name.c_str(), f2Name.c_str());
   //fprintf(trace, "sideEffectsEqualAddr = %p\n", sideEffectsEqualAddr);
   setupNoopSyscalls();
+  setupFAddrs();
   INS_AddInstrumentFunction(Instruction, 0);
   IMG_AddInstrumentFunction(Image, NULL);
   PIN_AddSyscallExitFunction(SyscallExit, 0);

@@ -31,7 +31,7 @@ unsigned long number_of_adaptors_tried=0;
 unsigned long number_of_correct_adaptors=0;
 unsigned long region_limit=0;
 unsigned int number_of_fields=0;
-unsigned long memsub_addr=-1;
+unsigned long f1s, f2s;
 
 typedef struct { long a,b,c,d,e,f} test; 
 test tests[MAX_TESTS];
@@ -57,8 +57,8 @@ void sanitize(long a, long *aS, char *fname, int numTest) {
       // 	return;
       // }
       *aS = (long) p;
-      memsub_addr=(unsigned long) p;
       fclose(f);
+      add_sane_struct_addr(p);
     } else { *aS = a; printf("failed to open %s\n", newfname); }
   } else { printf("%lx need not be sanitized\n", a); *aS = a; }
   fflush(stdout);
@@ -76,14 +76,6 @@ void addTest(long a, long b, long c, long d, long e, long f) {
 
 bool isSaneAddr(long a) { return a > 4096; }
 
-long f1(long a, long b, long c, long d, long e, long f) {
-  return f1_sf(a); //(funcs[f1num].fptr)(a, b, c, d, e, f);
-}
-
-long f2(long a, long b, long c, long d, long e, long f) {
-  return f2_sf(a); //(funcs[f2num].fptr)(a, b, c, d, e, f);
-}
-
 void print_adaptor() {
   char output[200];
   printf("Input vars: ");
@@ -93,7 +85,7 @@ void print_adaptor() {
   else if(adaptor_family==2) sprintf(type_varname, "_type");
   else if(adaptor_family==4) {
     char str[400];
-    printf("%s ",get_struct_adaptor_string(str, m, ad)); 
+    printf("%s",get_struct_adaptor_string(str, m, ad)); 
   }
   else printf("undefined adaptor_family\n");
   for(i=0; i<f2nargs && adaptor_family != 4; i++) {
@@ -162,11 +154,12 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
     }
   }
   
-  if(memsub_addr != -1 && adaptor_family==4) {
-    unsigned long f1s = memsub_addr;
-    unsigned long f2s = (unsigned long) malloc(region_limit);
+  if(is_sane_struct_addr(a) != -1 && adaptor_family==4) {
+    f1s = a;
     char str[ADAPTOR_STR_LEN];
-    printf("trying adaptor: %s\n", get_struct_adaptor_string(str, m, ad));
+    char str1[ADAPTOR_STR_LEN];
+    printf("trying adaptor: %s ", get_struct_adaptor_string(str, m, ad));
+    printf(" with ret adaptor: %s\n", get_return_adaptor_string(str1, ad.r_ad));
     fflush(stdout);
     f2args[0] = f2s;
     for(i=0; i<region_limit; i++) *((unsigned long *)(f2s + i))=(unsigned char)0;
@@ -186,7 +179,7 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
 	     (total_b/n == 4) || (total_b/n)==8);
       if(f1_sz == f2_sz) {
 	memcpy(f2s + f2_offset, f1s + start_b, n*f2_sz);
-	f2_offset += total_b;
+	f2_offset += (n*f2_sz);
 	continue;
       } else if(f1_sz > f2_sz) w=-1;
       else w=1;
@@ -299,11 +292,18 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
       } // end for i = 0 to n (number of entries in this field)
       assert(f2_offset <= region_limit);
     }// end for f = 0 to number_of_fields
-  }// end if memsub_addr != -1
-  
-  
-  long ret_val = f2(f2args[0], f2args[1], f2args[2], 
-  		    f2args[3], f2args[4], f2args[5]);
+    printf("f1s->x = %d f1s->y = %d\n", *(unsigned int *)f1s, ((unsigned int *)f1s)[1]); 
+    printf("f2s->x = %d f2s->y = %d\n", *(unsigned int *)f2s, ((unsigned int *)f2s)[1]);
+    printf("\n");
+    printf("f1s->m[0] = %d f1s->m[1] = %d\n", 
+	   ((unsigned char *)(f1s+8))[0],  
+	   ((unsigned char *)(f1s+8))[1]); 
+    printf("f2s->m[0] = %d f2s->m[1] = %d\n", 
+	   ((unsigned int *)(f2s+8))[0],  
+	   ((unsigned int *)(f2s+8))[1]); 
+  }// end if isSaneAddr(a)
+   
+  long ret_val = f2(f2args[0]);
   switch(ad.r_ad.ret_type) {
   case 0: break;
   case 1: ret_val = ad.r_ad.ret_val; break;
@@ -358,7 +358,8 @@ int compare() {
       continue;
     } // else printf("setjmp setup\n");
     fflush(stdout);
-    r1 = f1(a0, a1, a2, a3, a4, a5);
+    f1s = a0;
+    r1 = f1(a0); //, a1, a2, a3, a4, a5);
     // printf("Completed f1\n");
     // fflush(stdout);
     // printf("Starting f2\n");
@@ -377,7 +378,6 @@ int compare() {
   if(is_all_match == 1 && !find_all_correct_adaptors) { 
     printf("Number of adaptors tried = %ld\n", number_of_adaptors_tried);
     printf("All tests succeeded!\n");
-    fflush(stdout);
     print_adaptor();
     fflush(stdout);
   }
@@ -456,7 +456,6 @@ int main(int argc, char **argv) {
       printf("Tight upper bound on number of adaptors = %ld\n", calc_total_adaptor_num_typeconv());
     while (fscanf(fh, "%lx %lx %lx %lx %lx %lx",
 		  &a, &b, &c, &d, &e, &f) != EOF) {
-      memsub_addr=-1;
       printf("read a test\n");
       fflush(stdout);
       long aS, bS, cS, dS, eS, fS;
@@ -472,9 +471,11 @@ int main(int argc, char **argv) {
     }
     if(adaptor_family==1)
       generate_adaptors_randomized(0);
-    else if(adaptor_family==4) 
+    else if(adaptor_family==4) {
+      f2s = (unsigned long) malloc(region_limit);
       generate_struct_adaptors_randomized(0, 0);
-    else {
+      free((unsigned char *)f2s);
+    } else {
       printf("unknown adaptor family\n");
       exit(1);
     }
