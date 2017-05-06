@@ -44,12 +44,12 @@ int f2_sf(struct2 *s) {
   return 0;
 }
 
-#define ARR_LEN 2
+#define ARR_LEN 8
 #define CRYPT_LEN 1
 unsigned char g_input[CRYPT_LEN]="12345678";
 // int f1( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
 //                 unsigned char *output )
-long f1(mbedtls_arc4_context *ctx)
+long f2(mbedtls_arc4_context *ctx)
 {
   size_t length=CRYPT_LEN;
   unsigned char *input=g_input;
@@ -108,7 +108,7 @@ long f1(mbedtls_arc4_context *ctx)
 
 // int f2(RC4_KEY *key, size_t len, const unsigned char *indata,
 //          unsigned char *outdata)
-long f2(RC4_KEY *key)
+long f1(RC4_KEY *key)
 {
   size_t len = CRYPT_LEN;
   unsigned char *indata = g_input;

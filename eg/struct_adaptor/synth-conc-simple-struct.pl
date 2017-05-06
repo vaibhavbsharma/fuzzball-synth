@@ -20,7 +20,7 @@ my $iteration_limit = 4000;
 my $adaptor_ivc = 1;
 
 my $n_fields = 2;
-my $arr_len = 2;
+my $arr_len = 8;
 my $starting_sane_addr = 0x42420000;
 
 # End configurables
@@ -609,11 +609,31 @@ sub get_struct_adapt_str () {
     return $tmp_str;
 }
 
+sub find_all_adaptors {
+    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, $region_limit, $n_fields, "0");
+    my @printable;
+    for my $a (@args) {
+	if ($a =~ /[\s|<>]/) {
+	    push @printable, "'$a'";
+	} else {
+	    push @printable, $a;
+	}
+    }
+    print "@printable\n";
+    open(LOG, "-|", @args);
+    while (<LOG>) {
+	print "  $_"
+    }
+    close LOG;
+}
+
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt structure-adaptor = @$struct_adapt\n";
 my @tests = ();
 my $done = 0;
 my $start_time = time();
 my $reset_time = time();
+my $total_ce_time = 0;
+my $total_as_time = 0;
 my $diff;
 my $diff1;
 while (!$done) {
@@ -627,6 +647,7 @@ while (!$done) {
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last CE search time = $diff1\n";
+    $total_ce_time += $diff1;
     $reset_time = time();
     if ($res) {
 	print "Success!\n";
@@ -638,10 +659,15 @@ while (!$done) {
 	if ($f1_completed_count == $iteration_count) {
 	    $verified="complete";
 	}
+	$done = 1;
+	$reset_time = time();
+	find_all_adaptors();
+	$diff1 = time() - $reset_time;
 	printf "Final adaptors: arg=$adapt_s, ret=$ret_adapt_s, ".
 	    "struct=%s with $f1_completed_count,$iteration_count,$verified\n", 
 	    get_struct_adapt_str();
-	$done = 1;
+	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
+	print "find-all-adaptors took $diff1 seconds\n";
 	last;
     } else {
 	push @fuzzball_extra_args_arr, @{ $_fuzzball_extra_args };
@@ -657,5 +683,6 @@ while (!$done) {
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last AS search time = $diff1\n";
+    $total_as_time += $diff1;
     $reset_time = time();
 }

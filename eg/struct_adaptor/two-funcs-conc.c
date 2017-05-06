@@ -85,7 +85,7 @@ void print_adaptor() {
   else if(adaptor_family==2) sprintf(type_varname, "_type");
   else if(adaptor_family==4) {
     char str[400];
-    printf("%s",get_struct_adaptor_string(str, m, ad)); 
+    printf("%s",get_struct_adaptor_string(str, m)); 
   }
   else printf("undefined adaptor_family\n");
   for(i=0; i<f2nargs && adaptor_family != 4; i++) {
@@ -156,11 +156,11 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
   
   if(is_sane_struct_addr(a) != -1 && adaptor_family==4) {
     f1s = a;
-    char str[ADAPTOR_STR_LEN];
-    char str1[ADAPTOR_STR_LEN];
-    printf("trying adaptor: %s ", get_struct_adaptor_string(str, m, ad));
-    printf(" with ret adaptor: %s\n", get_return_adaptor_string(str1, ad.r_ad));
-    fflush(stdout);
+    // char str[ADAPTOR_STR_LEN];
+    // char str1[ADAPTOR_STR_LEN];
+    // printf("trying adaptor: %s ", get_struct_adaptor_string(str, m));
+    // printf(" with ret adaptor: %s\n", get_return_adaptor_string(str1, ad.r_ad));
+    // fflush(stdout);
     f2args[0] = f2s;
     for(i=0; i<region_limit; i++) *((unsigned long *)(f2s + i))=(unsigned char)0;
     int f2_offset=0;
@@ -292,15 +292,15 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
       } // end for i = 0 to n (number of entries in this field)
       assert(f2_offset <= region_limit);
     }// end for f = 0 to number_of_fields
-    printf("f1s->x = %d f1s->y = %d\n", *(unsigned int *)f1s, ((unsigned int *)f1s)[1]); 
-    printf("f2s->x = %d f2s->y = %d\n", *(unsigned int *)f2s, ((unsigned int *)f2s)[1]);
-    printf("\n");
-    printf("f1s->m[0] = %d f1s->m[1] = %d\n", 
-	   ((unsigned char *)(f1s+8))[0],  
-	   ((unsigned char *)(f1s+8))[1]); 
-    printf("f2s->m[0] = %d f2s->m[1] = %d\n", 
-	   ((unsigned int *)(f2s+8))[0],  
-	   ((unsigned int *)(f2s+8))[1]); 
+    // printf("f1s->x = %d f1s->y = %d\n", *(unsigned int *)f1s, ((unsigned int *)f1s)[1]); 
+    // printf("f2s->x = %d f2s->y = %d\n", *(unsigned int *)f2s, ((unsigned int *)f2s)[1]);
+    // printf("\n");
+    // printf("f1s->m[0] = %d f1s->m[1] = %d\n", 
+    // 	   ((unsigned char *)(f1s+8))[0],  
+    // 	   ((unsigned char *)(f1s+8))[1]); 
+    // printf("f2s->m[0] = %d f2s->m[1] = %d\n", 
+    // 	   ((unsigned int *)(f2s+8))[0],  
+    // 	   ((unsigned int *)(f2s+8))[1]); 
   }// end if isSaneAddr(a)
    
   long ret_val = f2(f2args[0]);
@@ -367,7 +367,7 @@ int compare() {
     r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
     // printf("Completed f2\n");
     // fflush(stdout);
-    printf("r1 = 0x%lx, r2 = 0x%lx\n", r1, r2);
+    //printf("r1 = 0x%lx, r2 = 0x%lx\n", r1, r2);
     if (r1==r2 && sideEffectsEqual) {
       printf("Match\n");
       is_match[j]=true;

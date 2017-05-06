@@ -37,18 +37,18 @@ bool is_sane_struct_addr(unsigned long a) {
   //return ((a - 0x42420000)/region_limit) < MAX_STEPS;
 }
 
-char *get_struct_adaptor_string(char *str, fieldsub *m, argret a) {
+char *get_struct_adaptor_string(char *str, fieldsub *m) {
   assert(adaptor_family==4);
-  char output[200];
   int len=0;
   int i;
   char type_varname[10];
   char my_str[ADAPTOR_STR_LEN/2];
   str[0]='\0';
   for(i=0; i<number_of_fields; i++) {
-    len+=sprintf(my_str, "f%c_type=0x%lx f%c_size=0x%lx f%c_n=0x%lx ", '1'+i,   
+    sprintf(my_str, "f%c_type=0x%lx f%c_size=0x%x f%c_n=0x%x ", '1'+i,   
 		 m[i].type, '1'+i, m[i].size, '1'+i, m[i].n); 
-    sprintf(str, "%s%s", str, my_str);
+    len = sprintf(str, "%s%s", str, my_str);
+    str[len]='\0';
   }
   assert(len<= ADAPTOR_STR_LEN);
   return str;

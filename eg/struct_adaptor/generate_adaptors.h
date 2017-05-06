@@ -70,18 +70,11 @@ char *get_adaptor_string(char *str, argret a) {
   int len=0;
   int i;
   char type_varname[10];
-  char my_str[ADAPTOR_STR_LEN/2];
-  len+=sprintf(str, "Input vars: ");
-  if(adaptor_family==1) sprintf(type_varname,"_is_const");
-  else if(adaptor_family==2) sprintf(type_varname, "_type");
-  else sprintf(type_varname, "_undefined\n");
-  for(i=0; i<f2nargs; i++) {
-    len+=sprintf(my_str, "%c%s=0x%x %c_val=0x%lx ", 'a'+i, type_varname,  
-	   a.a_ad[i].var_is_const, 'a'+i, a.a_ad[i].var_val); 
-    sprintf(str, "%s%s", str, my_str);
-  }
-  len+=sprintf(my_str, "ret_type=0x%x ret_val=0x%lx", a.r_ad.ret_type, a.r_ad.ret_val);
-  sprintf(str, "%s%s", str, my_str); 
+  char my_str[ADAPTOR_STR_LEN/2]={'\0'};
+  if(adaptor_family==4) 
+    len = sprintf(str, "Input vars: %sret_type=0x%x ret_val=0x%lx", 
+		  get_struct_adaptor_string(my_str, m), 
+		  a.r_ad.ret_type, a.r_ad.ret_val);
   assert(len<= ADAPTOR_STR_LEN);
   return str;
 }
