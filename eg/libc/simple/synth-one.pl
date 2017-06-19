@@ -168,7 +168,7 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f2nargs=6;
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
+my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp
 		   # , "-save-solver-files"
 		   , "-solver-timeout",5,"-timeout-as-unsat"
     );
@@ -494,7 +494,7 @@ if ($default_adaptor_pref == 1) {
     }
 }
 
-$adapt->[0]=1;
+# $adapt->[0]=1;
 
 # If outer function takes no arguments, then the inner function can only use constants
 if ($f1nargs==0) {
