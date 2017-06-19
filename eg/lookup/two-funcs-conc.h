@@ -230,23 +230,37 @@ int global=0;
 //     //return a + b + (c & d);
 // }
 
-int _f1(int x, unsigned y, int z) {
-//int _f1(int x){//, int z) {
-  //return (x << 1);// + (z << 1);
-  return (x << 1) + (y % 2);
-}
-
-int _f2(int a, int b) {//, int c, int d) {//,int e){//, int f) {
-//int _f2(int y1, int y2) {//,int e){//, int f) {
-  //return y1 << y2;// + e;// + f;
-  //return c + d + (a & b);// + e;// + f;
-    //return a + b + (c & d);
-  return (a & 1) + (b * 2);
-}
+// int _f1(int x, unsigned y, int z) {
+// //int _f1(int x){//, int z) {
+//   //return (x << 1);// + (z << 1);
+//   return (x << 1) + (y % 2);
+// }
+// 
+// int _f2(int a, int b) {//, int c, int d) {//,int e){//, int f) {
+// //int _f2(int y1, int y2) {//,int e){//, int f) {
+//   //return y1 << y2;// + e;// + f;
+//   //return c + d + (a & b);// + e;// + f;
+//     //return a + b + (c & d);
+//   return (a & 1) + (b * 2);
+// }
 
 /* int _f1(char *s) {
   return s[0]=='\0';
   } */
+
+int _f1(int *preds, int len, int c) {
+  if(abs(c) > (len/2)) //buggy for c = -2147483648
+    return -1; 
+  //if(abs(c) > (len/2) || c == INT_MIN) return -1; //fixed
+  return preds[c+(len/2)+1];
+}
+
+int _f2(int c, int *preds, int len) {
+  if( !(-(len/2) <= c && c <= (len/2)) ) 
+    return -1;
+  //if(abs(c) > (len/2) || c == INT_MIN) return -1; //fixed
+  return preds[c+(len/2)+1];
+}
 
 int _isalpha(int i) {
   if( ( i < 0 ) || ( i > 127 ) ) {
@@ -1864,7 +1878,7 @@ struct func_info funcs[] = {
     /* 1314 */ {"getpass", (func*)&getpass, 1, 0, 0},
     /* 1315 */ {"ttyslot", (func*)&ttyslot, 0, 0, 0},
     /* 1316 */ {"_f1", (func*)&_f1, 3, 0, 0},
-    /* 1317 */ {"_f2", (func*)&_f2, 2, 0, 0},
+    /* 1317 */ {"_f2", (func*)&_f2, 3, 0, 0},
     /* 1318 */ {"frexpf", (func*)&frexpf, 2, 0, 0},
     /* 1319 */ {"frexp", (func*)&frexp, 2, 0, 0},
     /* 1320 */ {"_isalpha", (func*)&_isalpha, 1, 0, 0},

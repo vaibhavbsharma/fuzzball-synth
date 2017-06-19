@@ -8,15 +8,16 @@ die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identi
 my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
 srand($rand_seed);
+my $adaptor_grammar = 2;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
-my $region_limit = 936;
+my $region_limit = 2;
 
 my $sane_addr = 0x42420000;
 
 my @fuzzball_extra_args_arr;
-
+my $numTests=0;
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
 my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
@@ -48,14 +49,15 @@ if (exists $ENV{STP_LOC}) {
     $stp = "stp";
 }
 
+my $pwd = $ENV{PWD};
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
 my $bin = "./two-funcs";
 
-print "compiling concrete adaptor search binary: ";
-my $unused = `gcc -static $bin.c -g -o $bin -lpthread`;
+print "compiling binary: ";
+my $unused = `gcc -static two-funcs.c -g -o two-funcs -lpthread`;
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
@@ -103,7 +105,7 @@ my $match_jne_addr =
 
 print "$fuzzball\n";
 print "$stp\n";
-print "fuzz-start-addr: $fuzz_start_addr\n";
+print "fuzz-start-addr : $fuzz_start_addr\n";
 print "f1:   $f1_addr @ $f1_call_addr\n";
 print "f2:   $f2_addr\n";
 print "wrap_f2: $wrap_f2_addr @ $f2_call_addr\n";
@@ -121,40 +123,42 @@ my($fields_addr);
 # Field [2]: printf format for the string form
 
 my @fields =
-  (["a_type",  "reg8_t", "%01x"],
+  (["a_is_const",  "reg1_t", "%01x"],
    ["a_val",      "reg64_t", "%016x"],
-   ["b_type",  "reg8_t", "%01x"],
+   ["b_is_const",  "reg1_t", "%01x"],
    ["b_val",      "reg64_t", "%016x"],
-   ["c_type",  "reg8_t", "%01x"],
+   ["c_is_const",  "reg1_t", "%01x"],
    ["c_val",      "reg64_t", "%016x"],
-   ["d_type",  "reg8_t", "%01x"],
+   ["d_is_const",  "reg1_t", "%01x"],
    ["d_val",      "reg64_t", "%016x"],
-   ["e_type",  "reg8_t", "%01x"],
+   ["e_is_const",  "reg1_t", "%01x"],
    ["e_val",      "reg64_t", "%016x"],
-   ["f_type",  "reg8_t", "%01x"],
+   ["f_is_const",  "reg1_t", "%01x"],
    ["f_val",      "reg64_t", "%016x"],
 );
 
-my @ret_fields = 
+my @ret_fields =  
 (
    ["ret_type",  "reg8_t", "%01x"],
    ["ret_val",   "reg64_t", "%016x"],
 );
 
+
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f1nargs=6;
 #$f2nargs=6;
-
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
+my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
+		   # , "-save-solver-files"
+		   , "-solver-timeout",5,"-timeout-as-unsat"
+    );
 
 my @synth_opt = ("-synthesize-adaptor",
-		 join(":", "typeconv", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
+		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
 
 my @synth_ret_opt = ("-synthesize-return-adaptor",
 		 join(":", "return-typeconv", $f2_addr, $post_f2_call, $f2nargs));
-
 print "synth_ret_opt = @synth_ret_opt\n";
 
 my @const_bounds_ec = ();
@@ -164,8 +168,8 @@ if($const_lb != $const_ub) {
 	my $s1='';
 	my $s2='';
 	if($f1nargs != 0) {
-	    $s1 = sprintf("%s_type:reg8_t==0:reg8_t | %s_val:reg64_t>=\$0x%Lx:reg64_t",$n,$n,$const_lb);
-	    $s2 = sprintf("%s_type:reg8_t==0:reg8_t | %s_val:reg64_t<=\$0x%Lx:reg64_t",$n,$n,$const_ub);
+	    $s1 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg64_t>=\$0x%Lx:reg64_t",$n,$n,$const_lb);
+	    $s2 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg64_t<=\$0x%Lx:reg64_t",$n,$n,$const_ub);
 	}
 	else {
 	    $s1 = sprintf("%s_val:reg64_t>=\$0x%016x:reg64_t",$n,$const_lb);
@@ -178,6 +182,23 @@ if($const_lb != $const_ub) {
 }
 
 #print "const_bounds_ec = @const_bounds_ec\n";
+
+# http://stackoverflow.com/questions/17860976/how-do-i-output-a-string-of-hex-values-into-a-binary-file-in-perl
+sub generate_new_file
+{
+    my $fname = shift(@_);
+    my $aref = shift(@_);
+
+    open(BIN, ">", $fname) or die;
+    binmode(BIN);
+
+    for (my $i = 0; $i < @$aref; $i += 2)
+    {
+	my ($hi, $lo) = @$aref[$i, $i+1];
+	print BIN pack "H*", $hi.$lo;
+    }
+    close(BIN);
+}
 
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
@@ -219,7 +240,7 @@ sub check_adaptor {
 		#"-save-decision-tree-interval", 1,
 		#"-trace-decision-tree",
 		"-trace-binary-paths-bracketed",
-#"-narrow-bitwidth-cutoff","1",
+                #"-narrow-bitwidth-cutoff","1",
 		#"-trace-offset-limit",
 		"-trace-basic",
 		#"-trace-eip",
@@ -240,6 +261,7 @@ sub check_adaptor {
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		"-region-limit", $region_limit,
+		"-nonzero-divisors",
 		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
@@ -313,13 +335,21 @@ sub check_adaptor {
 		}
 	    }
 	    for my $i (1 .. $#region_contents) {
+		my $str_arg_contents="";
 		for my $j (1 .. $#{$region_contents[$i]}) {
+		    my $byte="0x00";
 		    if($region_contents[$i][0] == 1) {
 			push @fuzzball_extra_args, "-store-byte";
 			push @fuzzball_extra_args, 
 			sprintf("0x%x=%s", $regnum_to_saneaddr[$i]+$j-1, $region_contents[$i][$j]);
+			$str_arg_contents .= substr $region_contents[$i][$j], 2;
+		    } else { 
+			$str_arg_contents .= "00";
 		    }
 		}
+		printf("str_arg_contents = $str_arg_contents\n");;
+		my @data_ary = split //, $str_arg_contents;
+		generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
 	    $this_ce = 0;
 	    print "  $_";
@@ -332,11 +362,10 @@ sub check_adaptor {
 		    $add_var = ord($v) - ord('a');
 		} elsif ($v =~ /^[0-9]$/) { # matches region number
 		    if ($add_var < $f1nargs and $add_var >= 0) {
-			$arg_to_regnum[$add_var] = int($v);
-			$regnum_to_arg[int($v)]=$add_var;
+			$arg_to_regnum[$add_var] = $v-'0';
+			$regnum_to_arg[$v-'0']=$add_var;
 			# 1 indicates symbolic input created a region
 			$region_contents[$v][0]=1;
-			print "Found region $v";
 		    }
 		}
 	    }
@@ -347,6 +376,7 @@ sub check_adaptor {
     if ($matches == 0 and $fails == 0) {
 	die "Missing results from check run";
     }
+    $numTests++;
     if ($fails == 0) {
 	return 1;
     } else {
@@ -370,48 +400,50 @@ sub try_synth {
 	print TESTS $test_str, "\n";
     }
     close TESTS;
+    
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
-		@solver_opts, 
-		"-fuzz-start-addr", $fuzz_start_addr,
-		"-trace-temps",
-		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
-		#counter example search mode otherwise
-		"-adaptor-search-mode",
-		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
-		"-table-limit","12",
-		"-return-zero-missing-x64-syscalls",
-		@synth_opt, @const_bounds_ec,
-		@synth_ret_opt,
-		"-match-syscalls-in-addr-range",
-		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
-		"-branch-preference", "$match_jne_addr:1",
-		"-trace-conditions", "-omit-pf-af",
-		"-trace-syscalls",
-		#"-trace-decision-tree",
-		#"-save-decision-tree-interval","1",
-		"-trace-decisions",
-		"-trace-stopping",
-		"-trace-regions",
-		"-trace-binary-paths-bracketed",
-		"-trace-memory-snapshots",
-		"-trace-sym-addr-details",
-		"-trace-sym-addrs",
-		"-trace-tables",
-		#"-trace-offset-limit",
-		"-trace-basic",
-		#"-trace-eip",
-		#"-trace-registers",
-		#"-trace-stmts",
-		#"-trace-insns",
-		#"-trace-loads",
-		#"-trace-stores",
-		#"-trace-solver",
-		#"-save-solver-files", 
-		"-zero-memory",
-		@fuzzball_extra_args,
-		"-region-limit", $region_limit,
-		"-random-seed", int(rand(10000000)),
-		"--", $bin, $f1num, $f2num, "f", "tests");
+	    @solver_opts, 
+	    "-fuzz-start-addr", $fuzz_start_addr,
+	    "-trace-temps",
+	    #tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
+	    #counter example search mode otherwise
+	    "-adaptor-search-mode",
+	    "-trace-iterations", "-trace-assigns", "-solve-final-pc",
+	    "-table-limit","12",
+	    "-return-zero-missing-x64-syscalls",
+	    @synth_opt, @const_bounds_ec,
+	    @synth_ret_opt,
+	    "-match-syscalls-in-addr-range",
+	    $f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
+	    "-branch-preference", "$match_jne_addr:1",
+	    "-trace-conditions", "-omit-pf-af",
+	    "-trace-syscalls",
+	    #"-trace-decision-tree",
+	    #"-save-decision-tree-interval","1",
+	    "-trace-decisions",
+	    "-trace-stopping",
+	    "-trace-regions",
+	    "-trace-binary-paths-bracketed",
+	    "-trace-memory-snapshots",
+	    "-trace-sym-addr-details",
+	    "-trace-sym-addrs",
+	    "-trace-tables",
+	    #"-trace-offset-limit",
+	    "-trace-basic",
+	    #"-trace-eip",
+	    #"-trace-registers",
+	    #"-trace-stmts",
+	    #"-trace-insns",
+	    #"-trace-loads",
+	    #"-trace-stores",
+	    #"-trace-solver",
+	    #"-save-solver-files", 
+	    @fuzzball_extra_args,
+	    "-zero-memory",
+	    "-region-limit", $region_limit,
+	    "-random-seed", int(rand(10000000)),
+	    "--", $bin, $f1num, $f2num, "f", "tests");
+
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
@@ -436,7 +468,6 @@ sub try_synth {
 		$v =~ /^(\w+)=(0x[0-9a-f]+)$/
 		  or die "Parse failure on variable assignment <$v>";
 		$fields{$1} = hex $2;
-		#print "Found 1 and 2 = $1 and $2\n";
 	    }
 	    print "  $_";
 	    last;
@@ -452,7 +483,6 @@ sub try_synth {
     my @bfields;
     for my $fr (@fields) {
 	push @afields, $fields{$fr->[0]};
-	#print "try_synth: pushing $fr->[0] = $fields{$fr->[0]}\n";
     }
     for my $fr (@ret_fields) {
 	push @bfields, $fields{$fr->[0]};
@@ -461,6 +491,13 @@ sub try_synth {
     return ([@afields],[@bfields]);
 }
 
+# Set these to test a specific adaptor
+#  $adapt->[0]=0;
+#  $adapt->[1]=0;
+#  $adapt->[2]=1;
+#  $adapt->[3]=0;
+#  $adapt->[4]=1;
+#  $adapt->[5]=10;
 
 # Main loop: starting with a stupid adaptor and no tests, alternate
 # between test generation and synthesis.
@@ -480,23 +517,17 @@ if ($default_adaptor_pref == 1) {
     }
 }
 
+$adapt->[0]=1;
+
 # If outer function takes no arguments, then the inner function can only use constants
 if ($f1nargs==0) {
     for my $i (0 .. $#$adapt) {
-	if ($i%2 == 0) { # X_type field
+	if ($i%2 == 0) { # X_is_const field
 	    $adapt->[$i] = 1;
 	    $adapt->[$i+1] = 1;
 	}
     }
 }
-
-# Set these to test a specific adaptor
-$adapt->[0]=1;
-#  $adapt->[1]=0;
-#  $adapt->[2]=1;
-#  $adapt->[3]=0;
-#  $adapt->[4]=1;
-#  $adapt->[5]=10;
 
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();
@@ -507,6 +538,7 @@ my $total_ce_time = 0;
 my $total_as_time = 0;
 my $diff;
 my $diff1;
+`rm str_arg*`;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
@@ -521,7 +553,7 @@ while (!$done) {
 	print "Success!\n";
 	print "Final test set:\n";
 	for my $tr (@tests) {
-	    print " $tr->[0], $tr->[1]\n";
+	    print " $tr->[0], $tr->[1], $tr->[2] $tr->[3] $tr->[4] $tr->[5]\n";
 	}
 	my $verified="partial";
 	if ($f1_completed_count == $iteration_count) {

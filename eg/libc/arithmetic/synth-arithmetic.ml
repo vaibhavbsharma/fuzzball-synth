@@ -76,6 +76,13 @@ let create_adapt num_args =
            (create_tree tree_depth "R" x) @ (main_loop (n-1))
   in main_loop num_args
 let adapt = ref (create_adapt inner_nargs)
+(* let adapt = ref ["-extra-condition"; "a_type_R:reg8_t==2:reg8_t";
+		 "-extra-condition"; "a_val_R:reg64_t==0:reg64_t";
+		 "-extra-condition"; "a_type_R0:reg8_t==1:reg8_t";
+		 "-extra-condition"; "a_val_R0:reg64_t==0:reg64_t"; 
+		 "-extra-condition"; "a_type_R1:reg8_t==0:reg8_t";
+		 "-extra-condition"; "a_val_R1:reg64_t==0x20:reg64_t";
+		] *)
 
 let tests = ref [] (* will be a list of lists *)
 
@@ -123,14 +130,14 @@ let print_adaptor () =
 (*** FUZZBall command line arguments ***)
 
 (* hardcoded path for the fevis repository *)
-let fuzzball = "../../../../../tools/fuzzball/exec_utils/fuzzball"
+let fuzzball = "fuzzball"
 
 (* STP is the default for the integer adaptor; Z3 is required for floating 
    point operations (specify the path via the SOLVER environment variable) *)
 let solver, solver_type, wrapper = 
   if adaptor_type = "int"
   (*then "stp", "stp", "./stp-wrapper"*)
-  then "../../../../../tools/fuzzball/stp/stp", "stp", "../../../../../tools/fuzzball/stp/stp"
+  then "stp", "stp", "stp"
   else try Sys.getenv "SOLVER", "z3", "./z3-wrapper"
        with Not_found -> 
          failwith "Set the location of the solver with 'export SOLVER=...'"
@@ -188,7 +195,7 @@ let match_jne_addr =
       else "" (* again, not great error handling here *)
 
 let solver_opts = 
-  "-solver smtlib-batch -save-solver-files -smtlib-solver-type " ^ solver_type
+  "-solver smtlib-batch -smtlib-solver-type " ^ solver_type
 
 let fields = 
   let rec create_tree d base var_name =
@@ -236,7 +243,18 @@ let check_adaptor () =
        synth_opt]
     @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
     @ [(*"-table-limit 8";*)
-       "-zero-memory";
+      "-zero-memory";
+      (* "-trace-temps"; 
+      "-trace-solver";
+      "-trace-sym-addrs";
+      "-trace-sym-addr-details";
+      "-trace-insns";
+      "-trace-registers"; *)
+      "-trace-assigns";
+      "-trace-decisions";
+      "-trace-conditions";
+      "-trace-binary-paths";
+      "-trace-tables"; 
        "-random-seed"; string_of_int (Random.int 10000000); 
        "-trace-stopping";
        "--"; bin; string_of_int f1num; 
@@ -322,7 +340,10 @@ let try_synth () =
     @ ["-match-syscalls-in-addr-range";
        outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
          outer_call_addr ^ ":" ^ post_outer_call_addr;
-      "-return-zero-missing-x64-syscalls";
+       "-return-zero-missing-x64-syscalls";
+       "-adaptor-search-mode";
+       "-trace-sym-addrs";
+       "-trace-sym-addr-details";
       "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
       "-no-fail-on-huer"; (* not the right way to make strange term failures go away
 			  but it works for now, TODO: fix this in the near future *)
@@ -331,7 +352,7 @@ let try_synth () =
       "-zero-memory";
       "-random-seed"; string_of_int (Random.int 10000000);
       "--"; bin; string_of_int f1num; string_of_int f2num; "f tests"] in
-  (*let _ = printf "%s\n%!" (String.concat " " cmd) in*)
+  let _ = printf "%s\n%!" (String.concat " " cmd) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
   (* read_results : string list -> bool -> string
      read through the results of the call to FuzzBALL looking for a case
@@ -396,6 +417,8 @@ let try_synth () =
       else [] in
   read_results false
 
+let total_ce_time = ref 0.0
+let total_as_time = ref 0.0
 
 (*** main : () -> ()
      start with a simple adaptor and no tests and alternate between test 
@@ -406,6 +429,7 @@ let rec main () =
   | (true, _) -> (* we found a suitable adaptor *)
       let end_ver = Unix.gettimeofday () in
       printf "Time for verification: %fs\n" (end_ver -. start_ver);
+      total_ce_time := !total_ce_time +. (end_ver -. start_ver);
       printf "Success!\nFinal test set:\n%!";
       print_tests ();
       printf "Final adaptor:\n%!";
@@ -413,6 +437,7 @@ let rec main () =
   | (_, test) -> (* we need to synthesize a new adaptor *)
       let end_ver = Unix.gettimeofday () in
       printf "Time for verification: %fs\n" (end_ver -. start_ver);
+      total_ce_time := !total_ce_time +. (end_ver -. start_ver);
       printf "Adding test: %!";
       List.iter (Printf.printf "%Ld %!") test;
       printf "\n";
@@ -421,6 +446,7 @@ let rec main () =
       let _ = adapt := try_synth () in
       let end_syn = Unix.gettimeofday () in
       printf "Time for synthesis: %fs\n" (end_syn -. start_syn);
+      total_as_time := !total_as_time +. (end_syn -. start_syn);
       printf "Synthesized adaptor:\n%!";
       print_adaptor ();
       main () (* repeat *)
@@ -439,5 +465,6 @@ Printf.printf "%d = %s(%d)\n" f2num f2name inner_nargs;
 
 main ();;      
 
-
+printf "Total CE time = %fs\n" !total_ce_time;
+printf "Total AS time = %fs\n" !total_as_time;
   

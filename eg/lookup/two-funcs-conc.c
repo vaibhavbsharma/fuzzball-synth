@@ -4,7 +4,7 @@
 #include "calc_num_adaptors.h"
 #include <assert.h>
 
-#define REGION_LIMIT 2
+#define REGION_LIMIT 255
 #define SANE_ADDR 0x42420000
 #define MAX_ADAPTORS 1000000
 #define MAX_TESTS 100
@@ -334,6 +334,7 @@ int compare() {
   bool is_all_match;
   long a0, a1, a2, a3, a4, a5;
   bool is_match[MAX_TESTS];
+  bool f1_in_progress=true;
   if(calculating) {
     printf("Loose upper bound on number of adaptors = %ld\n", num_adaptors_g);
     calculating=false;
@@ -350,15 +351,22 @@ int compare() {
     //printf("Starting f1, j=%d\n", j);  
     fflush(stdout);
     long r1, r2;
+    f1_in_progress=true;
     if (sigsetjmp(JumpBuffer, 1) != 0) {     /* set a return mark   */
       printf("returning from longjmp, j=%d\n", j);
       fflush(stdout);
-      is_match[j]=false;
-      break;
-      continue;
+      if(!f1_in_progress) {
+	is_match[j]=false;
+	break;
+      } else {
+	f1_in_progress=false;
+	is_match[j]=true;
+	continue;
+      }
     } // else printf("setjmp setup\n");
     fflush(stdout);
     r1 = f1(a0, a1, a2, a3, a4, a5);
+    f1_in_progress=false;
     // printf("Completed f1\n");
     // fflush(stdout);
     // printf("Starting f2\n");

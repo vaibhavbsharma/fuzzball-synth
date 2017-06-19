@@ -1315,7 +1315,7 @@
 1398 1  getpass char *(const char *) 
 1399 0  ttyslot int (void) 
 1400 3  _f1 int (int, unsigned)
-1401 2  _f2 int (int, int, int, int)
+1401 3  _f2 int (int, int, int, int)
 1402 2  frexpf float (float, int *)
 1403 2  frexp  double (double, int *)
 1404 1  _isalpha int (int)

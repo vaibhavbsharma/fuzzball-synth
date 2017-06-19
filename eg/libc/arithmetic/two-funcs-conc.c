@@ -23,6 +23,13 @@ bool find_all_correct_adaptors=false;
 unsigned long number_of_adaptors_tried=0;
 unsigned long number_of_correct_adaptors=0;
 
+argret all_ads[MAX_ADAPTORS];
+argret ad;
+arithsub a_ad[6];
+int num_adaptors=0;
+int const_lb, const_ub;
+int adaptor_family;
+
 typedef struct { long a,b,c,d,e,f} test; 
 test tests[MAX_TESTS];
 int num_tests=0;
@@ -88,12 +95,6 @@ long f2(long a, long b, long c, long d, long e, long f) {
   //} 
   return (funcs[f2num].fptr)(a, b, c, d, e, f);
 }
-
-argret all_ads[MAX_ADAPTORS];
-argret ad;
-int num_adaptors=0;
-int const_lb, const_ub;
-int adaptor_family;
 
 void populateAdaptor() {
   int i;
@@ -224,6 +225,7 @@ void print_adaptor() {
   char type_varname[10];
   if(adaptor_family==1) sprintf(type_varname,"_is_const");
   else if(adaptor_family==2) sprintf(type_varname, "_type");
+  else if(adaptor_family==3) sprintf(type_varname,"_type_R");
   else printf("undefined adaptor_family\n");
   for(i=0; i<f2nargs; i++) {
     printf("%c%s=0x%x %c_val=0x%lx ", 'a'+i, type_varname,  
@@ -363,9 +365,11 @@ int compare() {
     // fflush(stdout);
     // printf("Starting f2\n");
     // fflush(stdout);
-    r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
+    if(adaptor_family==3) 
+      r2 = wrap_a_f2(a0, a1, a2, a3, a4, a5);
+    else r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
     // printf("Completed f2\n");
-    // fflush(stdout);
+    // fflush(stdout)
     if (r1==r2 && sideEffectsEqual) {
       printf("Match\n");
       is_match[j]=true;
@@ -377,7 +381,8 @@ int compare() {
     printf("Number of adaptors tried = %ld\n", number_of_adaptors_tried);
     printf("All tests succeeded!\n");
     fflush(stdout);
-    print_adaptor();
+    if(adaptor_family==3) print_a_adaptor();
+    else print_adaptor();
     fflush(stdout);
   }
   return is_all_match;
@@ -459,6 +464,9 @@ int main(int argc, char **argv) {
       printf("Tight upper bound on number of adaptors = %ld\n", calc_total_adaptor_num_argsub());
     else if(adaptor_family == 2)
       printf("Tight upper bound on number of adaptors = %ld\n", calc_total_adaptor_num_typeconv());
+    else if(adaptor_family == 3)
+      printf("Tight upper bound on number of adaptors = %ld\n", calc_total_adaptor_num_arith());
+    fflush(stdout);
     while (fscanf(fh, "%lx %lx %lx %lx %lx %lx",
 		  &a, &b, &c, &d, &e, &f) != EOF) {
       printf("read a test\n");
@@ -478,6 +486,8 @@ int main(int argc, char **argv) {
       generate_adaptors_randomized(0);
     else if(adaptor_family==2)
       generate_typeconv_adaptors_randomized(0);
+    else if(adaptor_family==3)
+      generate_arithmetic_adaptors_randomized(0);
     else {
       printf("unknown adaptor family\n");
       exit(1);

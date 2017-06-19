@@ -8,15 +8,16 @@ die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identi
 my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
 srand($rand_seed);
+my $adaptor_grammar = 2;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
-my $region_limit = 936;
+my $region_limit = 2;
 
 my $sane_addr = 0x42420000;
 
 my @fuzzball_extra_args_arr;
-
+my $numTests=0;
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
 my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
@@ -48,11 +49,35 @@ if (exists $ENV{STP_LOC}) {
     $stp = "stp";
 }
 
+my $pwd = $ENV{PWD};
+
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
 my $bin = "./two-funcs";
-my $conc_adaptor_bin = "./two-funcs-conc";
+my $conc_adaptor_bin = "$pwd/two-funcs-conc";
+
+print "compiling binary: ";
+my $unused = `gcc -static two-funcs.c -g -o two-funcs -lpthread`;
+my $gcc_ec = $?;
+die "failed to compile $bin" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
+print "compiling concrete adaptor search binary: ";
+my $unused = `gcc -static $conc_adaptor_bin.c -g -o $conc_adaptor_bin -lpthread`;
+my $gcc_ec = $?;
+die "failed to compile $conc_adaptor_bin" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
+print "compiling PinMonitor: ";
+my $unused = `make`;
+my $gcc_ec = $?;
+die "failed to compile PinMonitor" unless $gcc_ec == 0;
+print "gcc_ec = $gcc_ec\n";
+
+
+
+
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -68,6 +93,8 @@ close F;
 # Try to figure out the code and data addresses we need based on
 # matching the output of "nm" and "objdump". Not the most robust
 # possible approach.
+
+my $side_effects_equal_addr = "0x" . substr(`nm $conc_adaptor_bin | fgrep " B sideEffectsEqual"`, 0, 16);
 
 my $fuzz_start_addr = "0x" . substr(`nm $bin | fgrep " T fuzz_start"`, 0, 16);
 
@@ -141,7 +168,10 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f2nargs=6;
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
+my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
+		   # , "-save-solver-files"
+		   , "-solver-timeout",5,"-timeout-as-unsat"
+    );
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
@@ -171,6 +201,23 @@ if($const_lb != $const_ub) {
 }
 
 #print "const_bounds_ec = @const_bounds_ec\n";
+
+# http://stackoverflow.com/questions/17860976/how-do-i-output-a-string-of-hex-values-into-a-binary-file-in-perl
+sub generate_new_file
+{
+    my $fname = shift(@_);
+    my $aref = shift(@_);
+
+    open(BIN, ">", $fname) or die;
+    binmode(BIN);
+
+    for (my $i = 0; $i < @$aref; $i += 2)
+    {
+	my ($hi, $lo) = @$aref[$i, $i+1];
+	print BIN pack "H*", $hi.$lo;
+    }
+    close(BIN);
+}
 
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
@@ -204,7 +251,7 @@ sub check_adaptor {
 		"-trace-sym-addrs",
 		"-trace-syscalls",
 		"-omit-pf-af",
-		# "-trace-temps",
+		"-trace-temps",
 		"-trace-regions",
 		"-trace-memory-snapshots",
 		"-trace-tables",
@@ -233,6 +280,7 @@ sub check_adaptor {
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		"-region-limit", $region_limit,
+		"-nonzero-divisors",
 		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
@@ -306,13 +354,21 @@ sub check_adaptor {
 		}
 	    }
 	    for my $i (1 .. $#region_contents) {
+		my $str_arg_contents="";
 		for my $j (1 .. $#{$region_contents[$i]}) {
+		    my $byte="0x00";
 		    if($region_contents[$i][0] == 1) {
 			push @fuzzball_extra_args, "-store-byte";
 			push @fuzzball_extra_args, 
 			sprintf("0x%x=%s", $regnum_to_saneaddr[$i]+$j-1, $region_contents[$i][$j]);
+			$str_arg_contents .= substr $region_contents[$i][$j], 2;
+		    } else { 
+			$str_arg_contents .= "00";
 		    }
 		}
+		printf("str_arg_contents = $str_arg_contents\n");;
+		my @data_ary = split //, $str_arg_contents;
+		generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
 	    $this_ce = 0;
 	    print "  $_";
@@ -339,6 +395,7 @@ sub check_adaptor {
     if ($matches == 0 and $fails == 0) {
 	die "Missing results from check run";
     }
+    $numTests++;
     if ($fails == 0) {
 	return 1;
     } else {
@@ -362,7 +419,8 @@ sub try_synth {
 	print TESTS $test_str, "\n";
     }
     close TESTS;
-    my @args = ($conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub);
+    # my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $func_info[$f1num][2], $func_info[$f2num][2]);
+    my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_grammar);
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
@@ -451,22 +509,35 @@ if ($f1nargs==0) {
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();
 my $done = 0;
+my $start_time = time();
+my $reset_time = time();
+my $total_ce_time = 0;
+my $total_as_time = 0;
+my $diff;
+my $diff1;
+`rm str_arg*`;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
     my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt,$ret_adapt);
+    $diff = time() - $start_time;
+    $diff1 = time() - $reset_time;
+    print "elapsed time = $diff, last CE search time = $diff1\n";
+    $total_ce_time += $diff1;
+    $reset_time = time();
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
 	for my $tr (@tests) {
-	    print " $tr->[0], $tr->[1]\n";
+	    print " $tr->[0], $tr->[1], $tr->[2] $tr->[3] $tr->[4] $tr->[5]\n";
 	}
 	my $verified="partial";
 	if ($f1_completed_count == $iteration_count) {
 	    $verified="complete";
 	}
 	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
+	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
 	$done = 1;
 	last;
     } else {
@@ -479,4 +550,9 @@ while (!$done) {
     ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
     print "Synthesized arg adaptor ".join(",",@$adapt).
 	" and return adaptor ".join(",",@$ret_adapt)."\n";
+    $diff = time() - $start_time;
+    $diff1 = time() - $reset_time;
+    print "elapsed time = $diff, last AS search time = $diff1\n";
+    $total_as_time += $diff1;
+    $reset_time = time();
 }

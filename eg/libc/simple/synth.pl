@@ -12,20 +12,6 @@ my $num_of_buckets = 8;
 
 die "Usage: synth.pl <bucket number ( 1 - $num_of_buckets ) <direction ( 1 or -1 )>" unless @ARGV == 2;
 
-my $bin = "./two-funcs";
-print "compiling binary: ";
-my $unused = `gcc -static two-funcs.c -g -o two-funcs -lpthread`;
-my $gcc_ec = $?;
-die "failed to compile $bin" unless $gcc_ec == 0;
-print "gcc_ec = $gcc_ec\n";
-
-my $conc_adaptor_bin = "./two-funcs-conc";
-print "compiling concrete adaptor search binary: ";
-my $unused = `gcc $conc_adaptor_bin.c -g -o $conc_adaptor_bin -lpthread`;
-my $gcc_ec = $?;
-die "failed to compile $conc_adaptor_bin" unless $gcc_ec == 0;
-print "gcc_ec = $gcc_ec\n";
-
 my($bucket_num, $direction) = @ARGV;
 
 my $total_fns = 1316;

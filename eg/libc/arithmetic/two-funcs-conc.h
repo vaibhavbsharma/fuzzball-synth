@@ -248,6 +248,22 @@ int _f2(int a, int b) {//, int c, int d) {//,int e){//, int f) {
   return s[0]=='\0';
   } */
 
+int my_isupper(int c) {
+  if((c >= 0) && (c <= 127)) {
+    if(isupper(c)) return 1;
+    else return 0;
+  } else return 0;
+  //return (unsigned)c-'A' < 26;
+}
+
+int my_islower(int c) {
+  if((c >= 0) && (c <= 127)) {
+    if(islower(c)) return 1;
+    else return 0;
+  } else return 0;
+  //return (unsigned)c-'a' < 26;
+}
+
 int _isalpha(int i) {
   if( ( i < 0 ) || ( i > 127 ) ) {
     return 0;
@@ -280,7 +296,11 @@ int _seteuid(uid_t uid) {
 }
 
 int _killpg(__pid_t pgrp, int sig) {
-  return killpg(abs(pgrp), sig);
+  return sig + killpg(pgrp, 0);
+}
+
+int _kill(__pid_t pgrp, int sig) {
+  return sig + kill(pgrp, 0); 
 }
 
 long int mystrtol_1(char *nptr, char **endptr, int base) 
@@ -1132,12 +1152,12 @@ struct func_info funcs[] = {
     /*  582 */ {"isalpha", (func*)&isalpha, 1, 0, 0},
     /*  583 */ {"iscntrl", (func*)&iscntrl, 1, 0, 0},
     /*  584 */ {"isdigit", (func*)&isdigit, 1, 0, 0},
-    /*  585 */ {"islower", (func*)&islower, 1, 0, 0},
+    /*  585 */ {"islower", (func*)&my_islower, 1, 0, 0},
     /*  586 */ {"isgraph", (func*)&isgraph, 1, 0, 0},
     /*  587 */ {"isprint", (func*)&isprint, 1, 0, 0},
     /*  588 */ {"ispunct", (func*)&ispunct, 1, 0, 0},
     /*  589 */ {"isspace", (func*)&isspace, 1, 0, 0},
-    /*  590 */ {"isupper", (func*)&isupper, 1, 0, 0},
+    /*  590 */ {"isupper", (func*)&my_isupper, 1, 0, 0},
     /*  591 */ {"isxdigit", (func*)&isxdigit, 1, 0, 0},
     /*  592 */ {"tolower", (func*)&tolower, 1, 0, 0},
     /*  593 */ {"toupper", (func*)&toupper, 1, 0, 0},
@@ -1178,10 +1198,10 @@ struct func_info funcs[] = {
     /*  628 */ {"longjmp", (func*)&longjmp, 2, 0, 1},
     /*  629 */ {"signal", (func*)&signal, 2, 0, 0},
     /*  630 */ {"raise", (func*)&raise, 1, 0, 0},
-    /*  631 */ {"killpg", (func*)&killpg, 2, 0, 0},
+    /*  631 */ {"killpg", (func*)&_killpg, 2, 0, 0},
     /*  632 */ {"sigaction", (func*)&sigaction, 3, 0, 0},
     /*  633 */ {"sigprocmask", (func*)&sigprocmask, 3, 0, 0},
-    /*  634 */ {"kill", (func*)&kill, 2, 0, 0},
+    /*  634 */ {"kill", (func*)&_kill, 2, 0, 0},
     /*  635 */ {"sigpending", (func*)&sigpending, 1, 0, 0},
     /*  636 */ {"sigsuspend", (func*)&sigsuspend, 1, 0, 0},
     /*  637 */ {"sigwait", (func*)&sigwait, 2, 0, 0},
