@@ -60,7 +60,7 @@ if (exists $ENV{STP_LOC}) {
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./test3_" . $arch_str;
+my $bin = "./test4_" . $arch_str;
 
 if ($arch_flag==0) {
     print "compiling adaptor search binary: ";
@@ -104,11 +104,11 @@ my $f2_call_addr;
 if ($arch_flag == 0) {
   $f2_call_addr = "0x" . substr(`objdump -dr $bin | grep 'call.*<wrap_f2>'`, 2, 6);
 } else {
-  $f2_call_addr = "0x" . substr(`objdump -dr $bin | grep 'bl.*<wrap_f2>'`, 4, 4);
+  $f2_call_addr = "0x" . substr(`objdump -dr $bin | grep 'bl.*<f2>'`, 4, 4);
 }
 
-my $post_f1_call = sprintf("0x%x",hex($f1_call_addr)+0x5);
-my $post_f2_call = sprintf("0x%x",hex($f2_call_addr)+0x5);
+my $post_f1_call = sprintf("0x%x",hex($f1_call_addr)+0x4);
+my $post_f2_call = sprintf("0x%x",hex($f2_call_addr)+0x4);
 
 my @arg_addr;
 for my $i (0 .. 5) {
@@ -143,24 +143,24 @@ my($fields_addr);
 # Field [2]: printf format for the string form
 
 my @fields =
-  (["a_type",  "reg8_t", "%01x"],
-   ["a_val",      "reg64_t", "%016x"],
-   ["b_type",  "reg8_t", "%01x"],
-   ["b_val",      "reg64_t", "%016x"],
-   ["c_type",  "reg8_t", "%01x"],
-   ["c_val",      "reg64_t", "%016x"],
-   ["d_type",  "reg8_t", "%01x"],
-   ["d_val",      "reg64_t", "%016x"],
-   ["e_type",  "reg8_t", "%01x"],
-   ["e_val",      "reg64_t", "%016x"],
-   ["f_type",  "reg8_t", "%01x"],
-   ["f_val",      "reg64_t", "%016x"],
+  (["a_is_const",  "reg1_t", "%01x"],
+   ["a_val",      "reg32_t", "%016x"],
+   ["b_is_const",  "reg1_t", "%01x"],
+   ["b_val",      "reg32_t", "%016x"],
+   ["c_is_const",  "reg1_t", "%01x"],
+   ["c_val",      "reg32_t", "%016x"],
+   ["d_is_const",  "reg1_t", "%01x"],
+   ["d_val",      "reg32_t", "%016x"],
+   ["e_is_const",  "reg1_t", "%01x"],
+   ["e_val",      "reg32_t", "%016x"],
+   ["f_is_const",  "reg1_t", "%01x"],
+   ["f_val",      "reg32_t", "%016x"],
 );
 
 my @ret_fields = 
 (
    ["ret_type",  "reg8_t", "%01x"],
-   ["ret_val",   "reg64_t", "%016x"],
+   ["ret_val",   "reg32_t", "%016x"],
 );
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
@@ -169,13 +169,16 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
+my @solver_opts = ("-solver", "smtlib-batch", 
+		   # "-save-solver-files", 
+		   "-solver-path", $stp, 
+		   "-solver-timeout",5,"-timeout-as-unsat");
 
 my @synth_opt = ("-synthesize-adaptor",
-		 join(":", "typeconv", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
+		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
 
 my @synth_ret_opt = ("-synthesize-return-adaptor",
-		 join(":", "return-typeconv", $f2_addr, $post_f2_call, $f2nargs));
+		 join(":", "return-typeconv", $f2_call_addr, $post_f2_call, $f2nargs));
 
 print "synth_ret_opt = @synth_ret_opt\n";
 
@@ -186,12 +189,12 @@ if($const_lb != $const_ub) {
 	my $s1='';
 	my $s2='';
 	if($f1nargs != 0) {
-	    $s1 = sprintf("%s_type:reg8_t==0:reg8_t | %s_val:reg64_t>=\$0x%Lx:reg64_t",$n,$n,$const_lb);
-	    $s2 = sprintf("%s_type:reg8_t==0:reg8_t | %s_val:reg64_t<=\$0x%Lx:reg64_t",$n,$n,$const_ub);
+	    $s1 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg32_t>=\$0x%Lx:reg32_t",$n,$n,$const_lb);
+	    $s2 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg32_t<=\$0x%Lx:reg32_t",$n,$n,$const_ub);
 	}
 	else {
-	    $s1 = sprintf("%s_val:reg64_t>=\$0x%016x:reg64_t",$n,$const_lb);
-	    $s2 = sprintf("%s_val:reg64_t<=\$0x%016x:reg64_t",$n,$const_ub);
+	    $s1 = sprintf("%s_val:reg32_t>=\$0x%016x:reg32_t",$n,$const_lb);
+	    $s2 = sprintf("%s_val:reg32_t<=\$0x%016x:reg32_t",$n,$const_ub);
 	}
 	push @const_bounds_ec, ("-extra-condition", $s1);
 	push @const_bounds_ec, ("-extra-condition", $s2);
@@ -230,6 +233,8 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
+		# "-extra-condition","a:reg64_t<=0xf:reg64_t",
+		"-dont-compare-memory-sideeffects",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
 		"-trace-syscalls",
@@ -255,7 +260,7 @@ sub check_adaptor {
 		# "-trace-offset-limit",
 		"-trace-conditions",
 		"-trace-decisions",
-		"-tracepoint","0x27dac:R2:reg32_t",
+		# "-tracepoint","0x27dac:R2:reg32_t",
 		#"-trace-solver",
 		#"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
@@ -397,6 +402,8 @@ sub try_synth {
     }
     close TESTS;
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch_str, $bin,
+		"-load-base", "0x8000",
+		"-dont-compare-memory-sideeffects",
 		@solver_opts, 
 		"-fuzz-start-addr", $fuzz_start_addr,
 		"-trace-temps",
@@ -425,10 +432,10 @@ sub try_synth {
 		"-trace-tables",
 		#"-trace-offset-limit",
 		"-trace-basic",
-		#"-trace-eip",
-		#"-trace-registers",
+		# "-trace-eip",
+		# "-trace-registers",
 		#"-trace-stmts",
-		#"-trace-insns",
+		# "-trace-insns",
 		#"-trace-loads",
 		#"-trace-stores",
 		#"-trace-solver",
@@ -509,7 +516,7 @@ if ($default_adaptor_pref == 1) {
 # If outer function takes no arguments, then the inner function can only use constants
 if ($f1nargs==0) {
     for my $i (0 .. $#$adapt) {
-	if ($i%2 == 0) { # X_type field
+	if ($i%2 == 0) { # X_is_const field
 	    $adapt->[$i] = 1;
 	    $adapt->[$i+1] = 1;
 	}
@@ -518,9 +525,9 @@ if ($f1nargs==0) {
 
 # Set these to test a specific adaptor
 $adapt->[0]=1;
-#  $adapt->[1]=0;
-#  $adapt->[2]=1;
-#  $adapt->[3]=0;
+$adapt->[1]=1;
+# $adapt->[2]=1;
+# $adapt->[3]=15;
 #  $adapt->[4]=1;
 #  $adapt->[5]=10;
 

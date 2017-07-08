@@ -12,6 +12,14 @@ unsigned short f1(unsigned short v) {
   return c;
 }
 
+// unsigned short f2(unsigned short v) {
+//   unsigned short c;
+//   for (c = 0; v; v >>= 1) {
+//     c += v & 1;
+//   }
+//   return c;
+// }
+
 unsigned short f2(unsigned short x, unsigned short f) {
   x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
   x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
@@ -20,9 +28,9 @@ unsigned short f2(unsigned short x, unsigned short f) {
   return x;
 }
 
-long wrap_f2(long a0, long a1) {
-  return f2(a0, a1);
-}
+// long wrap_f2(long a0, long a1) {
+//   return f2(a0, a1);
+// }
 
 int compare(long *r1p, long *r2p,
 	    long a0, long a1, long a2, long a3, long a4, long a5) {
@@ -38,7 +46,7 @@ int compare(long *r1p, long *r2p,
   printf("Starting adapted_f1\n");
   fflush(stdout);
   
-  long r2 = wrap_f2(a0, a1);
+  long r2 = f2(a0, a1);
   
   printf("Completed adapted_f1\n");
   fflush(stdout);
