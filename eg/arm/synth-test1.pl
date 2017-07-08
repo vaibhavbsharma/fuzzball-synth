@@ -60,7 +60,7 @@ if (exists $ENV{STP_LOC}) {
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./test1" . $arch_str;
+my $bin = "./test3_" . $arch_str;
 
 if ($arch_flag==0) {
     print "compiling adaptor search binary: ";
@@ -85,19 +85,27 @@ close F;
 # matching the output of "nm" and "objdump". Not the most robust
 # possible approach.
 
-my $fuzz_start_addr = "0x" . substr(`nm $bin | fgrep " T fuzz_start"`, 0, 16);
+my $fuzz_start_addr = "0x" . substr(`nm $bin | fgrep " T fuzz_start"`, 0, 8);
 
-my $f1_addr = "0x" . substr(`nm $bin | fgrep " T f1"`, 0, 16);
+my $f1_addr = "0x" . substr(`nm $bin | fgrep " T f1"`, 0, 8);
 
-my $f1_call_addr =
-  "0x" . substr(`objdump -dr $bin | grep 'call.*<f1>'`, 2, 6);
+my $f1_call_addr;
+if ($arch_flag == 0 ) {
+  $f1_call_addr = "0x" . substr(`objdump -dr $bin | grep 'call.*<f1>'`, 2, 6);
+} else {
+  $f1_call_addr = "0x" . substr(`objdump -dr $bin | grep 'bl.*<f1>'`, 4, 4);
+}
 
-my $f2_addr = "0x" . substr(`nm $bin | fgrep " T f2"`, 0, 16);
+my $f2_addr = "0x" . substr(`nm $bin | fgrep " T f2"`, 0, 8);
 
-my $wrap_f2_addr = "0x" . substr(`nm $bin | fgrep " T wrap_f2"`, 0, 16);
+my $wrap_f2_addr = "0x" . substr(`nm $bin | fgrep " T wrap_f2"`, 0, 8);
 
-my $f2_call_addr =
-  "0x" . substr(`objdump -dr $bin | grep 'call.*<wrap_f2>'`, 2, 6);
+my $f2_call_addr;
+if ($arch_flag == 0) {
+  $f2_call_addr = "0x" . substr(`objdump -dr $bin | grep 'call.*<wrap_f2>'`, 2, 6);
+} else {
+  $f2_call_addr = "0x" . substr(`objdump -dr $bin | grep 'bl.*<wrap_f2>'`, 4, 4);
+}
 
 my $post_f1_call = sprintf("0x%x",hex($f1_call_addr)+0x5);
 my $post_f2_call = sprintf("0x%x",hex($f2_call_addr)+0x5);
@@ -105,11 +113,15 @@ my $post_f2_call = sprintf("0x%x",hex($f2_call_addr)+0x5);
 my @arg_addr;
 for my $i (0 .. 5) {
     $arg_addr[$i] =
-      "0x" . substr(`nm $bin | fgrep " B global_arg$i"`, 0, 16);
+      "0x" . substr(`nm $bin | fgrep " B global_arg$i"`, 0, 8);
 }
 
-my $match_jne_addr =
-  "0x" . substr(`objdump -dr $bin | grep 'jne.*compare+'`, 2, 6);
+my $match_jne_addr;
+if ($arch_flag == 0) {
+  $match_jne_addr = "0x" . substr(`objdump -dr $bin | grep 'jne.*compare+'`, 2, 6);
+} else { 
+  $match_jne_addr = "0x" . substr(`objdump -dr $bin | grep 'bne.*compare+'`, 4, 4);
+}
 
 print "$fuzzball\n";
 print "$stp\n";
@@ -209,6 +221,7 @@ sub check_adaptor {
 	push @conc_ret_adapt, ("-extra-condition", $s);
     }
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch_str,
+		"-load-base", "0x8000",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
 		"-symbolic-long", "$arg_addr[0]=a",
@@ -230,16 +243,19 @@ sub check_adaptor {
 		#"-trace-decision-tree",
 		"-trace-binary-paths-bracketed",
 #"-narrow-bitwidth-cutoff","1",
-		#"-trace-offset-limit",
 		"-trace-basic",
-		#"-trace-eip",
-		#"-trace-registers",
+		# "-trace-eip",
+		# "-trace-registers",
 		#"-trace-stmts",
-		#"-trace-insns",
-		#"-trace-loads",
-		#"-trace-stores",
+		# "-trace-ir",
+		# "-trace-insns",
+		# "-trace-loads",
+		# "-trace-eval",
+		# "-trace-stores",
+		# "-trace-offset-limit",
 		"-trace-conditions",
 		"-trace-decisions",
+		"-tracepoint","0x27dac:R2:reg32_t",
 		#"-trace-solver",
 		#"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
