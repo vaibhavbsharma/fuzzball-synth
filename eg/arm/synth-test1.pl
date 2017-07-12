@@ -60,7 +60,7 @@ if (exists $ENV{STP_LOC}) {
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./test4_" . $arch_str;
+my $bin = "./test6_" . $arch_str;
 
 if ($arch_flag==0) {
     print "compiling adaptor search binary: ";
@@ -85,18 +85,18 @@ close F;
 # matching the output of "nm" and "objdump". Not the most robust
 # possible approach.
 
-my $fuzz_start_addr = "0x" . substr(`nm $bin | fgrep " T fuzz_start"`, 0, 8);
+my $fuzz_start_addr = "0x" . substr(`nm $bin | fgrep "T fuzz_start"`, 0, 8);
 
-my $f1_addr = "0x" . substr(`nm $bin | fgrep " T f1"`, 0, 8);
+my $f1_addr = "0x" . substr(`nm $bin | egrep -e 'T f1'`, 0, 8);
 
 my $f1_call_addr;
 if ($arch_flag == 0 ) {
   $f1_call_addr = "0x" . substr(`objdump -dr $bin | grep 'call.*<f1>'`, 2, 6);
 } else {
-  $f1_call_addr = "0x" . substr(`objdump -dr $bin | grep 'bl.*<f1>'`, 4, 4);
+  $f1_call_addr = "0x" . substr(`objdump -dr $bin | egrep -e 'bl.*<f1>'`, 4, 4);
 }
 
-my $f2_addr = "0x" . substr(`nm $bin | fgrep " T f2"`, 0, 8);
+my $f2_addr = "0x" . substr(`nm $bin | egrep -e 'T f2'`, 0, 8);
 
 my $wrap_f2_addr = "0x" . substr(`nm $bin | fgrep " T wrap_f2"`, 0, 8);
 
@@ -104,7 +104,7 @@ my $f2_call_addr;
 if ($arch_flag == 0) {
   $f2_call_addr = "0x" . substr(`objdump -dr $bin | grep 'call.*<wrap_f2>'`, 2, 6);
 } else {
-  $f2_call_addr = "0x" . substr(`objdump -dr $bin | grep 'bl.*<f2>'`, 4, 4);
+  $f2_call_addr = "0x" . substr(`objdump -dr $bin | egrep -e 'bl.*<f2>'`, 4, 4);
 }
 
 my $post_f1_call = sprintf("0x%x",hex($f1_call_addr)+0x4);
@@ -233,7 +233,7 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		# "-extra-condition","a:reg64_t<=0xf:reg64_t",
+		"-extra-condition","a:reg64_t<0x80000000:reg64_t",
 		"-dont-compare-memory-sideeffects",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
@@ -524,12 +524,12 @@ if ($f1nargs==0) {
 }
 
 # Set these to test a specific adaptor
-$adapt->[0]=1;
-$adapt->[1]=1;
+# $adapt->[0]=0;
+# $adapt->[1]=0;
 # $adapt->[2]=1;
-# $adapt->[3]=15;
-#  $adapt->[4]=1;
-#  $adapt->[5]=10;
+# $adapt->[3]=0;
+# $adapt->[4]=1;
+# $adapt->[5]=255;
 
 print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();
