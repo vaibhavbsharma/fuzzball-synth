@@ -233,7 +233,7 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		"-extra-condition","a:reg64_t<0x80000000:reg64_t",
+		# "-extra-condition","a:reg64_t<0x80000000:reg64_t",
 		"-dont-compare-memory-sideeffects",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
