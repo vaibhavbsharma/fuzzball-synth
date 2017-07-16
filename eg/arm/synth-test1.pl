@@ -60,7 +60,7 @@ if (exists $ENV{STP_LOC}) {
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./test6_" . $arch_str;
+my $bin = "./test_" . $arch_str;
 
 if ($arch_flag==0) {
     print "compiling adaptor search binary: ";
@@ -169,7 +169,7 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", 
+my @solver_opts = ("-solver", "smtlib", 
 		   # "-save-solver-files", 
 		   "-solver-path", $stp, 
 		   "-solver-timeout",5,"-timeout-as-unsat");
@@ -524,8 +524,8 @@ if ($f1nargs==0) {
 }
 
 # Set these to test a specific adaptor
-# $adapt->[0]=0;
-# $adapt->[1]=0;
+$adapt->[8]=1;
+$adapt->[9]=0;
 # $adapt->[2]=1;
 # $adapt->[3]=0;
 # $adapt->[4]=1;

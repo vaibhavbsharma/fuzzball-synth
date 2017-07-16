@@ -7,15 +7,15 @@
 
 //#include "popCount.h"
 
-extern "C" int f1(int x) {
+extern "C" int f2(int x) {
   char code[] = {
-      0x00, 0x40, 0xa0, 0xe1 // mov r0, r4
-    , 0xff, 0x00 ,0x54 ,0xe3
-    , 0x02, 0x00 ,0x00 ,0x9a
-    , 0x00, 0x00 ,0x54 ,0xe3
-    , 0xff, 0x40 ,0xa0 ,0xa3
-    , 0x00, 0x40 ,0xa0 ,0xb3
-    , 0x04, 0x00, 0xa0, 0xe1 // mov r4, r0
+    //0x00, 0x40, 0xa0, 0xe1   // mov r4, r0
+    0xff, 0x00 ,0x54 ,0xe3 // cmp     r4, #255        ; 0xff
+    , 0x02, 0x00 ,0x00 ,0x9a // bls     0x3d650
+    , 0x00, 0x00 ,0x54 ,0xe3 // cmp     r4, #0
+    , 0xff, 0x40 ,0xa0 ,0xa3 // movge   r4, #255        ; 0xff
+    , 0x00, 0x40 ,0xa0 ,0xb3 // movlt   r4, #0
+    , 0x04, 0x00, 0xa0, 0xe1 // mov r0, r4
     , 0x1e, 0xff, 0x2f, 0xe1 // bx lr
   };	
   return ((int (*) (int ))code)(x);
@@ -35,13 +35,10 @@ short clamp16(short x, short lo, short hi) {
 }
 
 // inspired from boost
-extern "C" int f2(int val, int lo, int hi) {
-  return clamp32(val, lo, hi);
+extern "C" int f1(int val){ //, int lo, int hi) {
+  //return clamp32(val, lo, hi);
+  return clamp32(val, 0, 255);
   // return (val < lo) ? lo : ( hi < val) ? hi : val;
-}
-
-void myvoidret() {
-  asm("mov r4, r0\n\t mov r0, r4");
 }
 
 // long wrap_f2(long a0, long a1) {
@@ -62,7 +59,7 @@ extern "C" int compare(long *r1p, long *r2p,
   printf("Starting adapted_f1\n");
   fflush(stdout);
   
-  long r2 = f2(a0, a1, a2);
+  long r2 = f2(a0); //, a1, a2);
   
   printf("Completed adapted_f1\n");
   fflush(stdout);
