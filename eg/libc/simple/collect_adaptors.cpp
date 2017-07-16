@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <cassert>
 using namespace std;
 
 string pretty_adaptor(string s) {
@@ -27,6 +28,26 @@ string pretty_adaptor(string s) {
   else if (s.length()-prev_pos==20) ret<<"-1";
   else ret<<s.substr(prev_pos,string::npos);
   return ret.str();
+}
+
+string getFileName(int n) {
+  char str[20];
+  switch(n) {
+  case 1: case 2: case 3: case 4: 
+  case 5: case 6: case 7: case 8:
+    sprintf(str, "../simple-%d/logs/4.log", n);
+    return str;
+    break;
+  case 9: case 10: case 11: case 12:
+  case 13: case 14: case 15: case 16:
+    sprintf(str, "../simple+%d/logs/4.log", n-8);
+    return str;
+    break;
+  default: 
+    cout<<"dont know how to generate log file for n = "<<n<<endl;
+    assert(false); 
+  }
+  return "NULL";
 }
 
 int main(int argc, char * argv[]) {
@@ -201,16 +222,16 @@ int main(int argc, char * argv[]) {
   //blacklisted_fns.push_back(" = setusershell");
 
  
-  for(int i=0;i<8;i++) {
-    string filename("../simple-");
-    filename=filename+(char)('1'+i);
-    filename=filename+"/";
-    filename=filename+(char)('1'+i);
-    if(argc>1) {
-      if(argv[1][1]=='0') filename=filename+"-zero";
-      else if(argv[1][1]=='1') filename=filename+"-identity";
-    } 
-    filename=filename+".txt";
+  for(int i=1;i<=16;i++) {
+    string filename = getFileName(i);// ("../simple-");
+    // filename=filename+(char)('1'+i);
+    // filename=filename+"/logs/4.log";
+    // //filename=filename+(char)('1'+i);
+    // if(argc>1) {
+    //   if(argv[1][1]=='0') filename=filename+"-zero";
+    //   else if(argv[1][1]=='1') filename=filename+"-identity";
+    // } 
+    // //filename=filename+".txt";
     cout<<filename<<endl;
     ifstream fin(filename.c_str());
     string line;

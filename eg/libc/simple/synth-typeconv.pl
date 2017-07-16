@@ -17,40 +17,12 @@ my $sane_addr = 0x42420000;
 
 my @fuzzball_extra_args_arr;
 
-# Paths to binaries: these probably differ on your system. You can add
-# your locations to the list, or set the environment variable.
-my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
-my $smcc_home = "/home/smcc/bitblaze/fuzzball/trunk-gh";
-my $git_fuzzball = "../../../../../tools/fuzzball";
-my $fuzzball;
-if (exists $ENV{FUZZBALL_LOC}) {
-    $fuzzball = $ENV{FUZZBALL_LOC};
-} elsif (-x "$git_fuzzball/exec_utils/fuzzball") {
-    $fuzzball = "$git_fuzzball/exec_utils/fuzzball";
-} elsif (-x "$smcc_umn/exec_utils/fuzzball") {
-    $fuzzball = "$smcc_umn/exec_utils/fuzzball";
-} elsif (-x "$smcc_home/exec_utils/fuzzball") {
-    $fuzzball = "$smcc_home/exec_utils/fuzzball";
-} else {
-    $fuzzball = "fuzzball";
-}
-
-my $stp;
-if (exists $ENV{STP_LOC}) {
-    $stp = $ENV{STP_LOC};
-} elsif (-x "$git_fuzzball/stp/stp") {
-    $stp = "$git_fuzzball/stp/stp";
-} elsif (-x "$smcc_umn/stp/stp") {
-    $stp = "$smcc_umn/stp/stp";
-} elsif (-x "$smcc_home/stp/stp") {
-    $stp = "$smcc_home/stp/stp";
-} else {
-    $stp = "stp";
-}
-
+my $fuzzball="fuzzball";
+my $stp="stp";
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
+my $adaptor_score = 0;
 
 my $bin = "./two-funcs";
 
@@ -147,7 +119,9 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
+my @solver_opts = ("-solver", "smtlib-batch", 
+		   # "-save-solver-files",
+		   "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "typeconv", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
@@ -440,6 +414,8 @@ sub try_synth {
 	    }
 	    print "  $_";
 	    last;
+	} elsif (/^adaptor_score = (.*)$/ and $success) {
+	    $adaptor_score = $1;
 	}
 	print "  $_" unless /^Input vars:/;
     }
@@ -527,7 +503,7 @@ while (!$done) {
 	if ($f1_completed_count == $iteration_count) {
 	    $verified="complete";
 	}
-	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
+	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified, adaptor_score = $adaptor_score\n";
 	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
 	$done = 1;
 	last;
