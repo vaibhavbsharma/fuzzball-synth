@@ -22,7 +22,7 @@ elif [ "$1" == "-typeconv" ] ; then
     num_dirs=8;
 fi
 
-bkp_dir="";
+bkp_dir="logs";
 if [ $# -eq 3 ]; then
     if [ "$2" == "-bkp" ]; then
 	bkp_dir="/bkp-$3/";
@@ -30,13 +30,26 @@ if [ $# -eq 3 ]; then
 fi
 
 for ((i=1; i<=num_dirs; i++)); do 
-    inequivalent=`grep 'not equivalent' $prefix_dir-$i/$bkp_dir${i}.txt | wc -l`; 
-    adaptors=`grep 'Final adaptor' $prefix_dir-$i/$bkp_dir${i}.txt | wc -l`; 
-    missing=`grep 'Missing results' $prefix_dir-$i/$bkp_dir${i}.txt | wc -l`; 
-    killed=`grep 'killed by alarm' $prefix_dir-$i/$bkp_dir${i}.txt | wc -l`;
-    strange_term=`grep 'Strange term' $prefix_dir-$i/$bkp_dir${i}.txt | wc -l`;
+    inequivalent_minus=`grep 'not equivalent' $prefix_dir-$i/${bkp_dir}/3.log | wc -l`; 
+    inequivalent_plus=`grep 'not equivalent' $prefix_dir+$i/$bkp_dir/3.log | wc -l`; 
+    adaptors_minus=`grep 'Final adaptor' $prefix_dir-$i/$bkp_dir/3.log | wc -l`; 
+    adaptors_plus=`grep 'Final adaptor' $prefix_dir+$i/$bkp_dir/3.log | wc -l`; 
+    missing_minus=`grep 'Missing results' $prefix_dir-$i/$bkp_dir/3.log | wc -l`; 
+    missing_plus=`grep 'Missing results' $prefix_dir+$i/$bkp_dir/3.log | wc -l`; 
+    killed_minus=`grep 'killed by alarm' $prefix_dir-$i/$bkp_dir/3.log | wc -l`;
+    killed_plus=`grep 'killed by alarm' $prefix_dir+$i/$bkp_dir/3.log | wc -l`;
+    strange_term_minus=`grep 'Strange term' $prefix_dir-$i/$bkp_dir/3.log | wc -l`;
+    strange_term_plus=`grep 'Strange term' $prefix_dir-$i/$bkp_dir/3.log | wc -l`;
+    r_total_minus=`grep 'Startin synth' $prefix_dir-$i/$bkp_dir/3.log | wc -l`;
+    r_total_plus=`grep 'Startin synth' $prefix_dir+$i/$bkp_dir/3.log | wc -l`;
+    inequivalent=$((inequivalent_minus+inequivalent_plus));
+    adaptors=$((adaptors_minus+adaptors_plus));
+    missing=$((missing_minus+missing_plus));
+    killed=$((killed_minus+killed_plus));
+    strange_term=$((strange_minus+strange_plus));
     total=$((inequivalent+adaptors+killed+missing));
-    echo -e $i '\t' $inequivalent '(' $strange_term ')\t' $adaptors '\t' $killed '\t' $missing '\t\t' $total; 
+    r_total=$((r_total_minus+r_total_plus));
+    echo -e $i '\t' $inequivalent '(' $strange_term ')\t' $adaptors '\t' $killed '\t' $missing '\t\t' $total '(' $r_total ')'; 
     g_inequivalent=$((g_inequivalent+inequivalent));
     g_adaptors=$((g_adaptors+adaptors));
     g_missing=$((g_missing+missing));

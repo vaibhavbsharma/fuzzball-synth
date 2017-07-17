@@ -29,7 +29,7 @@ for (my $_fnum = 0; $_fnum <= $#f1nums; $_fnum++) {
 	my $f2num=$f2nums[$_fnum];
 	print "Startin synthesis for $f1num and $f2num\n";
 	
-	my @cmd = ("perl synth-conc-argsub.pl",
+	my @cmd = ("perl synth-typeconv.pl",
 		   sprintf("%d %d %d %d %d %d",
 			   $f1num,$f2num,$rand_seed,
 			   $default_adaptor,
