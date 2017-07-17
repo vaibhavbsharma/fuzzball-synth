@@ -214,6 +214,7 @@ sub check_adaptor {
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		"-region-limit", $region_limit,
+		"-nonzero-divisors",
 		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
