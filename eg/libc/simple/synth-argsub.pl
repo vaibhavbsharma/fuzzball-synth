@@ -29,11 +29,11 @@ my $iteration_count = 0;
 
 my $bin = "./two-funcs";
 
-print "compiling binary: ";
-my $unused = `gcc -static two-funcs.c -g -o two-funcs -lpthread`;
-my $gcc_ec = $?;
-die "failed to compile $bin" unless $gcc_ec == 0;
-print "gcc_ec = $gcc_ec\n";
+# print "compiling binary: ";
+# my $unused = `gcc -static two-funcs.c -g -o two-funcs -lpthread`;
+# my $gcc_ec = $?;
+# die "failed to compile $bin" unless $gcc_ec == 0;
+# print "gcc_ec = $gcc_ec\n";
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -205,7 +205,7 @@ sub check_adaptor {
 		"-trace-sym-addrs",
 		"-trace-syscalls",
 		"-omit-pf-af",
-		"-trace-temps",
+		# "-trace-temps",
 		"-trace-regions",
 		"-trace-memory-snapshots",
 		"-trace-tables",
@@ -377,7 +377,7 @@ sub try_synth {
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 	    @solver_opts, 
 	    "-fuzz-start-addr", $fuzz_start_addr,
-	    "-trace-temps",
+	    # "-trace-temps",
 	    #tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 	    #counter example search mode otherwise
 	    "-adaptor-search-mode",

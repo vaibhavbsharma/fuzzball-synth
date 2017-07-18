@@ -46,12 +46,12 @@ for (my $f1num = $start_lim; $f1num < $end_lim; $f1num++) {
 	if ($f2num > $total_fns-1) {
 	    $f2num = $f2num - $total_fns;
 	    # next;
-	} else if ($f2num < 0) {
+	} elsif ($f2num < 0) {
 	    $f2num = $total_fns + $f2num;
 	}
 	print "Startin synthesis for $f1num and $f2num\n";
 	
-	my @cmd = ("perl synth-typeconv-one.pl",
+	my @cmd = ("perl synth-argsub.pl",
 		   sprintf("%d %d %d %d %d %d",
 			   $f1num,$f2num,$rand_seed,
 			   $default_adaptor,
