@@ -268,7 +268,7 @@ int main(int argc, char * argv[]) {
 	  ss3>>tmpstr>>tmpstr>>tmpstr>>adaptor>>tmpstr>>ret_adaptor>>tmpstr>>tmpstr>>tmpstr>>tmpstr>>adaptor_score;
 	  adaptor=pretty_adaptor(adaptor);
 	  ret_adaptor=pretty_adaptor(ret_adaptor);
-	  cout<<f1<<" "<<f2<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<" "<<adaptor_score.substr(0,adaptor_score.find('('))<<endl;
+	  cout<<f1<<" "<<f2<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<" "<<adaptor_score<<endl;
 	}
 	//else cout<<"Skipping adaptor because one of the functions was pthread_* or blacklisted"<<endl;
 	if(ignore_flag==1) ignored_adaptor_count++;

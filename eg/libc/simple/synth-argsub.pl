@@ -13,7 +13,7 @@ my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 my $adaptor_score = 0;
 
-my $region_limit = 2;
+my $region_limit = 936;
 
 my $sane_addr = 0x42420000;
 
@@ -406,7 +406,7 @@ sub try_synth {
 	    #"-trace-eip",
 	    #"-trace-registers",
 	    #"-trace-stmts",
-	    #"-trace-insns",
+	    # "-trace-insns",
 	    #"-trace-loads",
 	    #"-trace-stores",
 	    #"-trace-solver",
