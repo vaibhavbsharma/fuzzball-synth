@@ -216,7 +216,7 @@ sub check_adaptor {
                 #"-narrow-bitwidth-cutoff","1",
 		#"-trace-offset-limit",
 		"-trace-basic",
-		#"-trace-eip",
+		# "-trace-eip",
 		#"-trace-registers",
 		#"-trace-stmts",
 		#"-trace-insns",
@@ -270,6 +270,11 @@ sub check_adaptor {
 	    @region_contents = ();
 	    for my $i (1 .. $region_limit+1) { push @tmp_reg_arr, 0; }
 	    for my $i (1 .. ($f1nargs+1)) { push @region_contents, [@tmp_reg_arr]; }
+	    for my $i (0 .. $#region_contents) {
+		for my $j (0 .. $#{$region_contents[$i]}) {
+		    $region_contents[$i][$j]=0;
+		}
+	    }
 	    $iteration_count++;
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
@@ -302,14 +307,23 @@ sub check_adaptor {
 		    # $2 -> offset within region
 		    # $3 -> value to be set
 		    my $this_reg_byte = hex $2;
+		    my $region_offset = $this_reg_byte + 1;
+		    my $region_number = $1;
+		    if($1 > $f1nargs) { $region_number = $1 - $f1nargs; }
 		    if($regnum_to_saneaddr[$1] != 0) {
-			$region_contents[$1][$this_reg_byte+1]=$3;
+			$region_contents[$region_number][$region_offset]=$3;
+			# printf("region_contents[$region_number][$region_offset] = %s (%s), with saneaddr = 0x%x\n", 
+			#        $region_contents[$region_number][$region_offset], $3,
+			#        $regnum_to_saneaddr[$1]);
+		    }
+		    else { #printf("cannot find regnum_to_saneaddr for $1\n"); 
 		    }
 		}
 	    }
 	    for my $i (1 .. $#region_contents) {
 		my $str_arg_contents="";
 		for my $j (1 .. $#{$region_contents[$i]}) {
+		    # printf("region_contents[$i][$j] = %s\n", $region_contents[$i][$j]);
 		    my $byte="0x00";
 		    if($region_contents[$i][0] == 1) {
 			push @fuzzball_extra_args, "-store-byte";
@@ -403,7 +417,7 @@ sub try_synth {
 	    "-trace-tables",
 	    #"-trace-offset-limit",
 	    "-trace-basic",
-	    #"-trace-eip",
+	    # "-trace-eip",
 	    #"-trace-registers",
 	    #"-trace-stmts",
 	    # "-trace-insns",
