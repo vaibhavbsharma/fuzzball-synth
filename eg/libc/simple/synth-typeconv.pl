@@ -560,7 +560,8 @@ while (!$done) {
 	if ($f1_completed_count == $iteration_count) {
 	    $verified="complete";
 	}
-	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified, adaptor_score = $adaptor_score\n";
+	my $scaled_adaptor_score = ($adaptor_score * $f1_completed_count) / $iteration_count;
+	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified, adaptor_score = $scaled_adaptor_score ($adaptor_score)\n";
 	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
 	$done = 1;
 	last;
