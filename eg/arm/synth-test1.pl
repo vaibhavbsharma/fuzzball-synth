@@ -60,7 +60,7 @@ if (exists $ENV{STP_LOC}) {
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./test_" . $arch_str;
+my $bin = "./test7_" . $arch_str;
 
 if ($arch_flag==0) {
     print "compiling adaptor search binary: ";
@@ -524,8 +524,8 @@ if ($f1nargs==0) {
 }
 
 # Set these to test a specific adaptor
-$adapt->[8]=1;
-$adapt->[9]=0;
+$adapt->[0]=1;
+$adapt->[1]=0;
 # $adapt->[2]=1;
 # $adapt->[3]=0;
 # $adapt->[4]=1;

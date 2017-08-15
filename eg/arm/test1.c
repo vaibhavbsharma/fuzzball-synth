@@ -7,10 +7,10 @@
 
 //#include "popCount.h"
 
-extern "C" int f2(int x) {
+extern "C" int f1(int x) {
   char code[] = {
-    //0x00, 0x40, 0xa0, 0xe1   // mov r4, r0
-    0xff, 0x00 ,0x54 ,0xe3 // cmp     r4, #255        ; 0xff
+    0x00, 0x40, 0xa0, 0xe1   // mov r4, r0
+    , 0xff, 0x00 ,0x54 ,0xe3 // cmp     r4, #255        ; 0xff
     , 0x02, 0x00 ,0x00 ,0x9a // bls     0x3d650
     , 0x00, 0x00 ,0x54 ,0xe3 // cmp     r4, #0
     , 0xff, 0x40 ,0xa0 ,0xa3 // movge   r4, #255        ; 0xff
@@ -35,9 +35,9 @@ short clamp16(short x, short lo, short hi) {
 }
 
 // inspired from boost
-extern "C" int f1(int val){ //, int lo, int hi) {
-  //return clamp32(val, lo, hi);
-  return clamp32(val, 0, 255);
+extern "C" int f2(int val, int lo, int hi) {
+  return clamp32(val, lo, hi);
+  // return clamp32(val, 0, 255);
   // return (val < lo) ? lo : ( hi < val) ? hi : val;
 }
 
@@ -59,7 +59,7 @@ extern "C" int compare(long *r1p, long *r2p,
   printf("Starting adapted_f1\n");
   fflush(stdout);
   
-  long r2 = f2(a0); //, a1, a2);
+  long r2 = f2(a0, a1, a2);
   
   printf("Completed adapted_f1\n");
   fflush(stdout);
