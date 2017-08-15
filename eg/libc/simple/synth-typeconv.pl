@@ -16,41 +16,13 @@ my $region_limit = 936;
 my $sane_addr = 0x42420000;
 
 my @fuzzball_extra_args_arr;
-
-# Paths to binaries: these probably differ on your system. You can add
-# your locations to the list, or set the environment variable.
-my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
-my $smcc_home = "/home/smcc/bitblaze/fuzzball/trunk-gh";
-my $git_fuzzball = "../../../../../tools/fuzzball";
-my $fuzzball;
-if (exists $ENV{FUZZBALL_LOC}) {
-    $fuzzball = $ENV{FUZZBALL_LOC};
-} elsif (-x "$git_fuzzball/exec_utils/fuzzball") {
-    $fuzzball = "$git_fuzzball/exec_utils/fuzzball";
-} elsif (-x "$smcc_umn/exec_utils/fuzzball") {
-    $fuzzball = "$smcc_umn/exec_utils/fuzzball";
-} elsif (-x "$smcc_home/exec_utils/fuzzball") {
-    $fuzzball = "$smcc_home/exec_utils/fuzzball";
-} else {
-    $fuzzball = "fuzzball";
-}
-
-my $stp;
-if (exists $ENV{STP_LOC}) {
-    $stp = $ENV{STP_LOC};
-} elsif (-x "$git_fuzzball/stp/stp") {
-    $stp = "$git_fuzzball/stp/stp";
-} elsif (-x "$smcc_umn/stp/stp") {
-    $stp = "$smcc_umn/stp/stp";
-} elsif (-x "$smcc_home/stp/stp") {
-    $stp = "$smcc_home/stp/stp";
-} else {
-    $stp = "stp";
-}
-
+my $numTests=0;
+my $fuzzball="fuzzball";
+my $stp="stp";
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
+my $adaptor_score = 0;
 
 my $bin = "./two-funcs";
 
@@ -147,7 +119,9 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
+my @solver_opts = ("-solver", "smtlib-batch", 
+		   # "-save-solver-files",
+		   "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "typeconv", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
@@ -179,6 +153,22 @@ if($const_lb != $const_ub) {
 
 #print "const_bounds_ec = @const_bounds_ec\n";
 
+# http://stackoverflow.com/questions/17860976/how-do-i-output-a-string-of-hex-values-into-a-binary-file-in-perl
+sub generate_new_file
+{
+    my $fname = shift(@_);
+    my $aref = shift(@_);
+
+    open(BIN, ">", $fname) or die;
+    binmode(BIN);
+
+    for (my $i = 0; $i < @$aref; $i += 2)
+    {
+	my ($hi, $lo) = @$aref[$i, $i+1];
+	print BIN pack "H*", $hi.$lo;
+    }
+    close(BIN);
+}
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
@@ -240,6 +230,7 @@ sub check_adaptor {
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		"-region-limit", $region_limit,
+		"-nonzero-divisors",
 		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
@@ -269,12 +260,21 @@ sub check_adaptor {
 	} elsif (/^Iteration (.*):$/) {
 	    $f1_completed = 0;
 	    @arg_to_regnum = (0) x $f1nargs;
-	    @regnum_to_arg = (0) x ($f1nargs+1);
+	    @regnum_to_arg = (0) x 1000;
 	    @regnum_to_saneaddr = (0) x ($f1nargs+1);
 	    my @tmp_reg_arr;
 	    @region_contents = ();
+	    # region_contents is row-indexed by argument number starting from 0
+	    # but col-indexed from 1 up to region_limit
+	    # this is because region_contents[i][0] indicates if a argument
+	    # has a region assigned to it
 	    for my $i (1 .. $region_limit+1) { push @tmp_reg_arr, 0; }
-	    for my $i (1 .. ($f1nargs+1)) { push @region_contents, [@tmp_reg_arr]; }
+	    for my $i (0 .. $f1nargs-1) { push @region_contents, [@tmp_reg_arr]; }
+	    for my $i (0 .. $#region_contents) {
+		for my $j (0 .. $#{$region_contents[$i]}) {
+		    $region_contents[$i][$j]=0;
+		}
+	    }
 	    $iteration_count++;
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
@@ -293,6 +293,8 @@ sub check_adaptor {
 		if ($v =~ /^([a-f])=(0x[0-9a-f]+)$/) {
 		    my $index = ord($1) - ord("a");
 		    $ce[$index] = hex $2;
+		    # printf("arg_to_regnum[$index] = %d\n",
+		    # 	   $arg_to_regnum[$index]);
 		    if ($arg_to_regnum[$index] != 0) {
 			$ce[$index] = $sane_addr;
 			$regnum_to_saneaddr[$arg_to_regnum[$index]] = $sane_addr;
@@ -303,23 +305,48 @@ sub check_adaptor {
 	    for my $v (split (/ /, $vars)) {
 		if($v =~ /^region_([0-9]+)_byte_0x([0-9a-f]+)=(0x[0-9a-f]+)$/) {
 		    print "region assignment $1 $2 $3 for arg $regnum_to_arg[$1]\n";
-		    # $1 -> region number
-		    # $2 -> offset within region
-		    # $3 -> value to be set
-		    my $this_reg_byte = hex $2;
-		    if($regnum_to_saneaddr[$1] != 0) {
-			$region_contents[$1][$this_reg_byte+1]=$3;
+		    # $1 -> region number, starts with 1
+		    # $2 -> offset within region, starts with 0
+		    # $3 -> value to be set, any value
+		    my $region_number = $1 + 0;
+		    my $region_offset = hex $2;
+		    $region_offset += 1; # because first value is 1 if region is used
+		    my $arg_num = $regnum_to_arg[$region_number];
+		    # printf("arg_num = %d, region_number = $region_number\n", $arg_num);
+		    if($regnum_to_saneaddr[$region_number] != 0) {
+			$region_contents[$arg_num][$region_offset]=$3;
+			# printf("region_contents[$arg_num][$region_offset] = %s (%s), with saneaddr = 0x%x\n", 
+			#        $region_contents[$arg_num][$region_offset], $3,
+			#        $regnum_to_saneaddr[$1]);
+		    }
+		    else { # printf("cannot find regnum_to_saneaddr for $1\n"); 
 		    }
 		}
 	    }
-	    for my $i (1 .. $#region_contents) {
-		for my $j (1 .. $#{$region_contents[$i]}) {
+	    for my $i (0 .. $f1nargs-1) {
+		my $str_arg_contents="";
+		for my $j (1 .. $region_limit) {
+		    # printf("region_contents[$i][$j] = %s, sane_addr = 0x%x\n", 
+		    # 	   $region_contents[$i][$j],
+		    # 	   $regnum_to_saneaddr[$arg_to_regnum[$i]]);
+		    my $byte="0x00";
 		    if($region_contents[$i][0] == 1) {
 			push @fuzzball_extra_args, "-store-byte";
 			push @fuzzball_extra_args, 
-			sprintf("0x%x=%s", $regnum_to_saneaddr[$i]+$j-1, $region_contents[$i][$j]);
+			sprintf("0x%x=%s", 
+				$regnum_to_saneaddr[$arg_to_regnum[$i]]+$j-1, 
+				$region_contents[$i][$j]);
+			# printf("pushed 0x%x=%s\n", 
+			# 	$regnum_to_saneaddr[$arg_to_regnum[$i]]+$j-1, 
+			# 	$region_contents[$i][$j]); 
+			$str_arg_contents .= substr $region_contents[$i][$j], 2;
+		    } else { 
+			$str_arg_contents .= "00";
 		    }
 		}
+		printf("str_arg_contents = $str_arg_contents\n");;
+		my @data_ary = split //, $str_arg_contents;
+		generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
 	    $this_ce = 0;
 	    print "  $_";
@@ -330,23 +357,26 @@ sub check_adaptor {
 	    for my $v (split(/ /, $add_line)) {
 		if ($v =~ /^[a-f]_([0-9]+):reg64_t$/) { # matches argument name
 		    $add_var = ord($v) - ord('a');
+		    printf("add_var = $add_var\n");
 		} elsif ($v =~ /^[0-9]$/) { # matches region number
 		    if ($add_var < $f1nargs and $add_var >= 0) {
-			$arg_to_regnum[$add_var] = int($v);
-			$regnum_to_arg[int($v)]=$add_var;
+			$arg_to_regnum[$add_var] = $v-'0';
+			# printf("arg_to_regnum[$add_var] = %d\n", 
+			#        $arg_to_regnum[$add_var]);
+			$regnum_to_arg[$v-'0'] = $add_var;
 			# 1 indicates symbolic input created a region
-			$region_contents[$v][0]=1;
-			print "Found region $v";
+			$region_contents[$add_var][0]=1;
 		    }
 		}
 	    }
-	} 
+	}
 	print "  $_";
     }
     close LOG;
     if ($matches == 0 and $fails == 0) {
 	die "Missing results from check run";
     }
+    $numTests++;
     if ($fails == 0) {
 	return 1;
     } else {
@@ -440,6 +470,8 @@ sub try_synth {
 	    }
 	    print "  $_";
 	    last;
+	} elsif (/^adaptor_score = (.*)$/ and $success) {
+	    $adaptor_score = $1;
 	}
 	print "  $_" unless /^Input vars:/;
     }
@@ -507,6 +539,7 @@ my $total_ce_time = 0;
 my $total_as_time = 0;
 my $diff;
 my $diff1;
+`rm str_arg*`;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
@@ -527,7 +560,8 @@ while (!$done) {
 	if ($f1_completed_count == $iteration_count) {
 	    $verified="complete";
 	}
-	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
+	my $scaled_adaptor_score = ($adaptor_score * $f1_completed_count) / $iteration_count;
+	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified, adaptor_score = $scaled_adaptor_score ($adaptor_score)\n";
 	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
 	$done = 1;
 	last;

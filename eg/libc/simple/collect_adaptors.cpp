@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <cassert>
 using namespace std;
 
 string pretty_adaptor(string s) {
@@ -27,6 +28,26 @@ string pretty_adaptor(string s) {
   else if (s.length()-prev_pos==20) ret<<"-1";
   else ret<<s.substr(prev_pos,string::npos);
   return ret.str();
+}
+
+string getFileName(int n) {
+  char str[20];
+  switch(n) {
+  case 1: case 2: case 3: case 4: 
+  case 5: case 6: case 7: case 8:
+    sprintf(str, "../simple-%d/logs/5.log", n);
+    return str;
+    break;
+  case 9: case 10: case 11: case 12:
+  case 13: case 14: case 15: case 16:
+    sprintf(str, "../simple+%d/logs/5.log", n-8);
+    return str;
+    break;
+  default: 
+    cout<<"dont know how to generate log file for n = "<<n<<endl;
+    assert(false); 
+  }
+  return "NULL";
 }
 
 int main(int argc, char * argv[]) {
@@ -201,16 +222,16 @@ int main(int argc, char * argv[]) {
   //blacklisted_fns.push_back(" = setusershell");
 
  
-  for(int i=0;i<8;i++) {
-    string filename("../simple-");
-    filename=filename+(char)('1'+i);
-    filename=filename+"/";
-    filename=filename+(char)('1'+i);
-    if(argc>1) {
-      if(argv[1][1]=='0') filename=filename+"-zero";
-      else if(argv[1][1]=='1') filename=filename+"-identity";
-    } 
-    filename=filename+".txt";
+  for(int i=1;i<=16;i++) {
+    string filename = getFileName(i);// ("../simple-");
+    // filename=filename+(char)('1'+i);
+    // filename=filename+"/logs/5.log";
+    // //filename=filename+(char)('1'+i);
+    // if(argc>1) {
+    //   if(argv[1][1]=='0') filename=filename+"-zero";
+    //   else if(argv[1][1]=='1') filename=filename+"-identity";
+    // } 
+    // //filename=filename+".txt";
     cout<<filename<<endl;
     ifstream fin(filename.c_str());
     string line;
@@ -241,12 +262,13 @@ int main(int argc, char * argv[]) {
 	  stringstream ss1(buf_line[15]),ss2(buf_line[16]),ss3(buf_line[buf_line.size()-1]);
 	  string f1,f1_name,f2,f2_name,adaptor,ret_adaptor;
 	  string tmpstr;
+	  string adaptor_score;
 	  ss1>>f1>>tmpstr>>f1_name;
 	  ss2>>f2>>tmpstr>>f2_name;
-	  ss3>>tmpstr>>tmpstr>>tmpstr>>adaptor>>tmpstr>>ret_adaptor;
+	  ss3>>tmpstr>>tmpstr>>tmpstr>>adaptor>>tmpstr>>ret_adaptor>>tmpstr>>tmpstr>>tmpstr>>tmpstr>>adaptor_score;
 	  adaptor=pretty_adaptor(adaptor);
 	  ret_adaptor=pretty_adaptor(ret_adaptor);
-	  cout<<f1<<" "<<f2<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<endl;
+	  cout<<f1<<" "<<f2<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<" "<<adaptor_score<<endl;
 	}
 	//else cout<<"Skipping adaptor because one of the functions was pthread_* or blacklisted"<<endl;
 	if(ignore_flag==1) ignored_adaptor_count++;

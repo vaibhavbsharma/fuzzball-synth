@@ -8,7 +8,7 @@ my $hard_timeout = 120; #seconds
 my $rand_seed = 1;
 my $default_adaptor = 1;
 my $ifns_per_target = 10;
-my $num_of_buckets = 16;
+my $num_of_buckets = 8;
 
 die "Usage: synth.pl <bucket number ( 1 - $num_of_buckets ) <direction ( 1 or -1 )>" unless @ARGV == 2;
 
@@ -38,15 +38,20 @@ my $start_lim = $boundaries[$bucket_num-1]+1;
 my $end_lim = $boundaries[$bucket_num];
 printf "start_lim = $start_lim end_lim = $end_lim number of functions = %d\n", $end_lim-$start_lim;
 
+my $start_time=time();
+
 for (my $f1num = $start_lim; $f1num < $end_lim; $f1num++) {
     for (my $f2_limit=1; $f2_limit <= $ifns_per_target; $f2_limit++) {
 	my $f2num = $f1num + ($f2_limit * $direction);
-	if ($f2num > 1315 || $f2num < 0) {
-	    next;
+	if ($f2num > $total_fns-1) {
+	    $f2num = $f2num - $total_fns;
+	    # next;
+	} elsif ($f2num < 0) {
+	    $f2num = $total_fns + $f2num;
 	}
 	print "Startin synthesis for $f1num and $f2num\n";
 	
-	my @cmd = ("perl synth-typeconv-one.pl",
+	my @cmd = ("perl synth-argsub.pl",
 		   sprintf("%d %d %d %d %d %d",
 			   $f1num,$f2num,$rand_seed,
 			   $default_adaptor,
@@ -76,3 +81,6 @@ for (my $f1num = $start_lim; $f1num < $end_lim; $f1num++) {
 	}
     }
 }
+
+my $diff = time() - $start_time;
+print "total elapsed time = $diff\n";

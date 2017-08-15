@@ -205,9 +205,8 @@ int main(int argc, char * argv[]) {
   for(int i=0;i<8;i++) {
     string filename("../simple-");
     filename=filename+(char)('1'+i);
-    filename=filename+"/";
-    filename=filename+(char)('1'+i);
-    filename=filename+".txt";
+    filename=filename+"/logs/4.log";
+    //filename=filename+(char)('1'+i);
     cout<<filename<<endl;
     ifstream fin(filename.c_str());
     string line;

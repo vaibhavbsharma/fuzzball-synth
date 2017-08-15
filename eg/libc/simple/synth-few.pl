@@ -8,28 +8,14 @@ my $hard_timeout = 1800; #seconds
 my $rand_seed = 4;
 my $default_adaptor = 1;
 
-#die "Usage: synth.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
-#  unless @ARGV == 6;
-#my($f1num, $f2num, $rand_seed, $default_adaptor, $const_lb, $const_ub) = @ARGV;
-
-my $lim0 = -1;
-my $lim1 = 327;
-my $lim2 = 657;
-my $lim3 = 984;
-my $lim4 = 1315;
-
-my $start_lim = $lim0 + 1;
-my $end_lim = $lim4;
-my $direction = 1;
-
-my @f1nums=(1055,1055,1055,1056,1057, 678,679, 663,664,663,662,664,  796,797, 72, 1088, 855,856, 681,682);
-my @f2nums=(1056,1057,1058,1058,1058, 679,678, 664,663,707,707,1323, 797,796, 73, 1086, 856,855, 682,681);
+my @f1nums=(1055,1055,1055,1056,1057, 678,679, 796,797, 72, 1088, 855,856, 681,682, 904);
+my @f2nums=(1056,1057,1058,1058,1058, 679,678, 797,796, 73, 1086, 856,855, 682,681, 905);
 for (my $_fnum = 0; $_fnum <= $#f1nums; $_fnum++) {
 	my $f1num=$f1nums[$_fnum];
 	my $f2num=$f2nums[$_fnum];
 	print "Startin synthesis for $f1num and $f2num\n";
 	
-	my @cmd = ("perl synth-conc-argsub.pl",
+	my @cmd = ("perl synth-typeconv.pl",
 		   sprintf("%d %d %d %d %d %d",
 			   $f1num,$f2num,$rand_seed,
 			   $default_adaptor,
@@ -61,14 +47,14 @@ for (my $_fnum = 0; $_fnum <= $#f1nums; $_fnum++) {
     #exit;
 }
 
-my @f1nums=(677,677, 904);
-my @f2nums=(678,679, 905);
+my @f1nums=( 663,664,663,662,664 );
+my @f2nums=( 664,663,707,707,1323);
 for (my $_fnum = 0; $_fnum <= $#f1nums; $_fnum++) {
 	my $f1num=$f1nums[$_fnum];
 	my $f2num=$f2nums[$_fnum];
 	print "Startin synthesis for $f1num and $f2num\n";
 	
-	my @cmd = ("perl synth-conc-argsub.pl",
+	my @cmd = ("perl synth-argsub.pl",
 		   sprintf("%d %d %d %d %d %d",
 			   $f1num,$f2num,$rand_seed,
 			   $default_adaptor,
