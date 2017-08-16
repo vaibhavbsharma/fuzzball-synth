@@ -35,8 +35,10 @@ while (<F>) {
 	    $bytes = $2; $insn_str = $3;
 	    if(/^ ([0-9a-f]+):  ([0-9a-f]+)  (.*)  (.*), (.*)$/) {
 		# printf("reg = $4\n");
-		$recent_w_regs[$ind] = $4;
-		$ind = ($ind + 1) % 3;
+		if ( !grep( /^$4$/, @recent_w_regs ) ) {
+		    $recent_w_regs[$ind] = $4;
+		    $ind = ($ind + 1) % 3;
+		}
 	    } else { #printf("\n"); 
 	    }
 	}
@@ -104,3 +106,4 @@ printf(FRAG "1e ff 2f e1\n"); #   bx     lr\n");
 printf(FRAG "00 00 a0 e1\n"); #   nop\n");
 close FRAG;
 
+printf("recent_w_regs = @recent_w_regs\n");
