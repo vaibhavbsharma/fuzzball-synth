@@ -227,12 +227,12 @@ sub check_adaptor {
 		"-load-base", "0x8000",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
-		"-symbolic-long", "$arg_addr[0]=a",
-		"-symbolic-long", "$arg_addr[1]=b",
-		"-symbolic-long", "$arg_addr[2]=c",
-		"-symbolic-long", "$arg_addr[3]=d",
-		"-symbolic-long", "$arg_addr[4]=e",
-		"-symbolic-long", "$arg_addr[5]=f",
+		"-symbolic-word", "$arg_addr[0]=a",
+		"-symbolic-word", "$arg_addr[1]=b",
+		"-symbolic-word", "$arg_addr[2]=c",
+		"-symbolic-word", "$arg_addr[3]=d",
+		"-symbolic-word", "$arg_addr[4]=e",
+		"-symbolic-word", "$arg_addr[5]=f",
 		# "-extra-condition","a:reg64_t<0x80000000:reg64_t",
 		"-dont-compare-memory-sideeffects",
 		"-trace-sym-addr-details",
@@ -275,6 +275,7 @@ sub check_adaptor {
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
+		"-fragments",
 		"--", $bin, $f1num, $f2num, "g");
     my @printable;
     for my $a (@args) {
@@ -444,6 +445,7 @@ sub try_synth {
 		@fuzzball_extra_args,
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
+		"-fragments",
 		"--", $bin, $f1num, $f2num, "f", "tests");
     my @printable;
     for my $a (@args) {
@@ -554,7 +556,7 @@ while (!$done) {
 	print "Success!\n";
 	print "Final test set:\n";
 	for my $tr (@tests) {
-	    print " $tr->[0], $tr->[1]\n";
+	    print " $tr->[0], $tr->[1], $tr->[2], $tr->[3], $tr->[4], $tr->[5]\n";
 	}
 	my $verified="partial";
 	if ($f1_completed_count == $iteration_count) {

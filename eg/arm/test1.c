@@ -7,18 +7,32 @@
 
 //#include "popCount.h"
 
-extern "C" int f1(int x) {
+extern "C" int f1(int a0, int a1, int a2, int a3, int a4, int a5) { 
+		  // int a6, int a7, int a8, int a9,
+		  // int a10, int a11, int a12) {
   char code[] = {
-    0x00, 0x40, 0xa0, 0xe1   // mov r4, r0
-    , 0xff, 0x00 ,0x54 ,0xe3 // cmp     r4, #255        ; 0xff
-    , 0x02, 0x00 ,0x00 ,0x9a // bls     0x3d650
-    , 0x00, 0x00 ,0x54 ,0xe3 // cmp     r4, #0
-    , 0xff, 0x40 ,0xa0 ,0xa3 // movge   r4, #255        ; 0xff
-    , 0x00, 0x40 ,0xa0 ,0xb3 // movlt   r4, #0
-    , 0x04, 0x00, 0xa0, 0xe1 // mov r0, r4
-    , 0x1e, 0xff, 0x2f, 0xe1 // bx lr
-  };	
-  return ((int (*) (int ))code)(x);
+    0x48, 0x00, 0x1b, 0xe5,  // ldr r0, [fp, #-56]  ; 0x38
+    0x4c, 0x10, 0x1b, 0xe5,  // ldr r1, [fp, #-60]  ; 0x3c
+    0x50, 0x20, 0x1b, 0xe5,  // ldr r2, [fp, #-64]  ; 0x40
+    0x54, 0x30, 0x1b, 0xe5,  // ldr r3, [fp, #-68]  ; 0x44
+    0x04, 0x40, 0x9b, 0xe5,  // ldr r4, [fp, #4]
+    0x08, 0x50, 0x9b, 0xe5,  // ldr r5, [fp, #8]
+    //0x00, 0x40, 0xa0, 0xe1,  // mov r4, r0
+    0xff, 0x00 ,0x54 ,0xe3,  // cmp     r4, #255        ; 0xff
+    0x02, 0x00 ,0x00 ,0x9a,  // bls     0x3d650
+    0x00, 0x00 ,0x54 ,0xe3,  // cmp     r4, #0
+    0xff, 0x40 ,0xa0 ,0xa3,  // movge   r4, #255        ; 0xff
+    0x00, 0x40 ,0xa0 ,0xb3,  // movlt   r4, #0
+    0x04, 0x00, 0xa0, 0xe1,  // mov r0, r4
+    0x1e, 0xff, 0x2f, 0xe1,  // bx lr
+  };
+  register int p0 __asm__("r0") = a0;
+  register int p1 __asm__("r1") = a1;
+  register int p2 __asm__("r2") = a2;
+  register int p3 __asm__("r3") = a3;
+  register int p4 __asm__("r4") = a4;
+  register int p5 __asm__("r5") = a5;
+  return ((int (*) ())code)();
 	
   // // int clamp_component(int x)
   // if ((unsigned) x > 255)
@@ -35,7 +49,7 @@ short clamp16(short x, short lo, short hi) {
 }
 
 // inspired from boost
-extern "C" int f2(int val, int lo, int hi) {
+extern "C" int f2(int val, int lo, int hi, int a, int b, int c) {
   return clamp32(val, lo, hi);
   // return clamp32(val, 0, 255);
   // return (val < lo) ? lo : ( hi < val) ? hi : val;
@@ -46,12 +60,12 @@ extern "C" int f2(int val, int lo, int hi) {
 // }
 
 extern "C" int compare(long *r1p, long *r2p,
-	    long a0, long a1, long a2, long a3, long a4, long a5) {
+		       int a0, int a1, int a2, int a3, int a4, int a5) {
   
   printf("Starting f1\n");  
   fflush(stdout);
   
-  long r1 = f1(a0);
+  long r1 = f1(a0, a1, a2, a3, a4, a5);
   
   printf("Completed f1\n");
   fflush(stdout);
@@ -59,7 +73,9 @@ extern "C" int compare(long *r1p, long *r2p,
   printf("Starting adapted_f1\n");
   fflush(stdout);
   
-  long r2 = f2(a0, a1, a2);
+  register int p0 __asm__("r4") = a4;
+  register int p1 __asm__("r5") = a5;
+  long r2 = f2(a0, a1, a2, a3, a4, a5);
   
   printf("Completed adapted_f1\n");
   fflush(stdout);
@@ -76,7 +92,7 @@ extern "C" int compare(long *r1p, long *r2p,
   return r1 == r2;
 }
 
-long global_arg0, global_arg1, global_arg2,
+int global_arg0, global_arg1, global_arg2,
     global_arg3, global_arg4, global_arg5;
 extern "C" void fuzz_start() {}
 
@@ -104,7 +120,7 @@ int main(int argc, char **argv) {
 	exit(1);
     }
     if (argv[3][0] == 'a') {
-	long args[6] = {0, 0, 0, 0, 0, 0};
+	int args[6] = {0, 0, 0, 0, 0, 0};
 	long r1, r2;
 	int i;
 	for (i = 0; i < 6 && i + 4 < argc; i++) {
@@ -123,7 +139,7 @@ int main(int argc, char **argv) {
 	    printf("Difference %ld vs. %ld\n", r1, r2);
 	}
     } else if (argv[3][0] == 'g') {
-      long a, b, c, d, e, f;
+      int a, b, c, d, e, f;
       // fscanf(fh_ce, "%lx %lx %lx %lx %lx %lx",
       //        &a, &b, &c, &d, &e, &f); 
       // printf("read ce inputs\n");
@@ -133,7 +149,7 @@ int main(int argc, char **argv) {
       	      global_arg0, global_arg1, global_arg2,
       	      global_arg3, global_arg4, global_arg5);
     } else if (argv[3][0] == 'f') {
-	long a, b, c, d, e, f;
+	int a, b, c, d, e, f;
         if (argv[4][0] == '-' && argv[4][1] == 0) {
             fh = stdin;
         } else {
@@ -144,7 +160,7 @@ int main(int argc, char **argv) {
                 return 1;
             }
         }
-	while (fscanf(fh, "%lx %lx %lx %lx %lx %lx",
+	while (fscanf(fh, "%x %x %x %x %x %x",
 		      &a, &b, &c, &d, &e, &f) != EOF) {
 	  printf("read a test\n");
 	  fflush(stdout);
