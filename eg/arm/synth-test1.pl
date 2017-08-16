@@ -60,7 +60,7 @@ if (exists $ENV{STP_LOC}) {
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./test7_" . $arch_str;
+my $bin = "./test_" . $arch_str;
 
 if ($arch_flag==0) {
     print "compiling adaptor search binary: ";
