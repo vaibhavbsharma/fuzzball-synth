@@ -111,18 +111,18 @@ extern "C" void fuzz_start() {}
 
 int main(int argc, char **argv) { 
   FILE *fh;
-  if (argc == 5 && argv[3][0]=='f') {
+  if (argc == 6 && argv[3][0]=='f') {
     fh = fopen(argv[4], "r");
   }
-  FILE *fh_ce;
-  if (argc == 5 && argv[3][0]=='g') {
-    fh_ce = fopen(argv[4], "r");
-    if (!fh_ce) {
-      fprintf(stderr, "Failed to open %s for reading: %s\n",
-	      argv[4], strerror(errno));
-      return 1;
-    }
-  }
+  // FILE *fh_ce;
+  // if (argc == 5 && argv[3][0]=='g') {
+  //   fh_ce = fopen(argv[4], "r");
+  //   if (!fh_ce) {
+  //     fprintf(stderr, "Failed to open %s for reading: %s\n",
+  // 	      argv[4], strerror(errno));
+  //     return 1;
+  //   }
+  // }
 
   for(int i=0; i < MAX_FRAG_SIZE; i+=4) {
     g_code[i] = 0x00;
@@ -130,7 +130,10 @@ int main(int argc, char **argv) {
     g_code[i+2] = 0xa0;
     g_code[i+3] = 0xe1;   // nop
   }
-  FILE *frag = fopen("f", "r");
+  // we assume the fragment file name will be the last argument
+  char *file_name = argv[argc-1]; 
+  FILE *frag;
+  frag = fopen(file_name, "r");
   unsigned b1, b2, b3, b4;
   int g_code_ind = 0;
   while (fscanf(frag, "%x %x %x %x",
@@ -158,7 +161,7 @@ int main(int argc, char **argv) {
 	int args[6] = {0, 0, 0, 0, 0, 0};
 	long r1, r2;
 	int i;
-	for (i = 0; i < 6 && i + 4 < argc; i++) {
+	for (i = 0; i < 6 && i + 4 < argc - 1; i++) {
 	    char *s = argv[i + 4];
 	    if (isdigit(s[0])) {
 		args[i] = atol(s);

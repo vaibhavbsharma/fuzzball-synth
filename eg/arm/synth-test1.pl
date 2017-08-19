@@ -3,9 +3,9 @@
 use strict;
 
 
-die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>] (0=x64,any other val=arm)"
-  unless @ARGV == 7;
-my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub, $arch_flag) = @ARGV;
+die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>] (0=x64,any other val=arm) <fragment file name>"
+  unless @ARGV == 8;
+my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub, $arch_flag, $frag_file_name) = @ARGV;
 
 srand($rand_seed);
 
@@ -276,7 +276,7 @@ sub check_adaptor {
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"-fragments",
-		"--", $bin, $f1num, $f2num, "g");
+		"--", $bin, $f1num, $f2num, "g", $frag_file_name);
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
@@ -446,7 +446,7 @@ sub try_synth {
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
 		"-fragments",
-		"--", $bin, $f1num, $f2num, "f", "tests");
+		"--", $bin, $f1num, $f2num, "f", "tests", $frag_file_name);
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
