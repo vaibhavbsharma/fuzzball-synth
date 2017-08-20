@@ -1,0 +1,456 @@
+small inline function = static inline bool mask_has_flag(unsigned int mask, unsigned int flag)
+{
+    return ((mask & flag) != 0);
+}
+
+small inline function = static inline bool is_context_filtered(int context)
+{
+    return (context == CONTEXT_FM || context == CONTEXT_WPS);
+}
+
+small inline function = static inline bool is_action_normal(int action)
+{
+    return (action != ACTION_REDRAW && (action & SYS_EVENT) == 0);
+}
+
+small inline function = static inline int32_t mul_s16_s16(int16_t op1, int16_t op2)
+{
+    return (int32_t)(op1 * op2);
+}
+
+small inline function = static inline uint32_t mul_u16_u16(uint16_t op1, uint16_t op2)
+{
+    return (uint32_t)(op1 * op2);
+}
+
+small inline function = static inline bool rec_format_ok(int rec_format)
+{
+    return (unsigned)rec_format < REC_NUM_FORMATS;
+}
+
+small inline function = static inline unsigned addDispl( unsigned addr, unsigned char displ ) {
+    return (unsigned)((int)addr + (int)(signed char)displ);
+}
+
+small inline function = static inline int get_margin(int width, int full_w) {
+    return ((full_w - width) / 2);
+}
+
+small inline function = static inline int clamp_component_bits(int x, int bits)
+{
+    if ((unsigned)x > (1u << bits) - 1)
+        x = x < 0 ? 0 : (1 << bits) - 1;
+    return x;
+}
+
+small inline function = static inline int32_t clip_sample16(int32_t sample)
+{
+    if ((int16_t)sample != sample)
+        sample = 0x7fff ^ (sample >> 31);
+    return sample;
+}
+
+small inline function = static inline uint32_t myswap32(uint32_t val)
+{
+  const uint8_t* v = (const uint8_t*)&val;
+
+  return ((uint32_t)v[0]<<24) | ((uint32_t)v[1]<<16) | ((uint32_t)v[2]<<8) | v[3];
+}
+small inline function = static inline uint32_t swapu32(uint32_t n)
+{
+    return (    ((n & 0xffU) << 24) |
+                ((n & 0xff00U) << 8) |
+                ((n & 0xff0000U) >> 8) |
+                ((n & 0xff000000U) >> 24) );
+}
+
+small inline function = static inline int bound_motion_vector (const int vector, const int f_code)
+{
+    return ((int32_t)vector << (27 - f_code)) >> (27 - f_code);
+}
+
+small inline function = static inline unsigned scale_subpixel_lcd(unsigned val, unsigned bits)
+{
+    (void) bits;
+#if LCD_PIXELFORMAT != RGB888
+    val = val * ((1 << bits) - 1);
+    val = ((val >> 8) + val + 128) >> 8;
+#endif
+    return val;
+}
+
+small inline function = static inline bool is_valid_cell(int x, int y) {
+    return (x >= 0 && x < GRID_W
+            && y >= 0 && y < GRID_H);
+}
+
+small inline function = static inline int isleap(int year) {
+  /* every fourth year is a leap year except for century years that are
+   * not divisible by 400. */
+/*  return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)); */
+  return (!(year%4) && ((year%100) || !(year%400)));
+}
+
+small inline function = static inline int SCALE(int x)
+{
+    return x == 1 ? x : x >> 1;
+}
+
+small inline function = static inline int clamp(int val, int min, int max)
+{
+    if (val < min)
+        val = min;
+    else if (val > max)
+        val = max;
+    return val;
+}
+
+small inline function = static inline unsigned int longent_char_next(unsigned int i)
+{
+    switch (i += 2)
+    {
+    case 26: i -= 1; /* return 28 */
+    case 11: i += 3; /* return 14 */
+    }
+
+    return i < 32 ? i : 0;
+}
+
+small inline function = static inline bool tuner_awake(void)
+{
+    return (tuner_status & TUNER_AWAKE) != 0;
+}
+
+small inline function = static inline int ep_index(int n, bool dir)
+{
+    return (n << 1) | dir;
+}
+
+small inline function = static inline bool epidx_dir(int idx)
+{
+    return idx & 1;
+}
+
+small inline function = static inline int epidx_n(int idx)
+{
+    return idx >> 1;
+}
+
+small inline function = static inline uint32_t encode_16_to_18(uint32_t a)
+{
+    return ((a & 0xff) << 1) | (((a >> 8) & 0xff) << 10);
+}
+
+small inline function = static inline uint32_t decode_18_to_16(uint32_t a)
+{
+    return ((a >> 1) & 0xff) | ((a >> 2) & 0xff00);
+}
+
+small inline function = static inline void *noncached(void *p)
+{
+    return (void *)(((unsigned long)p) & 0xffff);
+}
+
+small inline function = static inline uint16_t swap16_hw(uint16_t value)
+    /*
+      result[15..8] = value[ 7..0];
+      result[ 7..0] = value[15..8];
+    */
+{
+    return (value >> 8) | (value << 8);
+}
+
+small inline function = static inline uint32_t swaw32_hw(uint32_t value)
+  /*
+    result[31..16] = value[15.. 0];
+    result[15.. 0] = value[31..16];
+  */
+{
+    uint32_t result;
+    asm ("swap.w\t%1,%0" : "=r"(result) : "r"(value));
+    return result;
+}
+
+small inline function = static FORCE_INLINE uint32_t ad_s32(int32_t a, int32_t b)
+{
+    return (a >= b) ? (a - b) : (b - a);
+}
+
+small inline function = static inline int imx233_depth_3d_val2phys(int val)
+{
+    if(val == 0)
+        return 0; /* 0dB */
+    else
+        return 15 * (val + 1); /* 3dB + 1.5dB per step */
+}
+
+small inline function = static inline bool my_isspace(char c)
+{
+    return (c == ' ') || (c == '\t') || (c == '\n');
+}
+
+small inline function = static inline bool my_isdigit(char c)
+{
+    return (c >= '0') && (c <= '9');
+}
+
+small inline function = static inline bool my_isxdigit(char c)
+{
+    return ((c >= '0') && (c <= '9'))
+        || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F'));
+}
+
+small inline function = static inline uint32_t swap_odd_even32_hw(uint32_t value)
+    /*
+     * result[31..24],[15.. 8] = value[23..16],[ 7.. 0]
+     * result[23..16],[ 7.. 0] = value[31..24],[15.. 8]
+     */
+{
+    uint32_t t = value & 0xff00ff00;
+    return (t >> 8) | ((t ^ value) << 8);
+}
+
+small inline function = static inline int fifo_mod(int n)
+{
+    return (n >= SERIAL_BUF_SIZE) ? n - SERIAL_BUF_SIZE : n;
+}
+
+small inline function = static inline int ilog(register unsigned int v){
+  register int ret=0;
+  while(v){
+    ret++;
+    v>>=1;
+  }
+  return(ret);
+}
+
+small inline function = static inline ogg_int32_t MULT32(ogg_int32_t x, ogg_int32_t y) {
+  return (x >> 9) * y;  /* y preshifted >>23 */
+}
+
+small inline function = static inline ogg_int32_t MULT31(ogg_int32_t x, ogg_int32_t y) {
+  return (x >> 8) * y;  /* y preshifted >>23 */
+}
+
+small inline function = static inline ogg_int32_t MULT31_SHIFT15(ogg_int32_t x, ogg_int32_t y) {
+  return (x >> 6) * y;  /* y preshifted >>9 */
+}
+
+small inline function = static OPUS_INLINE int get_pulses(int i)
+{
+   return i<8 ? i : (8 + (i&7)) << ((i>>3)-1);
+}
+
+small inline function = static inline FIXP fixp_pow2(FIXP x, int i)
+{
+  if (i < 0)
+    return (x >> -i);
+  else
+    return x << i;              /* no check for overflow */
+}
+
+small inline function = static inline FIXP fixp_mult_su(FIXP a, FIXPU b)
+{
+    int32_t hb = (a >> 16) * b;      
+    uint32_t lb = (a & 0xffff) * b;      
+
+    return hb + (lb >> 16) + ((lb & 0x8000) >> 15);      
+}
+
+small inline function = static inline int av_clip(int a, int amin, int amax)
+{
+    if      (a < amin) return amin;
+    else if (a > amax) return amax;
+    else               return a;
+}
+small inline function = static inline int mask_addr( int addr, int mask )
+{
+	#ifdef check
+		check( addr <= mask );
+	#endif
+	return addr & mask;
+}
+
+small inline function = inline static int HIGHBITS(int c, int b)
+{
+	return c >> b;
+}
+
+small inline function = inline static int LOWBITS(int c, int b)
+{
+	return c & ((1<<b)-1);
+}
+
+small inline function = inline static int EXPAND_BITS(int x, int s, int d)
+{
+	return x << (d-s);
+}
+
+small inline function = static inline unsigned int rate_adjust(int x, int rate, int clk)
+{
+	unsigned int tmp = (long long)x * clk / 72 / rate;
+//	assert (tmp <= 4294967295U);
+	return tmp;
+}
+
+
+small inline function = static inline unsigned char get_bit(unsigned long val, unsigned char b)
+{
+    return (unsigned char) ((val >> b) & 1);
+}
+
+small inline function = static av_always_inline int MULH(int a, int b){
+    return ((int64_t)(a) * (int64_t)(b))>>32;
+}
+
+small inline function = static av_always_inline unsigned UMULH(unsigned a, unsigned b){
+    return ((uint64_t)(a) * (uint64_t)(b))>>32;
+}
+
+
+small inline function = static inline av_const int av_clip_c(int a, int amin, int amax)
+{
+    if      (a < amin) return amin;
+    else if (a > amax) return amax;
+    else               return a;
+}
+
+small inline function = static inline av_const uint8_t av_clip_uint8_c(int a)
+{
+    if (a&(~0xFF)) return (-a)>>31;
+    else           return a;
+}
+
+small inline function = static inline av_const int8_t av_clip_int8_c(int a)
+{
+    if ((a+0x80) & ~0xFF) return (a>>31) ^ 0x7F;
+    else                  return a;
+}
+
+small inline function = static inline av_const uint16_t av_clip_uint16_c(int a)
+{
+    if (a&(~0xFFFF)) return (-a)>>31;
+    else             return a;
+}
+
+small inline function = static inline av_const int16_t av_clip_int16_c(int a)
+{
+    if ((a+0x8000) & ~0xFFFF) return (a>>31) ^ 0x7FFF;
+    else                      return a;
+}
+
+small inline function = static inline av_const int32_t av_clipl_int32_c(int64_t a)
+{
+    if ((a+0x80000000u) & ~UINT64_C(0xFFFFFFFF)) return (a>>63) ^ 0x7FFFFFFF;
+    else                                         return a;
+}
+
+small inline function = static inline av_const float av_clipf_c(float a, float amin, float amax)
+{
+    if      (a < amin) return amin;
+    else if (a > amax) return amax;
+    else               return a;
+}
+
+small inline function = static inline av_const int av_ceil_log2_c(int x)
+{
+    return av_log2((x - 1) << 1);
+}
+
+
+
+small inline function = static av_always_inline av_const uint16_t av_bswap16(uint16_t x)
+{
+    x= (x>>8) | (x<<8);
+    return x;
+}
+
+small inline function = static av_always_inline av_const uint32_t av_bswap32(uint32_t x)
+{
+    x= ((x<<8)&0xFF00FF00) | ((x>>8)&0x00FF00FF);
+    x= (x>>16) | (x<<16);
+    return x;
+}
+small inline function = static inline uint16_t swap16(uint16_t value)
+{
+    return (value >> 8) | (value << 8);
+}
+
+small inline function = static inline uint32_t swap32(uint32_t value)
+{
+    uint32_t hi = swap16(value >> 16);
+    uint32_t lo = swap16(value & 0xffff);
+    return (lo << 16) | hi;
+}
+
+
+
+
+small inline function = static inline int SATURATE(int a, int b)
+{
+   if (a>b)
+      a=b;
+   if (a<-b)
+      a = -b;
+   return a;
+}
+
+
+
+small inline function =     static inline int32_t fixmulshift(int32_t x, int32_t y, int shamt)
+    {
+        int64_t temp;
+        temp = x;
+        temp *= y;
+    
+        temp >>= shamt;
+    
+        return (int32_t)temp;
+    }
+
+small inline function =     static inline int32_t fixmul31(int32_t x, int32_t y)
+    {
+        int64_t temp;
+        temp = x;
+        temp *= y;
+    
+        temp >>= 31;
+    
+        return (int32_t)temp;
+    }
+
+small inline function =     static inline int32_t fixmul24(int32_t x, int32_t y)
+    {
+        int64_t temp;
+        temp = x;
+        temp *= y;
+    
+        temp >>= 24;
+    
+        return (int32_t)temp;
+    }
+
+small inline function =     static inline int32_t fixmul16(int32_t x, int32_t y)
+    {
+        int64_t temp;
+        temp = x;
+        temp *= y;
+    
+        temp >>= 16;
+    
+        return (int32_t)temp;
+    }
+
+small inline function = static inline int rand_range(int min, int max)
+{
+    return rb->rand() % (max-min + 1) + min;
+}
+
+small inline function = static inline int rand_2_or_4(void)
+{
+    /* 1 in 10 chance of a four */
+    if(rb->rand() % 10 == 0)
+        return 4;
+    else
+        return 2;
+}

@@ -1,0 +1,188 @@
+small inline function = static inline int rgbcmp(const struct uint8_rgb *rgb1, const struct uint8_rgb *rgb2)
+{
+    return memcmp(rgb1, rgb2, sizeof(struct uint8_rgb));
+}
+
+small inline function = static inline bool LodePNG_chunk_critical(const uint8_t* chunk)
+{
+    return((chunk[4] & 32) == 0);
+}
+
+small inline function = static inline bool LodePNG_chunk_private(const uint8_t* chunk) 
+{
+    return((chunk[6] & 32) != 0);
+}
+
+small inline function = static inline const uint8_t* LodePNG_chunk_data(const uint8_t* chunk)
+{
+    return &chunk[8];
+}
+
+small inline function = static inline void vo_rect_clear_inl(struct vo_rect *rc)
+{
+    rc->l = rc->t = rc->r = rc->b = 0;
+}
+
+small inline function = static inline void int2le32(unsigned char* buf, int32_t x)
+{
+  buf[0] = (x & 0xff);
+  buf[1] = (x & 0xff00) >> 8;
+  buf[2] = (x & 0xff0000) >> 16;
+  buf[3] = (x & 0xff000000) >>24;
+}
+
+small inline function = static inline void int2le24(unsigned char* buf, int32_t x)
+{
+  buf[0] = (x & 0xff);
+  buf[1] = (x & 0xff00) >> 8;
+  buf[2] = (x & 0xff0000) >> 16;
+}
+
+small inline function = static inline void int2le16(unsigned char* buf, int16_t x)
+{
+  buf[0] = (x & 0xff);
+  buf[1] = (x & 0xff00) >> 8;
+}
+
+small inline function = static inline unsigned short be2short(unsigned char* buf)
+{
+   return (unsigned short)((buf[0] << 8) | buf[1]);
+}
+
+small inline function = static inline unsigned short le2short(unsigned char* buf)
+{
+   return (unsigned short)((buf[1] << 8) | buf[0]);
+}
+
+small inline function = static inline unsigned int le2int(unsigned char* buf)
+{
+   int32_t res = (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
+
+   return res;
+}
+
+small inline function = static inline void int2le(unsigned int val, unsigned char* addr)
+{
+    addr[0] = val & 0xFF;
+    addr[1] = (val >> 8) & 0xff;
+    addr[2] = (val >> 16) & 0xff;
+    addr[3] = (val >> 24) & 0xff;
+}
+
+small inline function = static inline bool name_is_dot(const char *name)
+{
+    return name[0] == '.' && !name[1];
+}
+
+small inline function = static inline bool name_is_dot_dot(const char *name)
+{
+    return name[0] == '.' && name[1] == '.' && !name[2];
+}
+
+small inline function = static inline bool path_is_absolute(const char *path)
+{
+    return path && path[0] == PATH_SEPCH;
+}
+
+small inline function = static inline uint32_t rm_get_uint32be(uint8_t *buf)
+{
+    return (uint32_t)((buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]);
+}
+
+small inline function = static inline uint16_t rm_get_uint16le(uint8_t *buf)
+{
+    return (uint16_t)((buf[1] << 8)|buf[0]);
+}
+
+small inline function = static inline uint32_t rm_get_uint32le(uint8_t *buf)
+{
+    return (uint32_t)((buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0]);
+}
+
+small inline function = static inline unsigned get_le16( void const* p )
+{
+	return  (unsigned) ((unsigned char const*) p) [1] << 8 |
+			(unsigned) ((unsigned char const*) p) [0];
+}
+
+small inline function = static inline unsigned get_be16( void const* p )
+{
+	return  (unsigned) ((unsigned char const*) p) [0] << 8 |
+			(unsigned) ((unsigned char const*) p) [1];
+}
+
+small inline function = static inline unsigned get_le32( void const* p )
+{
+	return  (unsigned) ((unsigned char const*) p) [3] << 24 |
+			(unsigned) ((unsigned char const*) p) [2] << 16 |
+			(unsigned) ((unsigned char const*) p) [1] <<  8 |
+			(unsigned) ((unsigned char const*) p) [0];
+}
+
+small inline function = static inline unsigned get_be32( void const* p )
+{
+	return  (unsigned) ((unsigned char const*) p) [0] << 24 |
+			(unsigned) ((unsigned char const*) p) [1] << 16 |
+			(unsigned) ((unsigned char const*) p) [2] <<  8 |
+			(unsigned) ((unsigned char const*) p) [3];
+}
+
+small inline function = static inline void set_le16( void* p, unsigned n )
+{
+	((unsigned char*) p) [1] = (unsigned char) (n >> 8);
+	((unsigned char*) p) [0] = (unsigned char) n;
+}
+
+small inline function = static inline void set_be16( void* p, unsigned n )
+{
+	((unsigned char*) p) [0] = (unsigned char) (n >> 8);
+	((unsigned char*) p) [1] = (unsigned char) n;
+}
+
+small inline function = static inline void set_le32( void* p, unsigned n )
+{
+	((unsigned char*) p) [0] = (unsigned char) n;
+	((unsigned char*) p) [1] = (unsigned char) (n >> 8);
+	((unsigned char*) p) [2] = (unsigned char) (n >> 16);
+	((unsigned char*) p) [3] = (unsigned char) (n >> 24);
+}
+
+small inline function = static inline void set_be32( void* p, unsigned n )
+{
+	((unsigned char*) p) [3] = (unsigned char) n;
+	((unsigned char*) p) [2] = (unsigned char) (n >> 8);
+	((unsigned char*) p) [1] = (unsigned char) (n >> 16);
+	((unsigned char*) p) [0] = (unsigned char) (n >> 24);
+}
+small inline function = static inline int le2int(unsigned char* buf)
+{
+   int32_t res = (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
+
+   return res;
+}
+
+small inline function = static inline int be2int(unsigned char* buf)
+{
+   int32_t res = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+
+   return res;
+}
+
+small inline function = static inline int getint16le(char* buf)
+{
+   int16_t res = (buf[1] << 8) | buf[0];
+
+   return res;
+}
+small inline function = static inline uint32_t getuint32le(unsigned char* buf)
+{
+  int32_t res = (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
+
+  return res;
+}
+
+
+small inline function = static inline uint32_t read32(uint8_t *p)
+{
+    return *p | *(p + 1) << 8 | *(p + 2) << 16 | *(p + 3) << 24;
+}
