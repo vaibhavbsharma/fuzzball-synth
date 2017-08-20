@@ -10,8 +10,8 @@ my ($dump_file,$file_prefix) = @ARGV;
 printf("dump_file = %s\n", $dump_file);
 my $line_num = 1;
 
-my $start_num = 64842;
-my $end_num = 64846;
+my $start_num = 64859; #64872; #64842;
+my $end_num = 64863; #64876; #64846;
 
 
 my $frag_contents;
@@ -59,7 +59,10 @@ my $ret_reg_byte = 0;
 for my $str (@recent_w_regs) {
     my $added_ret_reg = 1;
     my $ret_insn = "";
-    if ($str =~ "r1") {
+    if ($str =~ "r0") {
+	$ret_insn = sprintf("00 00 a0 e1\n"); #   nop\n");
+	$added_ret_reg = 1;
+    } elsif ($str =~ "r1") {
 	$ret_insn = sprintf("01 00 a0 e1\n"); #   mov    r0 r1\n"); 
     } elsif ($str =~ "r2") {
 	$ret_insn = sprintf("02 00 a0 e1\n"); #   mov    r0 r2\n"); 
@@ -92,7 +95,7 @@ for my $str (@recent_w_regs) {
 	$added_ret_reg = 0;
     }
     if($added_ret_reg == 1) {
-	my $file_name = $file_prefix . "_" . $file_num . ".frag";
+	my $file_name = $file_prefix . $start_num . "_" . $end_num . "_" . $file_num . ".frag";
 	$file_num += 1;
 	open(FRAG, ">", $file_name);
 	printf(FRAG $frag_contents);
