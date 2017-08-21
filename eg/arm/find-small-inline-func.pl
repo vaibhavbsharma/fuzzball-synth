@@ -22,6 +22,7 @@ my $function_name;
 my $parens = 0;
 my $THRESHOLD = 10;
 my $func_body_str;
+my $func_count=0;
 for my $file (@file_path) {
     open(FRAG_FILE, "<", $file) or die;
     while (<FRAG_FILE>) {
@@ -36,6 +37,7 @@ for my $file (@file_path) {
 		$parens -= 1;
 		# printf("p-$_");
 		if($parens == 0) {
+		    $func_count++;
 		    if($lines < $THRESHOLD) {
 			printf("small inline function = $func_body_str\n");
 		    } 
@@ -68,3 +70,5 @@ for my $file (@file_path) {
 	}
     }
 }
+
+print "Total inline functions = $func_count";

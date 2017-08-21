@@ -440,17 +440,3 @@ small inline function =     static inline int32_t fixmul16(int32_t x, int32_t y)
     
         return (int32_t)temp;
     }
-
-small inline function = static inline int rand_range(int min, int max)
-{
-    return rb->rand() % (max-min + 1) + min;
-}
-
-small inline function = static inline int rand_2_or_4(void)
-{
-    /* 1 in 10 chance of a four */
-    if(rb->rand() % 10 == 0)
-        return 4;
-    else
-        return 2;
-}
