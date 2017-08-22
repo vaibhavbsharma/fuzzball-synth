@@ -8,6 +8,11 @@ my ($dump_file) = @ARGV;
 my @insns = ();
 
 my $fragment_count=0;
+my %frag_insn_count=();
+
+for(my $i = 0; $i <= 20; $i++) {
+    $frag_insn_count{$i} = 0;
+}
 
 sub a_fragment
 {
@@ -32,9 +37,12 @@ sub a_fragment
 	my $b = $ending_line_num + 1;
 	# printf("fragment at ($a, $b)\n");
 	# printf("$this_fragment_insns");
-	my $output; # = `perl create-fragments.pl $dump_file fragments/ $a $b`;
-	printf("$output");
+
+	# my $output; # = `perl create-fragments.pl $dump_file fragments/ $a $b`;
+	# printf("$output");
+
 	$fragment_count++;
+	$frag_insn_count{$b - $a}++;
     }
 }
 
@@ -109,3 +117,6 @@ foreach (@insns) {
 }
 
 printf("total number of fragments = $fragment_count\n");
+while(my($k, $v) = each %frag_insn_count) { 
+    printf("k = $k, v = $v\n");
+}
