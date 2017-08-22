@@ -3,15 +3,15 @@
 use strict;
 
 
-die "Usage: count-insns.pl <path-to-dump-file> <fragment-prefix>"
+die "Usage: create-fragments.pl <path-to-dump-file> <fragment-prefix> <starting-line-num> <ending-line-num>"
   unless @ARGV == 2;
-my ($dump_file,$file_prefix) = @ARGV;
+my ($dump_file,$file_prefix,$start_num,$end_num) = @ARGV;
 
 printf("dump_file = %s\n", $dump_file);
 my $line_num = 1;
 
-my $start_num = 64859; #64872; #64842;
-my $end_num = 64863; #64876; #64846;
+# my $start_num = 64859; #64872; #64842;
+# my $end_num = 64863; #64876; #64846;
 
 
 my $frag_contents;

@@ -34,10 +34,12 @@ unsigned addDispl( unsigned addr, unsigned char displ ) {
     return (unsigned)((int)addr + (int)(signed char)displ);
 }
 
+// gets average of difference
 int get_margin(int width, int full_w) {
     return ((full_w - width) / 2);
 }
 
+// another kind of clamping
 int clamp_component_bits(int x, int bits)
 {
     if ((unsigned)x > (1u << bits) - 1)
@@ -45,6 +47,7 @@ int clamp_component_bits(int x, int bits)
     return x;
 }
 
+// another kind of clamping we should be able to do
 int clip_sample16(int sample)
 {
     if ((short int)sample != sample)
@@ -52,6 +55,7 @@ int clip_sample16(int sample)
     return sample;
 }
 
+// see ntohl
 unsigned int myswap32(unsigned int val)
 {
   const unsigned char* v = (const unsigned char*)&val;
@@ -66,21 +70,25 @@ unsigned int swapu32(unsigned int n)
                 ((n & 0xff000000U) >> 24) );
 }
 
+// looks like clamping again
 int bound_motion_vector (const int vector, const int f_code)
 {
     return ((int)vector << (27 - f_code)) >> (27 - f_code);
 }
 
+// should be able to find
 bool is_valid_cell(int x, int y, int GRID_W, int GRID_H) {
     return (x >= 0 && x < GRID_W
             && y >= 0 && y < GRID_H);
 }
 
+// wont likely find
 int SCALE(int x)
 {
     return x == 1 ? x : x >> 1;
 }
 
+// is just clamping
 int clamp(int val, int min, int max)
 {
     if (val < min)
@@ -90,6 +98,7 @@ int clamp(int val, int min, int max)
     return val;
 }
 
+// weird function
 unsigned int longent_char_next(unsigned int i)
 {
     switch (i += 2)
@@ -101,6 +110,7 @@ unsigned int longent_char_next(unsigned int i)
     return i < 32 ? i : 0;
 }
 
+// look into binary heap implementations
 int ep_index(int n, bool dir)
 {
     return (n << 1) | dir;
@@ -116,6 +126,7 @@ int epidx_n(int idx)
     return idx >> 1;
 }
 
+// weird encoding in 18 bits
 unsigned int encode_16_to_18(unsigned int a)
 {
     return ((a & 0xff) << 1) | (((a >> 8) & 0xff) << 10);
@@ -131,11 +142,13 @@ void *noncached(void *p)
     return (void *)(((unsigned long)p) & 0xffff);
 }
 
+// Abs val of difference
 unsigned int ad_s32(int a, int b)
 {
     return (a >= b) ? (a - b) : (b - a);
 }
 
+// weird function, how is this used ?
 int imx233_depth_3d_val2phys(int val)
 {
     if(val == 0)
@@ -144,6 +157,7 @@ int imx233_depth_3d_val2phys(int val)
         return 15 * (val + 1); /* 3dB + 1.5dB per step */
 }
 
+// plugin functions wont exist
 bool my_isspace(char c)
 {
     return (c == ' ') || (c == '\t') || (c == '\n');
@@ -175,6 +189,7 @@ int fifo_mod(int n, int SERIAL_BUF_SIZE)
     return (n >= SERIAL_BUF_SIZE) ? n - SERIAL_BUF_SIZE : n;
 }
 
+// should be able to find
 int ilog(register unsigned int v){
   register int ret=0;
   while(v){
@@ -184,6 +199,7 @@ int ilog(register unsigned int v){
   return(ret);
 }
 
+// weird kind of multiplications we wont find elsewhere
 int MULT32(int x, int y) {
   return (x >> 9) * y;  /* y preshifted >>23 */
 }
@@ -201,6 +217,7 @@ int get_pulses(int i)
    return i<8 ? i : (8 + (i&7)) << ((i>>3)-1);
 }
 
+// Seems worth looking for
 int fixp_pow2(int x, int i)
 {
   if (i < 0)
@@ -209,6 +226,7 @@ int fixp_pow2(int x, int i)
     return x << i;              /* no check for overflow */
 }
 
+// Use MULT31_SHIFT16 instead
 int fixp_mult_su(int a, int b)
 {
     int hb = (a >> 16) * b;      
@@ -217,6 +235,7 @@ int fixp_mult_su(int a, int b)
     return hb + (lb >> 16) + ((lb & 0x8000) >> 15);      
 }
 
+// more clamping
 int av_clip(int a, int amin, int amax)
 {
     if      (a < amin) return amin;
@@ -231,21 +250,23 @@ int mask_addr( int addr, int mask )
 	return addr & mask;
 }
 
-inline int HIGHBITS(int c, int b)
+int HIGHBITS(int c, int b)
 {
 	return c >> b;
 }
 
-inline int LOWBITS(int c, int b)
+// is probably masking with a constant if b is a constant
+int LOWBITS(int c, int b)
 {
 	return c & ((1<<b)-1);
 }
 
-inline int EXPAND_BITS(int x, int s, int d)
+int EXPAND_BITS(int x, int s, int d)
 {
 	return x << (d-s);
 }
 
+// probably wont find
 unsigned int rate_adjust(int x, int rate, int clk)
 {
 	unsigned int tmp = (long long)x * clk / 72 / rate;
@@ -307,12 +328,14 @@ long long av_clipl_int32_c(long long a)
     else                                         return a;
 }
 
+// should be able to find
 int av_ceil_log2_c(int x)
 {
     //return av_log2((x - 1) << 1);
     return (int) log2((x - 1) << 1);
 }
 
+// yet another way of clamping, can only find if b is a constant
 int SATURATE(int a, int b)
 {
    if (a>b)
@@ -375,7 +398,7 @@ unsigned short int swap16_hw(unsigned short int value)
     return (value >> 8) | (value << 8);
 }
 
-static inline unsigned int swaw32_hw(unsigned int value)
+unsigned int swaw32_hw(unsigned int value)
 {
     /*
       result[31..16] = value[15.. 0];
@@ -420,6 +443,10 @@ unsigned int av_bswap32(unsigned int x)
     x= (x>>16) | (x<<16);
     return x;
 }
+
+int abs (int i ) { return i < 0 ? -i : i; }
+
+// More C library functions in rockbox/firmware/libc/
 
 int main() { 
   return 0; 
