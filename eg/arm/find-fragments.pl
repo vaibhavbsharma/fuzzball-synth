@@ -32,6 +32,8 @@ sub a_fragment
 	my $b = $ending_line_num + 1;
 	# printf("fragment at ($a, $b)\n");
 	# printf("$this_fragment_insns");
+	my $output = `perl create-fragments.pl $dump_file fragments/ $a $b`;
+	printf("$output");
 	$fragment_count++;
     }
 }
