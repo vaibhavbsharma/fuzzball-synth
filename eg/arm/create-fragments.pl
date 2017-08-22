@@ -4,10 +4,10 @@ use strict;
 
 
 die "Usage: create-fragments.pl <path-to-dump-file> <fragment-prefix> <starting-line-num> <ending-line-num>"
-  unless @ARGV == 2;
+  unless @ARGV == 4;
 my ($dump_file,$file_prefix,$start_num,$end_num) = @ARGV;
 
-printf("dump_file = %s\n", $dump_file);
+# printf("dump_file = %s\n", $dump_file);
 my $line_num = 1;
 
 # my $start_num = 64859; #64872; #64842;
@@ -33,10 +33,12 @@ while (<F>) {
 	if(/^ ([0-9a-f]+):  ([0-9a-f]+)  (.*)$/) {
 	    # printf("address = $1, bytes = $2, ");
 	    $bytes = $2; $insn_str = $3;
-	    if(/^ ([0-9a-f]+):  ([0-9a-f]+)  (.*)  (.*), (.*)$/) {
-		# printf("reg = $4\n");
-		if ( !grep( /^$4$/, @recent_w_regs ) ) {
-		    $recent_w_regs[$ind] = $4;
+	    if(/^ ([0-9a-f]+):  ([0-9a-f]+)  (.*)  (.*)$/) {
+		my $cmd = $4;
+		my $write_reg = substr $cmd, 0, index($cmd, ',');
+		# printf("reg = $write_reg\n");
+		if ( !grep( /^$write_reg$/, @recent_w_regs ) ) {
+		    $recent_w_regs[$ind] = $write_reg;
 		    $ind = ($ind + 1) % 3;
 		}
 	    } else { #printf("\n"); 
@@ -47,13 +49,13 @@ while (<F>) {
 	my $b2 = substr $bytes, 2, 2;
 	my $b3 = substr $bytes, 4, 2;
 	my $b4 = substr $bytes, 6, 2;
-	printf(" $b4, $b3, $b2, $b1, // $insn_str\n");
+	# printf(" $b4, $b3, $b2, $b1, // $insn_str\n");
 	$frag_contents .= sprintf("$b4 $b3 $b2 $b1\n");
 	# print "$_";
     } 
     $line_num += 1;
 }
-printf("line_num = %d\n", $line_num);
+# printf("line_num = %d\n", $line_num);
 my $file_num = 1;
 my $ret_reg_byte = 0;
 for my $str (@recent_w_regs) {
@@ -103,6 +105,7 @@ for my $str (@recent_w_regs) {
 	printf(FRAG "1e ff 2f e1\n"); #   bx     lr\n");
 	printf(FRAG "00 00 a0 e1\n"); #   nop\n");
 	close FRAG;
+	printf("Wrote to $file_name\n");
     }
 }
 
