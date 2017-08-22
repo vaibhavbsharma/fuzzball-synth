@@ -36,7 +36,7 @@ sub a_fragment
 	my $a = $starting_line_num + 1;
 	my $b = $ending_line_num + 1;
 	# printf("fragment at ($a, $b)\n");
-	# printf("$this_fragment_insns");
+	printf("$this_fragment_insns");
 
 	# my $output; # = `perl create-fragments.pl $dump_file fragments/ $a $b`;
 	# printf("$output");
@@ -68,6 +68,7 @@ foreach (@insns) {
 	|| /.*ldr.*/  || /.*ldm.*/ 
 	|| /.*str.*/  || /.*stm.*/
 	|| /.*push.*/ || /.*pop.*/
+	|| /.*bx.*/ # branch to register
 	|| /.*mcr.*/ # move to coprocessor from ARM reg(s)
 	|| /.*mrc.*/ # move to ARM reg from coprocessor
 	|| /.*msr.*/ # move to system coprocessor reg from ARM reg 
@@ -85,6 +86,7 @@ foreach (@insns) {
 	    || ($insns[$j]=~/.*ldr.*/) || ($insns[$j]=~/.*ldm.*/) 
 	    || ($insns[$j]=~/.*str.*/) || ($insns[$j]=~/.*stm.*/)
 	    || ($insns[$j]=~/.*push.*/) || ($insns[$j]=~/.*pop.*/)
+	    || ($insns[$j]=~/.*bx.*/) # branch to register
 	    || ($insns[$j]=~/.*mcr.*/) # move to coprocessor from ARM reg(s)
 	    || ($insns[$j]=~/.*mrc.*/) # move to ARM reg from coprocessor
 	    || ($insns[$j]=~/.*msr.*/) # move to system coprocessor reg from ARM reg 
@@ -117,6 +119,7 @@ foreach (@insns) {
 }
 
 printf("total number of fragments = $fragment_count\n");
-while(my($k, $v) = each %frag_insn_count) { 
-    printf("k = $k, v = $v\n");
+#while(my($k, $v) = each %frag_insn_count) {
+foreach my $k (sort {$a <=> $b} keys %frag_insn_count) { 
+    printf("k = $k, v = $frag_insn_count{$k}\n");
 }
