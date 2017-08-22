@@ -30,11 +30,12 @@ while (<F>) {
     if($line_num >= $start_num && $line_num <= $end_num) {
 	my $bytes="";
 	my $insn_str="";
-	if(/^ ([0-9a-f]+):  ([0-9a-f]+)  (.*)$/) {
+	if(/^ ([0-9a-f]+):  ([0-9a-f]+)   (.*)$/) {
 	    # printf("address = $1, bytes = $2, ");
 	    $bytes = $2; $insn_str = $3;
 	    if(/^ ([0-9a-f]+):  ([0-9a-f]+)  (.*)  (.*)$/) {
 		my $cmd = $4;
+		if(index($cmd, ',') == -1) { next; }
 		my $write_reg = substr $cmd, 0, index($cmd, ',');
 		# printf("reg = $write_reg\n");
 		if ( !grep( /^$write_reg$/, @recent_w_regs ) ) {

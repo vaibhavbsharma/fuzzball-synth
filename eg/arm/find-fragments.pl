@@ -32,7 +32,7 @@ sub a_fragment
 	my $b = $ending_line_num + 1;
 	# printf("fragment at ($a, $b)\n");
 	# printf("$this_fragment_insns");
-	my $output = `perl create-fragments.pl $dump_file fragments/ $a $b`;
+	my $output; # = `perl create-fragments.pl $dump_file fragments/ $a $b`;
 	printf("$output");
 	$fragment_count++;
     }
@@ -56,6 +56,16 @@ foreach (@insns) {
     if($text_section == 0) { next; }
     if(!/ ([0-9a-f]+):  ([0-9a-f]+)   (.*)$/) { next; }
     if(/.*nop.*/) { next; }
+    if( /.*bx  lr.*/ # return 
+	|| /.*ldr.*/  || /.*ldm.*/ 
+	|| /.*str.*/  || /.*stm.*/
+	|| /.*push.*/ || /.*pop.*/
+	|| /.*mcr.*/ # move to coprocessor from ARM reg(s)
+	|| /.*mrc.*/ # move to ARM reg from coprocessor
+	|| /.*msr.*/ # move to system coprocessor reg from ARM reg 
+	) {
+	next; 
+    }
     my $starting_line_num = $line_num;
     my @branch_targets = ();
     for(my $j = $starting_line_num; $j < $starting_line_num + $max_fragment_size; $j++) {
@@ -66,6 +76,7 @@ foreach (@insns) {
 	if( ($insns[$j]=~/.*bx  lr.*/) # return 
 	    || ($insns[$j]=~/.*ldr.*/) || ($insns[$j]=~/.*ldm.*/) 
 	    || ($insns[$j]=~/.*str.*/) || ($insns[$j]=~/.*stm.*/)
+	    || ($insns[$j]=~/.*push.*/) || ($insns[$j]=~/.*pop.*/)
 	    || ($insns[$j]=~/.*mcr.*/) # move to coprocessor from ARM reg(s)
 	    || ($insns[$j]=~/.*mrc.*/) # move to ARM reg from coprocessor
 	    || ($insns[$j]=~/.*msr.*/) # move to system coprocessor reg from ARM reg 
