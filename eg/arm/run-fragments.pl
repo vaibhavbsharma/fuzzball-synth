@@ -9,6 +9,7 @@ my ($fragments_dir,$bucket_num,$min_frag_size,$max_frag_size) = @ARGV;
 my $rand_seed = 1;
 my $const_lb = 0;
 my $const_ub = 255;
+my $num_secs_to_timeout=15; # https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
 
 my @fragments = `ls $fragments_dir | grep -i .frag | sort `;
 my @filtered_fragments = ();
@@ -35,8 +36,24 @@ for(my $i = $starting_frag; $i < $ending_frag; $i++) {
     my @cmd = ("perl","synth-test1.pl","1","2",$rand_seed, "1", $const_lb, $const_ub,
 	       "1", "$frag_file");
     printf("cmd = @cmd\n");
-    open(LOG, "-|", @cmd);
-    while(<LOG>) {
-    	print $_;
+    # open(LOG, "-|", @cmd);
+    # while(<LOG>) {
+    # 	print $_;
+    # }
+    my $retval;
+    my $pid = fork;
+    if ($pid > 0){ # parent process
+	eval{
+	    local $SIG{ALRM} = 
+		sub {kill 9, -$pid; print STDOUT "TIME OUT!$/"; $retval = 124;};
+	    alarm $num_secs_to_timeout;
+	    waitpid($pid, 0);
+	    alarm 0;
+	};
+    }
+    elsif ($pid == 0){ # child process
+	setpgrp(0,0);
+	exec(@cmd);
+    } else { # forking not successful
     }
 }
