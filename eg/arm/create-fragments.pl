@@ -129,10 +129,13 @@ for my $str (@recent_w_regs) {
 }
 
 # printf("recent_w_regs = @recent_w_regs\n");
-# 0 = acsgtdm, adfeq
-# 1 = adc, add, asr, 
-# 2 = and, 
-# 3 = b
+# 0 = <get from find-fragments has_coproc_insn>
+# 1 = adc, add, mul, muls, qdadd, qdsub, rsb, rsbs, rsc, rscs, sbc, sbcs, smlabb, smlabt, smlatb, smtatt, smlabb", "smlad", "smlad", "smlal", "smlalbb", "smlaldx", "smlaltb", "smlaltt", "smlatt", "smlawb", "smlawt", "smlsd","smlsdx", "smmlar", SMLAD, SMLADX, SMLALD, SMLALDX, SMLSD, SMLSDX, SMLSLD, SMLSLDX, SMMLA, SMMLAR, SMMLS, SMMLSR, SMMUL, SMMULR, SMUAD, SMUADX, SMUSD, SMUSDX, smull, smlal, ssubaddx, sub, subs, 
+# 2 = and, asr, asrs, bici, bics, eor, eors, lsl, lsls, lsr, lsrs, mvn, mvns, orr, orrs, ror, 
+# 3 = b, 
+# 4 = cmn, cmp, 
+# 5 = mov, movs, movt, movw, nop,  
+
 
 sub get_bucket () {
     my $mnemonic = shift(@_);

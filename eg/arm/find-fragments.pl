@@ -126,7 +126,14 @@ foreach my $k (sort {$a <=> $b} keys %frag_insn_count) {
 
 sub has_coproc_insn () {
     my $line = shift(@_);
-    my @coproc_insn = ("ldc","stc","cdp","mcr","mrc","mrrc","msr","mrs","sys","mar","mra","bfi","bfc","bkpt");
+    my @coproc_insn = 
+	("ldc","stc","cdp","mcr","mrc","mrrc","msr","mrs","sys","mar","mra","bfi","bfc","bkpt",
+	 "cfcmp64","cfmadd32","cfmsub32", "cfmsuba32","cfmul32","cfmuld","cfmvrs","cfsh64","cfsub","cfadd",
+	 "ldfcse", "ldfcss", "ldfd", "ldfeqp", "ldfeqs", "ldfgte", "ldflee", "ldflse", "ldfmie", "ldfmis", 
+	 "ldfnep", "ldfnes", "ldfvce", "ldfvcs", "ldfvse", "ldfvss", "mla","mnfsp","mvfe",
+	 "pld","pldw","pli", "polltsp", "powvsem","powvsem", "rndnes","shsub16","shsub8","shadd16","shadd8",
+	 "shsubaddx","smc", "sqt", "ssat", "stfc", "stfg", "stfh", "stfl", "stfm", "stfn", "stfs", 
+	 "sufcse", "sufcs", "svc", );
     foreach my $str (@coproc_insn) {
 	if(has_cc_string($line, $str) == 1) { return 1; }
     }
