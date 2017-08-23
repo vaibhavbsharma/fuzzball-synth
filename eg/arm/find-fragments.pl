@@ -2,9 +2,9 @@
 
 use strict;
 
-die "Usage: find-fragments.pl <path-to-dump-file>"
-  unless @ARGV == 1;
-my ($dump_file) = @ARGV;
+die "Usage: find-fragments.pl <path-to-dump-file> <output-dir>"
+  unless @ARGV == 2;
+my ($dump_file,$output_dir) = @ARGV;
 my @insns = ();
 
 my $fragment_count=0;
@@ -36,10 +36,10 @@ sub a_fragment
 	my $a = $starting_line_num + 1;
 	my $b = $ending_line_num + 1;
 	# printf("fragment at ($a, $b)\n");
-	printf("$this_fragment_insns");
+	# printf("$this_fragment_insns");
 
-	# my $output; # = `perl create-fragments.pl $dump_file fragments/ $a $b`;
-	# printf("$output");
+	my $output = `perl create-fragments.pl $dump_file $output_dir/ $a $b`;
+	printf("$output");
 
 	$fragment_count++;
 	$frag_insn_count{$b - $a}++;
@@ -69,9 +69,14 @@ foreach (@insns) {
 	|| /.*str.*/  || /.*stm.*/
 	|| /.*push.*/ || /.*pop.*/
 	|| /.*bx.*/ # branch to register
+	|| /.*ldc.*/ || /.*stc.*/ # transfer data from memory to coprocessor
+	|| /.*cdp.*/ # coprocessor data operations
 	|| /.*mcr.*/ # move to coprocessor from ARM reg(s)
 	|| /.*mrc.*/ # move to ARM reg from coprocessor
+	|| /.*mrrc.*/ # move to ARM reg from coprocessor
 	|| /.*msr.*/ # move to system coprocessor reg from ARM reg 
+	|| /.*mrs.*/ # move to system coprocessor reg from ARM reg
+	|| /.*sys.*/ #system coprocessor instruction
 	) {
 	next; 
     }
@@ -86,10 +91,15 @@ foreach (@insns) {
 	    || ($insns[$j]=~/.*ldr.*/) || ($insns[$j]=~/.*ldm.*/) 
 	    || ($insns[$j]=~/.*str.*/) || ($insns[$j]=~/.*stm.*/)
 	    || ($insns[$j]=~/.*push.*/) || ($insns[$j]=~/.*pop.*/)
+	    || ($insns[$j]=~/.*ldc.*/) || ($insns[$j]=~/.*stc.*/) 
+	    || ($insns[$j]=~/.*cdp.*/) # coprocessor data operations
 	    || ($insns[$j]=~/.*bx.*/) # branch to register
 	    || ($insns[$j]=~/.*mcr.*/) # move to coprocessor from ARM reg(s)
 	    || ($insns[$j]=~/.*mrc.*/) # move to ARM reg from coprocessor
+	    || ($insns[$j]=~/.*mrrc.*/) # move to ARM reg from coprocessor
 	    || ($insns[$j]=~/.*msr.*/) # move to system coprocessor reg from ARM reg 
+	    || ($insns[$j]=~/.*mrs.*/) # move to system coprocessor reg from ARM reg 
+	    || ($insns[$j]=~/.*sys.*/) # system coprocessor instruction
 	    ) {
 	    # printf("breaking because of exit point ($insns[$j])\n");
 	    last; 
