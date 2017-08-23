@@ -40,20 +40,20 @@ for(my $i = $starting_frag; $i < $ending_frag; $i++) {
     # while(<LOG>) {
     # 	print $_;
     # }
-    my $retval;
-    my $pid = fork;
-    if ($pid > 0){ # parent process
-	eval{
-	    local $SIG{ALRM} = 
-		sub {kill 9, -$pid; print STDOUT "TIME OUT!$/"; $retval = 124;};
-	    alarm $num_secs_to_timeout;
-	    waitpid($pid, 0);
-	    alarm 0;
-	};
-    }
-    elsif ($pid == 0){ # child process
-	setpgrp(0,0);
-	exec(@cmd);
-    } else { # forking not successful
-    }
+    # my $retval;
+    # my $pid = fork;
+    # if ($pid > 0){ # parent process
+    # 	eval{
+    # 	    local $SIG{ALRM} = 
+    # 		sub {kill 9, -$pid; print STDOUT "TIME OUT!$/"; $retval = 124;};
+    # 	    alarm $num_secs_to_timeout;
+    # 	    waitpid($pid, 0);
+    # 	    alarm 0;
+    # 	};
+    # }
+    # elsif ($pid == 0){ # child process
+    # 	setpgrp(0,0);
+    # 	exec(@cmd);
+    # } else { # forking not successful
+    # }
 }

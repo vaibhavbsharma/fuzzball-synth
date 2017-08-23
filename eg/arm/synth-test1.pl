@@ -27,40 +27,13 @@ my @fuzzball_extra_args_arr;
 
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
-my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
-my $smcc_home = "/home/smcc/bitblaze/fuzzball/trunk-gh";
-my $git_fuzzball = "../../../../../tools/fuzzball";
-my $fuzzball;
-if (exists $ENV{FUZZBALL_LOC}) {
-    $fuzzball = $ENV{FUZZBALL_LOC};
-} elsif (-x "$git_fuzzball/exec_utils/fuzzball") {
-    $fuzzball = "$git_fuzzball/exec_utils/fuzzball";
-} elsif (-x "$smcc_umn/exec_utils/fuzzball") {
-    $fuzzball = "$smcc_umn/exec_utils/fuzzball";
-} elsif (-x "$smcc_home/exec_utils/fuzzball") {
-    $fuzzball = "$smcc_home/exec_utils/fuzzball";
-} else {
-    $fuzzball = "fuzzball";
-}
-
-my $stp;
-if (exists $ENV{STP_LOC}) {
-    $stp = $ENV{STP_LOC};
-} elsif (-x "$git_fuzzball/stp/stp") {
-    $stp = "$git_fuzzball/stp/stp";
-} elsif (-x "$smcc_umn/stp/stp") {
-    $stp = "$smcc_umn/stp/stp";
-} elsif (-x "$smcc_home/stp/stp") {
-    $stp = "$smcc_home/stp/stp";
-} else {
-    $stp = "stp";
-}
-
+my $fuzzball="fuzzball";
+my $stp="stp";
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./test_" . $arch_str;
+my $bin = "./test8_" . $arch_str;
 
 if ($arch_flag==0) {
     print "compiling adaptor search binary: ";
@@ -111,9 +84,9 @@ my $post_f1_call = sprintf("0x%x",hex($f1_call_addr)+0x4);
 my $post_f2_call = sprintf("0x%x",hex($f2_call_addr)+0x4);
 
 my @arg_addr;
-for my $i (0 .. 5) {
+for my $i (0 .. 10) {
     $arg_addr[$i] =
-      "0x" . substr(`nm $bin | fgrep " B global_arg$i"`, 0, 8);
+      "0x" . substr(`nm $bin | egrep -e " B global_arg$i\$"`, 0, 8);
 }
 
 my $match_jne_addr;
@@ -129,7 +102,7 @@ print "fuzz-start-addr: $fuzz_start_addr\n";
 print "f1:   $f1_addr @ $f1_call_addr\n";
 print "f2:   $f2_addr\n";
 print "wrap_f2: $wrap_f2_addr @ $f2_call_addr\n";
-for my $i (0 .. 5) {
+for my $i (0 .. 10) {
     print "arg$i: $arg_addr[$i]\n";
 }
 print "branch: $match_jne_addr\n";
@@ -233,6 +206,11 @@ sub check_adaptor {
 		"-symbolic-word", "$arg_addr[3]=d",
 		"-symbolic-word", "$arg_addr[4]=e",
 		"-symbolic-word", "$arg_addr[5]=f",
+		"-symbolic-word", "$arg_addr[6]=g",
+		"-symbolic-word", "$arg_addr[7]=h",
+		"-symbolic-word", "$arg_addr[8]=i",
+		"-symbolic-word", "$arg_addr[9]=j",
+		"-symbolic-word", "$arg_addr[10]=k",
 		# "-extra-condition","a:reg64_t<0x80000000:reg64_t",
 		"-dont-compare-memory-sideeffects",
 		"-trace-sym-addr-details",
@@ -322,7 +300,7 @@ sub check_adaptor {
 	    my $vars = $1;
 	    @ce = (0) x $f1nargs;
 	    for my $v (split(/ /, $vars)) {
-		if ($v =~ /^([a-f])=(0x[0-9a-f]+)$/) {
+		if ($v =~ /^([a-k])=(0x[0-9a-f]+)$/) {
 		    my $index = ord($1) - ord("a");
 		    $ce[$index] = hex $2;
 		    if ($arg_to_regnum[$index] != 0) {
@@ -356,11 +334,11 @@ sub check_adaptor {
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
-	} elsif (/Address [a-f]_([0-9])+:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
+	} elsif (/Address [a-k]_([0-9])+:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
 	    my $add_line = $_;
 	    my $add_var = -1;
 	    for my $v (split(/ /, $add_line)) {
-		if ($v =~ /^[a-f]_([0-9]+):reg64_t$/) { # matches argument name
+		if ($v =~ /^[a-k]_([0-9]+):reg64_t$/) { # matches argument name
 		    $add_var = ord($v) - ord('a');
 		} elsif ($v =~ /^[0-9]$/) { # matches region number
 		    if ($add_var < $f1nargs and $add_var >= 0) {
@@ -396,8 +374,8 @@ sub try_synth {
     }
     open(TESTS, ">tests");
     for my $t (@$testsr) {
-	my @vals = (@$t, (0) x 6);
-	splice(@vals, 6);
+	my @vals = (@$t, (0) x 11);
+	splice(@vals, 11);
 	my $test_str = join(" ", map(sprintf("0x%x", $_), @vals));
 	print TESTS $test_str, "\n";
     }
@@ -556,7 +534,7 @@ while (!$done) {
 	print "Success!\n";
 	print "Final test set:\n";
 	for my $tr (@tests) {
-	    print " $tr->[0], $tr->[1], $tr->[2], $tr->[3], $tr->[4], $tr->[5]\n";
+	    print " $tr->[0], $tr->[1], $tr->[2], $tr->[3], $tr->[4], $tr->[5], $tr->[6], $tr->[7], $tr->[8], $tr->[9], $tr->[10]\n";
 	}
 	my $verified="partial";
 	if ($f1_completed_count == $iteration_count) {

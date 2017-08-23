@@ -13,9 +13,9 @@ unsigned char g_code[MAX_FRAG_SIZE];
 int g_code_ind=0;
 
 extern "C" int f1(int _x1, int _x2, int _x3, int _x4, 
-		  int a0, int a1, int a2, int a3, int a4, int a5) { 
-		  // int a6, int a7, int a8, int a9,
-		  // int a10, int a11, int a12) {
+		  int a0, int a1, int a2, int a3, int a4, int a5,
+		  int a6, int a7, int a8, int a9,
+		  int a10) {
   // unsigned char code[] = {
   //   // 0x48, 0x00, 0x1b, 0xe5,  // ldr r0, [fp, #-56]  ; 0x38
   //   // 0x4c, 0x10, 0x1b, 0xe5,  // ldr r1, [fp, #-60]  ; 0x3c
@@ -45,6 +45,13 @@ extern "C" int f1(int _x1, int _x2, int _x3, int _x4,
   register int p3 __asm__("r3") = a3;
   register int p4 __asm__("r4") = a4;
   register int p5 __asm__("r5") = a5;
+  register int p6 __asm__("r6") = a6;
+  register int p7 __asm__("r7") = a7;
+  register int p8 __asm__("r8") = a8;
+  register int p9 __asm__("r9") = a9;
+  register int p10 __asm__("r10") = a10;
+  // register int p11 __asm__("r11") = a11;
+  // register int p12 __asm__("r12") = a12;
   return ((int (*) ())g_code)();
 	
   // // int clamp_component(int x)
@@ -62,7 +69,7 @@ short clamp16(short x, short lo, short hi) {
 }
 
 // inspired from boost
-extern "C" int f2(int val, int lo, int hi, int a, int b, int c) {
+extern "C" int f2(int val, int lo, int hi, int a) {
   return clamp32(val, lo, hi);
   // return clamp32(val, 0, 255);
   // return (val < lo) ? lo : ( hi < val) ? hi : val;
@@ -73,12 +80,13 @@ extern "C" int f2(int val, int lo, int hi, int a, int b, int c) {
 // }
 
 extern "C" int compare(long *r1p, long *r2p,
-		       int a0, int a1, int a2, int a3, int a4, int a5) {
+		       int a0, int a1, int a2, int a3, int a4, int a5,
+		       int a6, int a7, int a8, int a9, int a10) {
   
   printf("Starting f1\n");  
   fflush(stdout);
   
-  long r1 = f1(0, 0, 0, 0, a0, a1, a2, a3, a4, a5);
+  long r1 = f1(0, 0, 0, 0, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
   
   printf("Completed f1\n");
   fflush(stdout);
@@ -86,9 +94,16 @@ extern "C" int compare(long *r1p, long *r2p,
   printf("Starting adapted_f1\n");
   fflush(stdout);
   
-  register int p0 __asm__("r4") = a4;
-  register int p1 __asm__("r5") = a5;
-  long r2 = f2(a0, a1, a2, a3, a4, a5);
+  register int p4 __asm__("r4") = a4;
+  register int p5 __asm__("r5") = a5;
+  register int p6 __asm__("r6") = a6;
+  register int p7 __asm__("r7") = a7;
+  register int p8 __asm__("r8") = a8;
+  register int p9 __asm__("r9") = a9;
+  register int p10 __asm__("r10") = a10;
+  // register int p11 __asm__("r11") = a11;
+  // register int p12 __asm__("r12") = a12;
+  long r2 = f2(a0, a1, a2, a3);
   
   printf("Completed adapted_f1\n");
   fflush(stdout);
@@ -106,7 +121,11 @@ extern "C" int compare(long *r1p, long *r2p,
 }
 
 int global_arg0, global_arg1, global_arg2,
-    global_arg3, global_arg4, global_arg5;
+  global_arg3, global_arg4, global_arg5,
+  global_arg6, global_arg7, global_arg8,
+  global_arg9, global_arg10, global_arg11,
+  global_arg12;
+
 extern "C" void fuzz_start() {}
 
 int main(int argc, char **argv) { 
@@ -136,6 +155,31 @@ int main(int argc, char **argv) {
   frag = fopen(file_name, "r");
   unsigned b1, b2, b3, b4;
   int g_code_ind = 0;
+  // g_code[g_code_ind++] = 0x1c;
+  // g_code[g_code_ind++] = 0x60;
+  // g_code[g_code_ind++] = 0x9b;
+  // g_code[g_code_ind++] = 0xe5;
+
+  // g_code[g_code_ind++] = 0x20;
+  // g_code[g_code_ind++] = 0x70;
+  // g_code[g_code_ind++] = 0x9b;
+  // g_code[g_code_ind++] = 0xe5;
+
+  // g_code[g_code_ind++] = 0x24;
+  // g_code[g_code_ind++] = 0x80;
+  // g_code[g_code_ind++] = 0x9b;
+  // g_code[g_code_ind++] = 0xe5;
+
+  // g_code[g_code_ind++] = 0x28;
+  // g_code[g_code_ind++] = 0x90;
+  // g_code[g_code_ind++] = 0x9b;
+  // g_code[g_code_ind++] = 0xe5;
+
+  // g_code[g_code_ind++] = 0x2c;
+  // g_code[g_code_ind++] = 0xa0;
+  // g_code[g_code_ind++] = 0x9b;
+  // g_code[g_code_ind++] = 0xe5;
+
   while (fscanf(frag, "%x %x %x %x",
 		&b1, &b2, &b3, &b4) != EOF) {
     //printf("0x%x 0x%x 0x%x 0x%x\n", b1, b2, b3, b4);
@@ -158,7 +202,7 @@ int main(int argc, char **argv) {
 	exit(1);
     }
     if (argv[3][0] == 'a') {
-	int args[6] = {0, 0, 0, 0, 0, 0};
+      int args[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	long r1, r2;
 	int i;
 	for (i = 0; i < 6 && i + 4 < argc - 1; i++) {
@@ -170,7 +214,8 @@ int main(int argc, char **argv) {
 	    }
 	}
 	compare(&r1, &r2,
-		args[0], args[1], args[2], args[3], args[4], args[5]);
+		args[0], args[1], args[2], args[3], args[4], args[5],
+		args[6], args[7], args[8], args[9], args[10]);
 	if (r1 == r2) {
 	    printf("Both %ld\n", r1);
 	} else {
@@ -185,9 +230,11 @@ int main(int argc, char **argv) {
       // compare(0, 0, a, b, c, d, e, f);
       compare(0, 0,
       	      global_arg0, global_arg1, global_arg2,
-      	      global_arg3, global_arg4, global_arg5);
+      	      global_arg3, global_arg4, global_arg5,
+      	      global_arg6, global_arg7, global_arg8,
+      	      global_arg9, global_arg10);
     } else if (argv[3][0] == 'f') {
-	int a, b, c, d, e, f;
+      int a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10;
         if (argv[4][0] == '-' && argv[4][1] == 0) {
             fh = stdin;
         } else {
@@ -198,11 +245,12 @@ int main(int argc, char **argv) {
                 return 1;
             }
         }
-	while (fscanf(fh, "%x %x %x %x %x %x",
-		      &a, &b, &c, &d, &e, &f) != EOF) {
+	while (fscanf(fh, "%x %x %x %x %x %x %x %x %x %x %x",
+		      &a0, &a1, &a2, &a3, &a4, &a5, &a6, &a7,
+		      &a8, &a9, &a10) != EOF) {
 	  printf("read a test\n");
 	  fflush(stdout);
-	  int is_eq = compare(0, 0, a, b, c, d, e, f);
+	  int is_eq = compare(0, 0, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
 	    if (!is_eq)
 		exit(1);
 	}

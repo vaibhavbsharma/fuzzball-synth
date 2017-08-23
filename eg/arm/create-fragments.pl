@@ -21,6 +21,11 @@ $frag_contents .= sprintf("0c 20 9b e5\n"); #   ldr     r2 [fp #12]\n");
 $frag_contents .= sprintf("10 30 9b e5\n"); #   ldr     r3 [fp #16]\n");
 $frag_contents .= sprintf("14 40 9b e5\n"); #   ldr     r4 [fp #20]\n");
 $frag_contents .= sprintf("18 50 9b e5\n"); #   ldr     r5 [fp #24]\n");
+$frag_contents .= sprintf("1c 60 9b e5\n"); #   ldr	r6, [fp, #28]
+$frag_contents .= sprintf("20 70 9b e5\n"); #   ldr	r7, [fp, #32]
+$frag_contents .= sprintf("24 80 9b e5\n"); #   ldr	r8, [fp, #36]	; 0x24
+$frag_contents .= sprintf("28 90 9b e5\n"); #   ldr	r9, [fp, #40]	; 0x28
+$frag_contents .= sprintf("2c a0 9b e5\n"); #   ldr	sl, [fp, #44]	; 0x2c
 
 my @recent_w_regs = ("null", "null", "null");
 my $ind = 0;
@@ -28,22 +33,32 @@ my $ind = 0;
 open(F, "<$dump_file") or die;
 while (<F>) {
     if(($line_num >= $start_num) && ($line_num <= $end_num)) {
-	# print("line = $_, ($line_num)");
+	# print("$line_num| $_");
 	my $bytes="";
 	my $insn_str="";
 	if(/^ ([0-9a-f]+):  ([0-9a-f]+)   (.*)$/) {
 	    # printf("address = $1, bytes = $2, ");
 	    $bytes = $2; $insn_str = $3;
-	    if(/^ ([0-9a-f]+):  ([0-9a-f]+)  (.*)  (.*)$/) {
-		my $cmd = $4;
-		if(index($cmd, ',') == -1) { $line_num += 1; next; }
-		my $write_reg = substr $cmd, 0, index($cmd, ',');
-		# printf("reg = $write_reg\n");
+	    if(index($insn_str, ';') != -1) {
+		$insn_str = substr($insn_str, 0, index($insn_str, ';'));
+	    }
+	    my $write_reg="";
+	    # printf("insn_str = $insn_str, ");
+	    if(index($insn_str, ',') != -1) {
+		my $comma_pos = index($insn_str, ',');
+		my $space_pos = $comma_pos;
+		while(substr($insn_str, $space_pos, 1) ne " ") {
+		    $space_pos--;
+		}
+		# printf("comma_pos = $comma_pos, space_pos = $space_pos, ");
+		$write_reg = substr($insn_str, $space_pos+1, $comma_pos-$space_pos-1); 
+	    }
+	    if($write_reg ne "") {
+		# printf("reg = $write_reg, ");
 		if ( !grep( /^$write_reg$/, @recent_w_regs ) ) {
 		    $recent_w_regs[$ind] = $write_reg;
 		    $ind = ($ind + 1) % 3;
 		}
-	    } else { #printf("\n"); 
 	    }
 	}
 	(length $bytes) == 8 || die "ARM32 instructions cannot be more than 8 bytes long";
@@ -53,7 +68,7 @@ while (<F>) {
 	my $b4 = substr $bytes, 6, 2;
 	# printf(" $b4, $b3, $b2, $b1, // $insn_str\n");
 	$frag_contents .= sprintf("$b4 $b3 $b2 $b1\n");
-	# print "$_";
+	# print "$line_num*\n\n";
     } 
     $line_num += 1;
 }
