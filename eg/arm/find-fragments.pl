@@ -68,15 +68,10 @@ foreach (@insns) {
 	|| /.*ldr.*/  || /.*ldm.*/ 
 	|| /.*str.*/  || /.*stm.*/
 	|| /.*push.*/ || /.*pop.*/
-	|| /.*bx.*/ # branch to register
-	|| /.*ldc.*/ || /.*stc.*/ # transfer data from memory to coprocessor
-	|| /.*cdp.*/ # coprocessor data operations
-	|| /.*mcr.*/ # move to coprocessor from ARM reg(s)
-	|| /.*mrc.*/ # move to ARM reg from coprocessor
-	|| /.*mrrc.*/ # move to ARM reg from coprocessor
-	|| /.*msr.*/ # move to system coprocessor reg from ARM reg 
-	|| /.*mrs.*/ # move to system coprocessor reg from ARM reg
-	|| /.*sys.*/ #system coprocessor instruction
+	|| (has_cc_string($_, "bl") == 1)
+	|| (has_cc_string($_, "blx") == 1)
+	|| (has_cc_string($_, "bx") == 1)
+	|| (has_coproc_insn($_) == 1)
 	) {
 	next; 
     }
@@ -91,20 +86,15 @@ foreach (@insns) {
 	    || ($insns[$j]=~/.*ldr.*/) || ($insns[$j]=~/.*ldm.*/) 
 	    || ($insns[$j]=~/.*str.*/) || ($insns[$j]=~/.*stm.*/)
 	    || ($insns[$j]=~/.*push.*/) || ($insns[$j]=~/.*pop.*/)
-	    || ($insns[$j]=~/.*ldc.*/) || ($insns[$j]=~/.*stc.*/) 
-	    || ($insns[$j]=~/.*cdp.*/) # coprocessor data operations
-	    || ($insns[$j]=~/.*bx.*/) # branch to register
-	    || ($insns[$j]=~/.*mcr.*/) # move to coprocessor from ARM reg(s)
-	    || ($insns[$j]=~/.*mrc.*/) # move to ARM reg from coprocessor
-	    || ($insns[$j]=~/.*mrrc.*/) # move to ARM reg from coprocessor
-	    || ($insns[$j]=~/.*msr.*/) # move to system coprocessor reg from ARM reg 
-	    || ($insns[$j]=~/.*mrs.*/) # move to system coprocessor reg from ARM reg 
-	    || ($insns[$j]=~/.*sys.*/) # system coprocessor instruction
+	    || (has_cc_string($insns[$j], "bl") == 1)
+	    || (has_cc_string($insns[$j], "blx") == 1)
+	    || (has_cc_string($insns[$j], "bx") == 1)
+	    || (has_coproc_insn($insns[$j]) == 1)
 	    ) {
 	    # printf("breaking because of exit point ($insns[$j])\n");
 	    last; 
 	}
-	if($insns[$j]=~/.* beq (.*) (.*)$/ || 
+	if($insns[$j]=~/.* beq (.*) (.*)$/ ||  
 	   $insns[$j]=~/.* bne (.*) (.*)$/ ||
 	   $insns[$j]=~/.* bcs (.*) (.*)$/ ||
 	   $insns[$j]=~/.* bhs (.*) (.*)$/ ||
@@ -120,7 +110,7 @@ foreach (@insns) {
 	   $insns[$j]=~/.* blt (.*) (.*)$/ ||
 	   $insns[$j]=~/.* bgt (.*) (.*)$/ ||
 	   $insns[$j]=~/.* ble (.*) (.*)$/ ||
-	   $insns[$j]=~/.* bal (.*) (.*)$/) {
+	   $insns[$j]=~/.* bal (.*) (.*)$/)  {
 	    # printf("branch target = $1");
 	    push @branch_targets, $1;
 	}
@@ -133,3 +123,26 @@ printf("total number of fragments = $fragment_count\n");
 foreach my $k (sort {$a <=> $b} keys %frag_insn_count) { 
     printf("k = $k, v = $frag_insn_count{$k}\n");
 }
+
+sub has_coproc_insn () {
+    my $line = shift(@_);
+    my @coproc_insn = ("ldc","stc","cdp","mcr","mrc","mrrc","msr","mrs","sys","mar","mra","bfi","bfc","bkpt");
+    foreach my $str (@coproc_insn) {
+	if(has_cc_string($line, $str) == 1) { return 1; }
+    }
+    return 0;
+}
+
+sub has_cc_string () {
+    my $line = shift(@_);
+    my $cmd = shift(@_);
+    my @cc = ("eq","ne","cs","hs","cc","lo","mi","pl","vs","vc","hi","ls","ge","lt","gt","le","al");
+    if(index($line, ($cmd . " ")) != -1) { return 1; }
+    foreach my $cc_str (@cc) {
+	my $str = $cmd . $cc_str;
+	if(index($line, $str) != -1) { return 1; }
+    }
+    return 0;
+}
+
+

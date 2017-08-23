@@ -2,7 +2,6 @@
 
 use strict;
 
-
 die "Usage: create-fragments.pl <path-to-dump-file> <fragment-prefix> <starting-line-num> <ending-line-num>"
   unless @ARGV == 4;
 my ($dump_file,$file_prefix,$start_num,$end_num) = @ARGV;
@@ -39,6 +38,9 @@ while (<F>) {
 	if(/^ ([0-9a-f]+):  ([0-9a-f]+)   (.*)$/) {
 	    # printf("address = $1, bytes = $2, ");
 	    $bytes = $2; $insn_str = $3;
+	    my $mnemonic = substr($insn_str, 0, index($insn_str, ' '));
+	    my $bucket = get_bucket($mnemonic);
+	    # printf(" mnemonic($mnemonic) has bucket($bucket)\n");
 	    if(index($insn_str, ';') != -1) {
 		$insn_str = substr($insn_str, 0, index($insn_str, ';'));
 	    }
@@ -127,3 +129,15 @@ for my $str (@recent_w_regs) {
 }
 
 # printf("recent_w_regs = @recent_w_regs\n");
+# 0 = acsgtdm, adfeq
+# 1 = adc, add, asr, 
+# 2 = and, 
+# 3 = b
+
+sub get_bucket () {
+    my $mnemonic = shift(@_);
+    if($mnemonic =~ /^adc/) 
+    { return 1; }
+    elsif ($mnemonic =~ /^cmp/) 
+    { return 2; }
+}
