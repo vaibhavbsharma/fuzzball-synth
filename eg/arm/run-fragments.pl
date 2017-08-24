@@ -31,9 +31,19 @@ my $starting_frag = ($bucket_num-1)*$bucket_size;
 my $ending_frag = $starting_frag + $bucket_size;
 if($ending_frag > scalar(@filtered_fragments)) { $ending_frag = scalar(@filtered_fragments)-1; }
 @filtered_fragments = sort {$a->[1] <=> $b->[1]} @filtered_fragments;
-for(my $i = $starting_frag; $i < $ending_frag; $i++) {
-    my $frag_file = $filtered_fragments[$i][0];
-    my $distance = $filtered_fragments[$i][1];
+
+# for(my $i=0;$i < scalar(@filtered_fragments); $i++) {
+#     printf("($i) frag_file = %s\n", $filtered_fragments[$i][0]);
+# } 
+
+my @this_bucket_fragments = ();
+for(my $i = $bucket_num-1; $i < scalar(@filtered_fragments); $i += 16) {
+   push @this_bucket_fragments, [$filtered_fragments[$i][0], $filtered_fragments[$i][1]]; 
+}
+
+for(my $i = 0; $i < scalar(@this_bucket_fragments); $i++) {
+    my $frag_file = $this_bucket_fragments[$i][0];
+    my $distance = $this_bucket_fragments[$i][1];
     $frag_file =~ s/\n//;
     # printf("frag_file = $frag_file, distance = $distance\n");
     $frag_file = $fragments_dir . "/" . $frag_file;
@@ -44,20 +54,20 @@ for(my $i = $starting_frag; $i < $ending_frag; $i++) {
     # while(<LOG>) {
     # 	print $_;
     # }
-    # my $retval;
-    # my $pid = fork;
-    # if ($pid > 0){ # parent process
-    # 	eval{
-    # 	    local $SIG{ALRM} = 
-    # 		sub {kill 9, -$pid; print STDOUT "TIME OUT!$/"; $retval = 124;};
-    # 	    alarm $num_secs_to_timeout;
-    # 	    waitpid($pid, 0);
-    # 	    alarm 0;
-    # 	};
-    # }
-    # elsif ($pid == 0){ # child process
-    # 	setpgrp(0,0);
-    # 	exec(@cmd);
-    # } else { # forking not successful
-    # }
+    my $retval;
+    my $pid = fork;
+    if ($pid > 0){ # parent process
+    	eval{
+    	    local $SIG{ALRM} = 
+    		sub {kill 9, -$pid; print STDOUT "TIME OUT!$/"; $retval = 124;};
+    	    alarm $num_secs_to_timeout;
+    	    waitpid($pid, 0);
+    	    alarm 0;
+    	};
+    }
+    elsif ($pid == 0){ # child process
+    	setpgrp(0,0);
+    	exec(@cmd);
+    } else { # forking not successful
+    }
 }
