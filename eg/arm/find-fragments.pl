@@ -66,7 +66,9 @@ foreach (@insns) {
     if(/.*nop.*/) { next; }
     if( /.*bx  lr.*/ # return 
 	|| /.*ldr.*/  || /.*ldm.*/ 
+	|| /.*ldc.*/  || /.*ldcl.*/ 
 	|| /.*str.*/  || /.*stm.*/
+	|| /.*stc.*/  || /.*stcl.*/
 	|| /.*push.*/ || /.*pop.*/
 	|| (has_cc_string($_, "bl") == 1)
 	|| (has_cc_string($_, "blx") == 1)
@@ -84,7 +86,9 @@ foreach (@insns) {
 	}
 	if( ($insns[$j]=~/.*bx  lr.*/) # return 
 	    || ($insns[$j]=~/.*ldr.*/) || ($insns[$j]=~/.*ldm.*/) 
+	    || ($insns[$j]=~/.*ldc.*/) || ($insns[$j]=~/.*ldcl.*/) 
 	    || ($insns[$j]=~/.*str.*/) || ($insns[$j]=~/.*stm.*/)
+	    || ($insns[$j]=~/.*stc.*/) || ($insns[$j]=~/.*stcl.*/)
 	    || ($insns[$j]=~/.*push.*/) || ($insns[$j]=~/.*pop.*/)
 	    || (has_cc_string($insns[$j], "bl") == 1)
 	    || (has_cc_string($insns[$j], "blx") == 1)
@@ -144,7 +148,7 @@ sub has_coproc_insn () {
 	 "vqsub.s16", "vqsub.u8", "vraddhn.i32", "vrhadd.u8", "vrshr.u64", 
 	 "vsli.64", "vsra.s32", "vsri.64", "vst1.16", "vst3", "vst4.16", 
 	 "vst4", "vsubgt.f32", "vsubhn.i64",
-	 "stcl"
+	 "stcl", "stfv"
 	);
     foreach my $str (@coproc_insn) {
 	if(has_cc_string($line, $str) == 1) { return 1; }

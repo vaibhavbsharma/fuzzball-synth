@@ -52,7 +52,7 @@ while (<F>) {
 	my $bytes="";
 	my $insn_str="";
 	my $mnemonic;
-	if(/^ ([0-9a-f]+):  ([0-9a-f]+)   (.*)$/) {
+	if(/^ *([0-9a-f]+):  ([0-9a-f]+)   (.*)$/) {
 	    # printf("address = $1, bytes = $2, ");
 	    $bytes = $2; $insn_str = $3;
 	    $mnemonic = substr($insn_str, 0, index($insn_str, ' '));
@@ -304,7 +304,7 @@ sub is_ignored_mnemonic () {
 	 "vqsub.s16", "vqsub.u8", "vraddhn.i32", "vrhadd.u8", "vrshr.u64", 
 	 "vsli.64", "vsra.s32", "vsri.64", "vst1.16", "vst3", "vst4.16", 
 	 "vst4", "vsubgt.f32", "vsubhn.i64",
-	 "stcl"
+	 "stcl", "stfv"
 	);
     foreach my $str (@coproc_insn) {
 	if($str eq $mn) { return 1; }
