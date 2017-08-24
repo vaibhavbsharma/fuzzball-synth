@@ -28,6 +28,11 @@ $frag_contents .= sprintf("2c a0 9b e5\n"); #   ldr	sl, [fp, #44]	; 0x2c
 
 my @recent_w_regs = ("null", "null", "null");
 my $ind = 0;
+my %bucket_count=();
+
+for(my $i = 0; $i <= 4; $i++) {
+    $bucket_count{$i} = 0;
+}
 
 open(F, "<$dump_file") or die;
 while (<F>) {
@@ -35,12 +40,11 @@ while (<F>) {
 	# print("$line_num| $_");
 	my $bytes="";
 	my $insn_str="";
+	my $mnemonic;
 	if(/^ ([0-9a-f]+):  ([0-9a-f]+)   (.*)$/) {
 	    # printf("address = $1, bytes = $2, ");
 	    $bytes = $2; $insn_str = $3;
-	    my $mnemonic = substr($insn_str, 0, index($insn_str, ' '));
-	    my $bucket = get_bucket($mnemonic);
-	    # printf(" mnemonic($mnemonic) has bucket($bucket)\n");
+	    $mnemonic = substr($insn_str, 0, index($insn_str, ' '));
 	    if(index($insn_str, ';') != -1) {
 		$insn_str = substr($insn_str, 0, index($insn_str, ';'));
 	    }
@@ -71,6 +75,9 @@ while (<F>) {
 	# printf(" $b4, $b3, $b2, $b1, // $insn_str\n");
 	$frag_contents .= sprintf("$b4 $b3 $b2 $b1\n");
 	# print "$line_num*\n\n";
+	# my $bucket = get_bucket($mnemonic);
+	# printf("mnemonic($mnemonic) has bucket($bucket)\n");
+	# $bucket_count{$bucket}++;
     } 
     $line_num += 1;
 }
@@ -139,8 +146,115 @@ for my $str (@recent_w_regs) {
 
 sub get_bucket () {
     my $mnemonic = shift(@_);
-    if($mnemonic =~ /^adc/) 
+    if($mnemonic =~ /^adc/ || 
+       $mnemonic =~ /^add/  ||
+       $mnemonic =~ /^mul/  ||
+       $mnemonic =~ /^muls/  ||
+       $mnemonic =~ /^qdadd/  ||
+       $mnemonic =~ /^qdsub/  ||
+       $mnemonic =~ /^rsb/  ||
+       $mnemonic =~ /^rsbs/  ||
+       $mnemonic =~ /^rsc/  ||
+       $mnemonic =~ /^rscs/  ||
+       $mnemonic =~ /^sbc/  ||
+       $mnemonic =~ /^sbcs/  ||
+       $mnemonic =~ /^smlabb/  ||
+       $mnemonic =~ /^smlabt/  ||
+       $mnemonic =~ /^smlatb/  ||
+       $mnemonic =~ /^smtatt/  ||
+       $mnemonic =~ /^smlabb/  ||
+       $mnemonic =~ /^smlad/  ||
+       $mnemonic =~ /^smlad/  ||
+       $mnemonic =~ /^smlal/  ||
+       $mnemonic =~ /^smlalbb/  ||
+       $mnemonic =~ /^smlaldx/  ||
+       $mnemonic =~ /^smlaltb/  ||
+       $mnemonic =~ /^smlaltt/  ||
+       $mnemonic =~ /^smlatt/  ||
+       $mnemonic =~ /^smlawb/  ||
+       $mnemonic =~ /^smlawt/  ||
+       $mnemonic =~ /^smlsd/  ||
+       $mnemonic =~ /^smlsdx/  ||
+       $mnemonic =~ /^smmlar/  ||
+       $mnemonic =~ /^SMLAD/  ||
+       $mnemonic =~ /^SMLADX/  ||
+       $mnemonic =~ /^SMLALD/  ||
+       $mnemonic =~ /^SMLALDX/  ||
+       $mnemonic =~ /^SMLSD/  ||
+       $mnemonic =~ /^SMLSDX/  ||
+       $mnemonic =~ /^SMLSLD/  ||
+       $mnemonic =~ /^SMLSLDX/  ||
+       $mnemonic =~ /^SMMLA/  ||
+       $mnemonic =~ /^SMMLAR/  ||
+       $mnemonic =~ /^SMMLS/  ||
+       $mnemonic =~ /^SMMLSR/  ||
+       $mnemonic =~ /^SMMUL/  ||
+       $mnemonic =~ /^SMMULR/  ||
+       $mnemonic =~ /^SMUAD/  ||
+       $mnemonic =~ /^SMUADX/  ||
+       $mnemonic =~ /^SMUSD/  ||
+       $mnemonic =~ /^SMUSDX/  ||
+       $mnemonic =~ /^smull/  ||
+       $mnemonic =~ /^smlal/  ||
+       $mnemonic =~ /^ssubaddx/  ||
+       $mnemonic =~ /^sub/  ||
+       $mnemonic =~ /^subs/  ||
+       $mnemonic =~ /^umlal/ ) 
     { return 1; }
-    elsif ($mnemonic =~ /^cmp/) 
+    elsif ($mnemonic =~ /^and/  ||
+	   $mnemonic =~ /^asr/  ||
+	   $mnemonic =~ /^asrs/  ||
+	   $mnemonic =~ /^bici/  ||
+	   $mnemonic =~ /^bics/  ||
+	   $mnemonic =~ /^eor/  ||
+	   $mnemonic =~ /^eors/  ||
+	   $mnemonic =~ /^lsl/  ||
+	   $mnemonic =~ /^lsls/  ||
+	   $mnemonic =~ /^lsr/  ||
+	   $mnemonic =~ /^lsrs/  ||
+	   $mnemonic =~ /^mvn/  ||
+	   $mnemonic =~ /^mvns/  ||
+	   $mnemonic =~ /^orr/  ||
+	   $mnemonic =~ /^orrs/  ||
+	   $mnemonic =~ /^ror/  ||
+	   $mnemonic =~ /^ubfx/)
     { return 2; }
+    elsif ($mnemonic =~ /^cmn/ || 
+	   $mnemonic =~ /^cmp/ ||
+	   $mnemonic =~ /^teq/ ||
+	   $mnemonic =~ /^tst/) { return 4; }
+    elsif ($mnemonic =~ /^mov/ || 
+	   $mnemonic =~ /^movs/ ||
+	   $mnemonic =~ /^movt/ ||
+	   $mnemonic =~ /^movw/ ||
+	   $mnemonic =~ /^nop/) { return 5; }
+    elsif (is_ignored_mnemonic($mnemonic) == 1) { return 0; }
+    elsif ($mnemonic =~ /^b/) { return 3; }
+}
+
+sub is_ignored_mnemonic () {
+    my $mn = shift(@_);
+    my @coproc_insn = 
+	("ldc","stc","cdp","mcr","mrc","mrrc","msr","mrs","sys","mar","mra","bfi","bfc","bkpt",
+	 "cfcmp64","cfmadd32","cfmsub32", "cfmsuba32","cfmul32","cfmuld","cfmvrs","cfsh64","cfsub","cfadd",
+	 "ldfcse", "ldfcss", "ldfd", "ldfeqp", "ldfeqs", "ldfgte", "ldflee", "ldflse", "ldfmie", "ldfmis", 
+	 "ldfnep", "ldfnes", "ldfvce", "ldfvcs", "ldfvse", "ldfvss", "mla","mnfsp","mvfe",
+	 "pld","pldw","pli", "polltsp", "powvsem","powvsem", "rndnes","shsub16","shsub8","shadd16","shadd8",
+	 "shsubaddx","smc", "sqt", "ssat", "stfc", "stfg", "stfh", "stfl", "stfm", "stfn", "stfs", 
+	 "sufcse", "sufcs", "svc", "umaal", "umull", "uqsub16", "usada8", "usat", "usub8",
+	 "vaba.u16", "vabdl.u32", "vceq.i8", "vcge.s", "vcgt.u16", "vcgt.u", 
+	 "vcvteq.f64.f32", "vdupcs.8", "vext.8", "vhadd.u8", "vld1.8", "vld2.16", 
+	 "vld3", "vld4.16", "vld4.32", "vld4.8", "vmax.f32", "vmin.s16", "vmlacc.f64", 
+	 "vmls.i16", "vmls.i8", "vmlsl.u32", "vmlsmi.f32", "vmov.16", "vmovcc.8", 
+	 "vmovcs.s8", "vmovle.32", "vmovle.u8", "vmovne.u8", "vmovvs.8", "vmul.f32", 
+	 "vmul.i", "vmull.s32", "vnmlsle.f64", "vnmulmi.f64", "vnmulvs.f64", 
+	 "vpadd.f", "vpmin.u16", "vpmin.u8", "vqdmulh.s32", "vqrshl.s8", 
+	 "vqsub.s16", "vqsub.u8", "vraddhn.i32", "vrhadd.u8", "vrshr.u64", 
+	 "vsli.64", "vsra.s32", "vsri.64", "vst1.16", "vst3", "vst4.16", 
+	 "vst4", "vsubgt.f32", "vsubhn.i64"
+	);
+    foreach my $str (@coproc_insn) {
+	if($str eq $mn) { return 1; }
+    }
+    return 0;
 }
