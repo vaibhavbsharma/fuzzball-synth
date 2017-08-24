@@ -6,6 +6,17 @@ die "Usage: create-fragments.pl <path-to-dump-file> <fragment-prefix> <starting-
   unless @ARGV == 4;
 my ($dump_file,$file_prefix,$start_num,$end_num) = @ARGV;
 
+# 2, and(2), 
+# 4, beq(2), b(2), 
+# 4, cmp(4)
+# 5, mov(1), movge(2), movlt(2), 
+# 15
+my $inner_bucket_1 = 0/15;
+my $inner_bucket_2 = 2/15;
+my $inner_bucket_3 = 4/15;
+my $inner_bucket_4 = 4/15;
+my $inner_bucket_5 = 5/15;
+
 # printf("dump_file = %s\n", $dump_file);
 my $line_num = 1;
 
@@ -30,7 +41,7 @@ my @recent_w_regs = ("null", "null", "null");
 my $ind = 0;
 my %bucket_count=();
 
-for(my $i = 0; $i <= 4; $i++) {
+for(my $i = 0; $i <= 5; $i++) {
     $bucket_count{$i} = 0;
 }
 
@@ -75,9 +86,9 @@ while (<F>) {
 	# printf(" $b4, $b3, $b2, $b1, // $insn_str\n");
 	$frag_contents .= sprintf("$b4 $b3 $b2 $b1\n");
 	# print "$line_num*\n\n";
-	# my $bucket = get_bucket($mnemonic);
+	my $bucket = get_bucket($mnemonic);
 	# printf("mnemonic($mnemonic) has bucket($bucket)\n");
-	# $bucket_count{$bucket}++;
+	$bucket_count{$bucket}++;
     } 
     $line_num += 1;
 }
@@ -122,8 +133,11 @@ for my $str (@recent_w_regs) {
 	$ret_insn = sprintf("00 00 a0 e1\n"); #   nop\n");
 	$added_ret_reg = 0;
     }
+    my $distance = calc_distance ();
+    # printf("distance = $distance\n");
     if($added_ret_reg == 1) {
-	my $file_name = $file_prefix . $start_num . "_" . $end_num . "_" . $file_num . ".frag";
+	my $file_name = $file_prefix . $start_num . "_" . $end_num . "_" . (sprintf("%0.4f",$distance)) . $file_num . ".frag";
+	# printf("file_name = $file_name\n");
 	$file_num += 1;
 	open(FRAG, ">", $file_name);
 	printf(FRAG $frag_contents);
@@ -135,6 +149,45 @@ for my $str (@recent_w_regs) {
     }
 }
 
+sub calc_distance () {
+    my $total = 0;
+    foreach my $k (sort {$a <=> $b} keys %bucket_count) { 
+	if($k != 0) { $total += $bucket_count{$k}; }
+	# printf("bucket_count{$k} = $bucket_count{$k}\n");
+    }
+    # printf("total = $total\n");
+    my $distance = calc_euclidean_dist($bucket_count{1}/$total,
+				       $bucket_count{2}/$total,
+				       $bucket_count{3}/$total,
+				       $bucket_count{4}/$total,
+				       $bucket_count{5}/$total,
+				       $inner_bucket_1,
+				       $inner_bucket_2,
+				       $inner_bucket_3,
+				       $inner_bucket_4,
+				       $inner_bucket_5);
+    return $distance;
+}
+
+sub calc_euclidean_dist() {
+    my $a1 = shift(@_);
+    my $a2 = shift(@_);
+    my $a3 = shift(@_);
+    my $a4 = shift(@_);
+    my $a5 = shift(@_);
+    my $b1 = shift(@_);
+    my $b2 = shift(@_);
+    my $b3 = shift(@_);
+    my $b4 = shift(@_);
+    my $b5 = shift(@_);
+    my $ret = sqrt((($b1-$a1)**2) + 
+		   (($b2-$a2)**2) + 
+		   (($b3-$a3)**2) + 
+		   (($b4-$a4)**2) + 
+		   (($b5-$a5)**2));
+    return $ret;
+}
+
 # printf("recent_w_regs = @recent_w_regs\n");
 # 0 = <get from find-fragments has_coproc_insn>
 # 1 = adc, add, mul, muls, qdadd, qdsub, rsb, rsbs, rsc, rscs, sbc, sbcs, smlabb, smlabt, smlatb, smtatt, smlabb", "smlad", "smlad", "smlal", "smlalbb", "smlaldx", "smlaltb", "smlaltt", "smlatt", "smlawb", "smlawt", "smlsd","smlsdx", "smmlar", SMLAD, SMLADX, SMLALD, SMLALDX, SMLSD, SMLSDX, SMLSLD, SMLSLDX, SMMLA, SMMLAR, SMMLS, SMMLSR, SMMUL, SMMULR, SMUAD, SMUADX, SMUSD, SMUSDX, smull, smlal, ssubaddx, sub, subs, umlal,   
@@ -142,7 +195,6 @@ for my $str (@recent_w_regs) {
 # 3 = b, 
 # 4 = cmn, cmp, teq, tst,  
 # 5 = mov, movs, movt, movw, nop,  
-
 
 sub get_bucket () {
     my $mnemonic = shift(@_);
