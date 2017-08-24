@@ -38,8 +38,8 @@ sub a_fragment
 	# printf("fragment at ($a, $b)\n");
 	# printf("$this_fragment_insns");
 
-	my $output = `perl create-fragments.pl $dump_file $output_dir/ $a $b`;
-	printf("$output");
+	# my $output = `perl create-fragments.pl $dump_file $output_dir/ $a $b`;
+	# printf("$output");
 
 	$fragment_count++;
 	$frag_insn_count{$b - $a}++;
@@ -133,7 +133,18 @@ sub has_coproc_insn () {
 	 "ldfnep", "ldfnes", "ldfvce", "ldfvcs", "ldfvse", "ldfvss", "mla","mnfsp","mvfe",
 	 "pld","pldw","pli", "polltsp", "powvsem","powvsem", "rndnes","shsub16","shsub8","shadd16","shadd8",
 	 "shsubaddx","smc", "sqt", "ssat", "stfc", "stfg", "stfh", "stfl", "stfm", "stfn", "stfs", 
-	 "sufcse", "sufcs", "svc", );
+	 "sufcse", "sufcs", "svc", "umaal", "umull", "uqsub16", "usada8", "usat", "usub8",
+	 "vaba.u16", "vabdl.u32", "vceq.i8", "vcge.s", "vcgt.u16", "vcgt.u", 
+	 "vcvteq.f64.f32", "vdupcs.8", "vext.8", "vhadd.u8", "vld1.8", "vld2.16", 
+	 "vld3", "vld4.16", "vld4.32", "vld4.8", "vmax.f32", "vmin.s16", "vmlacc.f64", 
+	 "vmls.i16", "vmls.i8", "vmlsl.u32", "vmlsmi.f32", "vmov.16", "vmovcc.8", 
+	 "vmovcs.s8", "vmovle.32", "vmovle.u8", "vmovne.u8", "vmovvs.8", "vmul.f32", 
+	 "vmul.i", "vmull.s32", "vnmlsle.f64", "vnmulmi.f64", "vnmulvs.f64", 
+	 "vpadd.f", "vpmin.u16", "vpmin.u8", "vqdmulh.s32", "vqrshl.s8", 
+	 "vqsub.s16", "vqsub.u8", "vraddhn.i32", "vrhadd.u8", "vrshr.u64", 
+	 "vsli.64", "vsra.s32", "vsri.64", "vst1.16", "vst3", "vst4.16", 
+	 "vst4", "vsubgt.f32", "vsubhn.i64"
+	);
     foreach my $str (@coproc_insn) {
 	if(has_cc_string($line, $str) == 1) { return 1; }
     }
