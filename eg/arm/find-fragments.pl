@@ -38,8 +38,8 @@ sub a_fragment
 	# printf("fragment at ($a, $b)\n");
 	# printf("$this_fragment_insns");
 
-	# my $output = `perl create-fragments.pl $dump_file $output_dir/ $a $b`;
-	# printf("$output");
+	my $output = `perl create-fragments.pl $dump_file $output_dir/ $a $b`;
+	printf("$output");
 
 	$fragment_count++;
 	$frag_insn_count{$b - $a}++;
