@@ -303,7 +303,8 @@ sub is_ignored_mnemonic () {
 	 "vpadd.f", "vpmin.u16", "vpmin.u8", "vqdmulh.s32", "vqrshl.s8", 
 	 "vqsub.s16", "vqsub.u8", "vraddhn.i32", "vrhadd.u8", "vrshr.u64", 
 	 "vsli.64", "vsra.s32", "vsri.64", "vst1.16", "vst3", "vst4.16", 
-	 "vst4", "vsubgt.f32", "vsubhn.i64"
+	 "vst4", "vsubgt.f32", "vsubhn.i64",
+	 "stcl"
 	);
     foreach my $str (@coproc_insn) {
 	if($str eq $mn) { return 1; }

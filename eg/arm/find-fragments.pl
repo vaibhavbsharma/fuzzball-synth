@@ -143,7 +143,8 @@ sub has_coproc_insn () {
 	 "vpadd.f", "vpmin.u16", "vpmin.u8", "vqdmulh.s32", "vqrshl.s8", 
 	 "vqsub.s16", "vqsub.u8", "vraddhn.i32", "vrhadd.u8", "vrshr.u64", 
 	 "vsli.64", "vsra.s32", "vsri.64", "vst1.16", "vst3", "vst4.16", 
-	 "vst4", "vsubgt.f32", "vsubhn.i64"
+	 "vst4", "vsubgt.f32", "vsubhn.i64",
+	 "stcl"
 	);
     foreach my $str (@coproc_insn) {
 	if(has_cc_string($line, $str) == 1) { return 1; }
