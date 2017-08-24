@@ -17,10 +17,11 @@ for(my $i = 0; $i < scalar(@fragments); $i++) {
     my $frag_file = $fragments[$i];
     $frag_file =~ s/\n//;
     my @parts = split('_', $frag_file);
+    # $parts[2] = substr($parts[2], 0, rindex($parts[2],'.'));
     if(($parts[1] - $parts[0] >= $min_frag_size) && 
        ($parts[1] - $parts[0] <= $max_frag_size)) {
-	# printf("frag_file = $frag_file, parts[0] = $parts[0], parts[1] = $parts[1]\n");
-	push @filtered_fragments, $frag_file;
+	# printf("frag_file = $frag_file, parts[0] = $parts[0], parts[1] = $parts[1], parts[2] = $parts[2]\n");
+	push @filtered_fragments, [$frag_file, $parts[2]];
     }
 }
 printf("# of frags = %d\n", scalar(@filtered_fragments));
@@ -28,10 +29,13 @@ printf("# of frags = %d\n", scalar(@filtered_fragments));
 my $bucket_size = scalar(@filtered_fragments)/16;
 my $starting_frag = ($bucket_num-1)*$bucket_size;
 my $ending_frag = $starting_frag + $bucket_size;
-
+if($ending_frag > scalar(@filtered_fragments)) { $ending_frag = scalar(@filtered_fragments)-1; }
+@filtered_fragments = sort {$a->[1] <=> $b->[1]} @filtered_fragments;
 for(my $i = $starting_frag; $i < $ending_frag; $i++) {
-    my $frag_file = $filtered_fragments[$i];
+    my $frag_file = $filtered_fragments[$i][0];
+    my $distance = $filtered_fragments[$i][1];
     $frag_file =~ s/\n//;
+    # printf("frag_file = $frag_file, distance = $distance\n");
     $frag_file = $fragments_dir . "/" . $frag_file;
     my @cmd = ("perl","synth-test1.pl","1","2",$rand_seed, "1", $const_lb, $const_ub,
 	       "1", "$frag_file");

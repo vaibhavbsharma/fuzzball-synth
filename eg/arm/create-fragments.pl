@@ -136,7 +136,7 @@ for my $str (@recent_w_regs) {
     my $distance = calc_distance ();
     # printf("distance = $distance\n");
     if($added_ret_reg == 1) {
-	my $file_name = $file_prefix . $start_num . "_" . $end_num . "_" . (sprintf("%0.4f",$distance)) . $file_num . ".frag";
+	my $file_name = $file_prefix . $start_num . "_" . $end_num . "_" . (sprintf("%0.4f",$distance)) . "_" . $file_num . ".frag";
 	# printf("file_name = $file_name\n");
 	$file_num += 1;
 	open(FRAG, ">", $file_name);
