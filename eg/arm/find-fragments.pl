@@ -98,7 +98,8 @@ foreach (@insns) {
 	    # printf("breaking because of exit point ($insns[$j])\n");
 	    last; 
 	}
-	if($insns[$j]=~/.* beq (.*) (.*)$/ ||  
+	if($insns[$j]=~/.* b (.*) (.*)$/ ||
+	   $insns[$j]=~/.* beq (.*) (.*)$/ ||  
 	   $insns[$j]=~/.* bne (.*) (.*)$/ ||
 	   $insns[$j]=~/.* bcs (.*) (.*)$/ ||
 	   $insns[$j]=~/.* bhs (.*) (.*)$/ ||

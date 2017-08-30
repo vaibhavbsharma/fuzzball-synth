@@ -83,9 +83,14 @@ while (<F>) {
 	my $b2 = substr $bytes, 2, 2;
 	my $b3 = substr $bytes, 4, 2;
 	my $b4 = substr $bytes, 6, 2;
+	if(($line_num == $start_num) &&
+	   (substr($b1,0,1) ne 'e')) {
+	    printf("skipping fragment because starting byte 1 is %s\n", $b1);
+	    exit(0);
+	}
 	# printf(" $b4, $b3, $b2, $b1, // $insn_str\n");
 	$frag_contents .= sprintf("$b4 $b3 $b2 $b1\n");
-	# print "$line_num*\n\n";
+	# print "$line_num*";
 	my $bucket = get_bucket($mnemonic);
 	# printf("mnemonic($mnemonic) has bucket($bucket)\n");
 	$bucket_count{$bucket}++;
