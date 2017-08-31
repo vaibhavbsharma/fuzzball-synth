@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <ctype.h>
 #include <boost/algorithm/clamp.hpp>
-
+#include "test1.h"
 //#include "popCount.h"
 
 #define MAX_FRAG_SIZE 1024
@@ -69,15 +69,28 @@ short clamp16(short x, short lo, short hi) {
 }
 
 // inspired from boost
-extern "C" int f2(int val, int lo, int hi, int a) {
+extern "C" int boost_clamp(int val, int lo, int hi, int a) {
   return clamp32(val, lo, hi);
   // return clamp32(val, 0, 255);
   // return (val < lo) ? lo : ( hi < val) ? hi : val;
 }
 
-// long wrap_f2(long a0, long a1) {
-//   return f2(a0, a1);
-// }
+int identity_fn(int val, int lo, int hi, int a) {
+  return val;
+}
+
+struct func_info funcs[] = {
+  // must match types-no-float-1204.lst
+  /* 0 */ {"boost_clamp", (func*)&boost_clamp, 4, 0, 0}, // placeholder
+  /* 1 */ {"boost_clamp", (func*)&boost_clamp, 4, 0, 0}, // placeholder
+  /* 2 */ {"boost_clamp", (func*)&boost_clamp, 4, 0, 0},
+  /* 3 */ {"identity_fn", (func*)&identity_fn, 4, 0, 0},
+};
+int f2num; 
+
+ extern "C" int f2(int a, int b, int c, int d) {
+  return (funcs[f2num].fptr)(a, b, c, d);
+}
 
 extern "C" int compare(long *r1p, long *r2p,
 		       int a0, int a1, int a2, int a3, int a4, int a5,
@@ -196,10 +209,14 @@ int main(int argc, char **argv) {
   fuzz_start();
 
     if (argc < 4) {
-	fprintf(stderr, "Usage: two-funcs <f1num> <f2num> a [0-6 args]\n");
-	fprintf(stderr, "    or two-funcs <f1num> <f2num> g\n");
-	fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or ->\n");
+	fprintf(stderr, "Usage: test_arm <f1num> <f2num> a [0-6 args]\n");
+	fprintf(stderr, "    or test_arm <f1num> <f2num> g <fragment-file-name>\n");
+	fprintf(stderr, "    or test_arm <f1num> <f2num> f <tests file name or -> <fragment-file-name>\n");
 	exit(1);
+    }
+    f2num = atoi(argv[2]);
+    if (f2num < 1 || f2num > 3) {
+	fprintf(stderr, "Error: f2num %d out of range\n", f2num);
     }
     if (argv[3][0] == 'a') {
       int args[13] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};

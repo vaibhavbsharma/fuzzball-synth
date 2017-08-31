@@ -33,7 +33,7 @@ my $stp="stp";
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./test8_" . $arch_str;
+my $bin = "./test_" . $arch_str;
 
 if ($arch_flag==0) {
     print "compiling adaptor search binary: ";
