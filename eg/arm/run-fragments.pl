@@ -11,6 +11,26 @@ my $const_lb = 0;
 my $const_ub = 255;
 my $num_secs_to_timeout=15; # https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
 
+my @identity_fragments = ();
+open(F, $fragments_dir . "/identity-fragments.lst") or die;
+while (<F>) {
+    my $line = $_;
+    push @identity_fragments, substr($line, 0, length($line)-1);
+}
+printf("#identity-fragments = %d\n", scalar(@identity_fragments));
+
+sub is_identity_fragment  { 
+    my $frag_file = shift(@_);
+    foreach my $file (@identity_fragments) {
+	# printf("identity-fragment-file = $file\n");
+	if(index($frag_file, $file) != -1) {
+	    printf("skipping $frag_file because $file is identity\n");
+	    return 1;
+	}
+    }
+    return 0;
+}
+
 my @fragments = `ls $fragments_dir | grep -i .frag | sort `;
 my @filtered_fragments = ();
 for(my $i = 0; $i < scalar(@fragments); $i++) {
@@ -43,31 +63,32 @@ for(my $i = $bucket_num-1; $i < scalar(@filtered_fragments); $i += 16) {
 
 for(my $i = 0; $i < scalar(@this_bucket_fragments); $i++) {
     my $frag_file = $this_bucket_fragments[$i][0];
+    if(is_identity_fragment($frag_file) == 1) { next; }
     my $distance = $this_bucket_fragments[$i][1];
     $frag_file =~ s/\n//;
     # printf("frag_file = $frag_file, distance = $distance\n");
     $frag_file = $fragments_dir . "/" . $frag_file;
-    my @cmd = ("perl","synth-test1.pl","1","2",$rand_seed, "1", $const_lb, $const_ub,
+    my @cmd = ("perl","synth-test1.pl","1","3",$rand_seed, "1", $const_lb, $const_ub,
 	       "1", "$frag_file");
     printf("cmd = @cmd\n");
     # open(LOG, "-|", @cmd);
     # while(<LOG>) {
     # 	print $_;
     # }
-    my $retval;
-    my $pid = fork;
-    if ($pid > 0){ # parent process
-    	eval{
-    	    local $SIG{ALRM} = 
-    		sub {kill 9, -$pid; print STDOUT "TIME OUT!$/"; $retval = 124;};
-    	    alarm $num_secs_to_timeout;
-    	    waitpid($pid, 0);
-    	    alarm 0;
-    	};
-    }
-    elsif ($pid == 0){ # child process
-    	setpgrp(0,0);
-    	exec(@cmd);
-    } else { # forking not successful
-    }
+    # my $retval;
+    # my $pid = fork;
+    # if ($pid > 0){ # parent process
+    # 	eval{
+    # 	    local $SIG{ALRM} = 
+    # 		sub {kill 9, -$pid; print STDOUT "TIME OUT!$/"; $retval = 124;};
+    # 	    alarm $num_secs_to_timeout;
+    # 	    waitpid($pid, 0);
+    # 	    alarm 0;
+    # 	};
+    # }
+    # elsif ($pid == 0){ # child process
+    # 	setpgrp(0,0);
+    # 	exec(@cmd);
+    # } else { # forking not successful
+    # }
 }
