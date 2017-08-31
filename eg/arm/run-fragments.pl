@@ -68,27 +68,27 @@ for(my $i = 0; $i < scalar(@this_bucket_fragments); $i++) {
     $frag_file =~ s/\n//;
     # printf("frag_file = $frag_file, distance = $distance\n");
     $frag_file = $fragments_dir . "/" . $frag_file;
-    my @cmd = ("perl","synth-test1.pl","1","3",$rand_seed, "1", $const_lb, $const_ub,
+    my @cmd = ("perl","synth-test1.pl","1","2",$rand_seed, "1", $const_lb, $const_ub,
 	       "1", "$frag_file");
     printf("cmd = @cmd\n");
     # open(LOG, "-|", @cmd);
     # while(<LOG>) {
     # 	print $_;
     # }
-    # my $retval;
-    # my $pid = fork;
-    # if ($pid > 0){ # parent process
-    # 	eval{
-    # 	    local $SIG{ALRM} = 
-    # 		sub {kill 9, -$pid; print STDOUT "TIME OUT!$/"; $retval = 124;};
-    # 	    alarm $num_secs_to_timeout;
-    # 	    waitpid($pid, 0);
-    # 	    alarm 0;
-    # 	};
-    # }
-    # elsif ($pid == 0){ # child process
-    # 	setpgrp(0,0);
-    # 	exec(@cmd);
-    # } else { # forking not successful
-    # }
+    my $retval;
+    my $pid = fork;
+    if ($pid > 0){ # parent process
+    	eval{
+    	    local $SIG{ALRM} = 
+    		sub {kill 9, -$pid; print STDOUT "TIME OUT!$/"; $retval = 124;};
+    	    alarm $num_secs_to_timeout;
+    	    waitpid($pid, 0);
+    	    alarm 0;
+    	};
+    }
+    elsif ($pid == 0){ # child process
+    	setpgrp(0,0);
+    	exec(@cmd);
+    } else { # forking not successful
+    }
 }
