@@ -2,24 +2,27 @@
 
 use strict;
 
-die "Usage: run-fragments.pl <fragments-dir> <bucket-num(1-16)> <min-fragment-length> <max-fragment-length>"
-  unless @ARGV == 4;
-my ($fragments_dir,$bucket_num,$min_frag_size,$max_frag_size) = @ARGV;
+die "Usage: run-fragments.pl <fragments-dir> <bucket-num(1-16)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, any other value=avoid identity fragments using <fragments-dir>/identity-fragments.lst>"
+  unless @ARGV == 5;
+my ($fragments_dir,$bucket_num,$min_frag_size,$max_frag_size,$find_identity_frag) = @ARGV;
 
 my $rand_seed = 1;
 my $const_lb = 0;
 my $const_ub = 255;
-my $num_secs_to_timeout=15; # https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
+my $num_secs_to_timeout=60; # https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
 
 my @identity_fragments = ();
-open(F, $fragments_dir . "/identity-fragments.lst") or die;
-while (<F>) {
-    my $line = $_;
-    push @identity_fragments, substr($line, 0, length($line)-1);
-}
-printf("#identity-fragments = %d\n", scalar(@identity_fragments));
+if($find_identity_frag != 1) {
+    open(F, $fragments_dir . "/identity-fragments.lst") or die;
+    while (<F>) {
+	my $line = $_;
+	push @identity_fragments, substr($line, 0, length($line)-1);
+    }
+    printf("#identity-fragments = %d\n", scalar(@identity_fragments));
+} else { printf("finding identity fragments\n"); } 
 
-sub is_identity_fragment  { 
+sub is_identity_fragment  {
+    if($find_identity_frag == 1) { return 0; }
     my $frag_file = shift(@_);
     foreach my $file (@identity_fragments) {
 	# printf("identity-fragment-file = $file\n");
@@ -63,12 +66,16 @@ for(my $i = $bucket_num-1; $i < scalar(@filtered_fragments); $i += 16) {
 
 for(my $i = 0; $i < scalar(@this_bucket_fragments); $i++) {
     my $frag_file = $this_bucket_fragments[$i][0];
-    if(is_identity_fragment($frag_file) == 1) { next; }
+    if(($find_identity_frag != 1) && 
+       (is_identity_fragment($frag_file) == 1)) { next; }
     my $distance = $this_bucket_fragments[$i][1];
     $frag_file =~ s/\n//;
     # printf("frag_file = $frag_file, distance = $distance\n");
     $frag_file = $fragments_dir . "/" . $frag_file;
-    my @cmd = ("perl","synth-test1.pl","1","2",$rand_seed, "1", $const_lb, $const_ub,
+    my $inner_func_num = 0;
+    if($find_identity_frag == 1) { $inner_func_num = 3; } 
+    else { $inner_func_num = 2; }
+    my @cmd = ("perl","synth-test1.pl","1",$inner_func_num,$rand_seed, "1", $const_lb, $const_ub,
 	       "1", "$frag_file");
     printf("cmd = @cmd\n");
     # open(LOG, "-|", @cmd);
