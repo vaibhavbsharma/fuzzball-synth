@@ -273,6 +273,7 @@ sub check_adaptor {
     my $f1_completed = 0;
     $f1_completed_count = 0;
     $iteration_count = 0;
+    my $stp_timeout = 0;
     while (<LOG>) {
 	if ($_ eq "Match\n" ) {
 	    $matches++;
@@ -350,6 +351,8 @@ sub check_adaptor {
 		    }
 		}
 	    }
+	} elsif (/STP timeout/ and ($f1_completed == 1)) {
+	    $stp_timeout = 1;
 	} 
 	print "  $_";
     }
@@ -358,9 +361,9 @@ sub check_adaptor {
 	die "Missing results from check run";
     }
     if ($fails == 0) {
-	return 1;
+	return (1, [], [], $stp_timeout);
     } else {
-	return (0, [@ce], [@fuzzball_extra_args]);
+	return (0, [@ce], [@fuzzball_extra_args], $stp_timeout);
     }
 }
 
@@ -520,11 +523,24 @@ my $total_ce_time = 0;
 my $total_as_time = 0;
 my $diff;
 my $diff1;
+
+sub get_adaptor_str {
+    my $a = shift(@_);
+    my $a_str = "{ ";
+    for(my $i=0; $i < $#$a; $i+=2) {
+	$a_str .= sprintf("(%d, %d)", $a->[$i], $a->[$i+1]);
+	if($i + 2 < $#$a) { $a_str .= ", "; }
+	else { $a_str .= " "; }
+    }
+    $a_str = $a_str . "}";
+    return $a_str;
+}
+
 while (!$done) {
-    my $adapt_s = join(",", @$adapt);
-    my $ret_adapt_s = join(",", @$ret_adapt);
+    my $adapt_s = get_adaptor_str($adapt);
+    my $ret_adapt_s = get_adaptor_str($ret_adapt); #join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
-    my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt,$ret_adapt);
+    my($res, $cer, $_fuzzball_extra_args, $stp_timeout) = check_adaptor($adapt,$ret_adapt);
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last CE search time = $diff1\n";
@@ -537,11 +553,11 @@ while (!$done) {
 	    print " $tr->[0], $tr->[1], $tr->[2], $tr->[3], $tr->[4], $tr->[5], $tr->[6], $tr->[7], $tr->[8], $tr->[9], $tr->[10]\n";
 	}
 	my $verified="partial";
-	if ($f1_completed_count == $iteration_count) {
-	    $verified="complete";
-	}
+	if ($f1_completed_count == $iteration_count) { $verified="complete"; }
+	if ($stp_timeout == 1) { $verified = "timed-out"; }
 	print "Final adaptor for $frag_file_name is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
 	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
+	get_adaptor_str($adapt);
 	$done = 1;
 	last;
     } else {
