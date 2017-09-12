@@ -144,7 +144,7 @@ splice(@fields, 2 * $f2nargs);
 my @solver_opts = ("-solver", "smtlib", 
 		   # "-save-solver-files", 
 		   "-solver-path", $stp, 
-		   "-solver-timeout",5,"-timeout-as-unsat"
+		   # "-solver-timeout",5,"-timeout-as-unsat"
     );
 
 my @synth_opt = ("-synthesize-adaptor",
