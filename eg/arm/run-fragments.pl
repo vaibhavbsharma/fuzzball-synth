@@ -1,9 +1,18 @@
 #!/usr/bin/perl
 
 use strict;
+use BSD::Resource;
 
 die "Usage: run-fragments.pl <fragments-dir> <bucket-num(1-16)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, any other value=avoid identity fragments using <fragments-dir>/identity-fragments.lst>"
   unless @ARGV == 5;
+
+
+my $success = setrlimit(RLIMIT_VMEM, 4000000000, 4000000000);
+my $rss = getrlimit(RLIMIT_RSS);
+my $vmem = getrlimit(RLIMIT_VMEM);
+my $as = getrlimit(RLIMIT_AS);
+printf("rss = $rss, vmem = $vmem, as = $as\n");
+
 my ($fragments_dir,$bucket_num,$min_frag_size,$max_frag_size,$find_identity_frag) = @ARGV;
 
 my $rand_seed = 1;

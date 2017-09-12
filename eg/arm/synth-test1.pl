@@ -2,7 +2,6 @@
 
 use strict;
 
-
 die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>] (0=x64,any other val=arm) <fragment file name>"
   unless @ARGV == 8;
 my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub, $arch_flag, $frag_file_name) = @ARGV;
@@ -145,7 +144,8 @@ splice(@fields, 2 * $f2nargs);
 my @solver_opts = ("-solver", "smtlib", 
 		   # "-save-solver-files", 
 		   "-solver-path", $stp, 
-		   "-solver-timeout",5,"-timeout-as-unsat");
+		   "-solver-timeout",5,"-timeout-as-unsat"
+    );
 
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "simple", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
@@ -250,6 +250,7 @@ sub check_adaptor {
 		"-iteration-limit", $iteration_limit,
 		"-region-limit", $region_limit,
 		"-branch-preference", "$match_jne_addr:0",
+		"-redirect-stderr-to-stdout",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
@@ -274,6 +275,7 @@ sub check_adaptor {
     $f1_completed_count = 0;
     $iteration_count = 0;
     my $stp_timeout = 0;
+    my $fatal_error = 0;
     while (<LOG>) {
 	if ($_ eq "Match\n" ) {
 	    $matches++;
@@ -351,9 +353,11 @@ sub check_adaptor {
 		    }
 		}
 	    }
-	} elsif (/STP timeout/ and ($f1_completed == 1)) {
+	} elsif (/.*STP timeout.*/ and ($f1_completed == 1)) {
 	    $stp_timeout = 1;
-	} 
+	} elsif (/.*Fatal error.*/) {
+	    $fatal_error = 1;
+	}
 	print "  $_";
     }
     close LOG;
@@ -361,9 +365,9 @@ sub check_adaptor {
 	die "Missing results from check run";
     }
     if ($fails == 0) {
-	return (1, [], [], $stp_timeout);
+	return (1, [], [], $stp_timeout, $fatal_error);
     } else {
-	return (0, [@ce], [@fuzzball_extra_args], $stp_timeout);
+	return (0, [@ce], [@fuzzball_extra_args], $stp_timeout, $fatal_error);
     }
 }
 
@@ -400,6 +404,7 @@ sub try_synth {
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:1",
+		"-redirect-stderr-to-stdout",
 		"-trace-conditions", "-omit-pf-af",
 		"-trace-syscalls",
 		#"-trace-decision-tree",
@@ -540,7 +545,7 @@ while (!$done) {
     my $adapt_s = get_adaptor_str($adapt);
     my $ret_adapt_s = get_adaptor_str($ret_adapt); #join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
-    my($res, $cer, $_fuzzball_extra_args, $stp_timeout) = check_adaptor($adapt,$ret_adapt);
+    my($res, $cer, $_fuzzball_extra_args, $stp_timeout, $fatal_error) = check_adaptor($adapt,$ret_adapt);
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last CE search time = $diff1\n";
@@ -555,6 +560,7 @@ while (!$done) {
 	my $verified="partial";
 	if ($f1_completed_count == $iteration_count) { $verified="complete"; }
 	if ($stp_timeout == 1) { $verified = "timed-out"; }
+	if ($fatal_error == 1) { $verified = "fatal-error"; }
 	print "Final adaptor for $frag_file_name is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
 	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
 	get_adaptor_str($adapt);
