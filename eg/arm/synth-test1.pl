@@ -531,11 +531,10 @@ my $diff1;
 
 sub get_adaptor_str {
     my $a = shift(@_);
-    my $a_str = "{ ";
+    my $a_str = "{";
     for(my $i=0; $i < $#$a; $i+=2) {
 	$a_str .= sprintf("(%d, %d)", $a->[$i], $a->[$i+1]);
 	if($i + 2 < $#$a) { $a_str .= ", "; }
-	else { $a_str .= " "; }
     }
     $a_str = $a_str . "}";
     return $a_str;

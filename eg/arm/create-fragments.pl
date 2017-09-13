@@ -25,17 +25,17 @@ my $line_num = 1;
 
 
 my $frag_contents;
-$frag_contents .= sprintf("04 00 9b e5\n"); #   ldr     r0 [fp #4]\n");
-$frag_contents .= sprintf("08 10 9b e5\n"); #   ldr     r1 [fp #8]\n");
-$frag_contents .= sprintf("0c 20 9b e5\n"); #   ldr     r2 [fp #12]\n");
-$frag_contents .= sprintf("10 30 9b e5\n"); #   ldr     r3 [fp #16]\n");
-$frag_contents .= sprintf("14 40 9b e5\n"); #   ldr     r4 [fp #20]\n");
-$frag_contents .= sprintf("18 50 9b e5\n"); #   ldr     r5 [fp #24]\n");
-$frag_contents .= sprintf("1c 60 9b e5\n"); #   ldr	r6, [fp, #28]
-$frag_contents .= sprintf("20 70 9b e5\n"); #   ldr	r7, [fp, #32]
-$frag_contents .= sprintf("24 80 9b e5\n"); #   ldr	r8, [fp, #36]	; 0x24
-$frag_contents .= sprintf("28 90 9b e5\n"); #   ldr	r9, [fp, #40]	; 0x28
-$frag_contents .= sprintf("2c a0 9b e5\n"); #   ldr	sl, [fp, #44]	; 0x2c
+# $frag_contents .= sprintf("04 00 9b e5\n"); #   ldr     r0 [fp #4]\n");
+# $frag_contents .= sprintf("08 10 9b e5\n"); #   ldr     r1 [fp #8]\n");
+# $frag_contents .= sprintf("0c 20 9b e5\n"); #   ldr     r2 [fp #12]\n");
+# $frag_contents .= sprintf("10 30 9b e5\n"); #   ldr     r3 [fp #16]\n");
+# $frag_contents .= sprintf("14 40 9b e5\n"); #   ldr     r4 [fp #20]\n");
+# $frag_contents .= sprintf("18 50 9b e5\n"); #   ldr     r5 [fp #24]\n");
+# $frag_contents .= sprintf("1c 60 9b e5\n"); #   ldr	r6, [fp, #28]
+# $frag_contents .= sprintf("20 70 9b e5\n"); #   ldr	r7, [fp, #32]
+# $frag_contents .= sprintf("24 80 9b e5\n"); #   ldr	r8, [fp, #36]	; 0x24
+# $frag_contents .= sprintf("28 90 9b e5\n"); #   ldr	r9, [fp, #40]	; 0x28
+# $frag_contents .= sprintf("2c a0 9b e5\n"); #   ldr	sl, [fp, #44]	; 0x2c
 
 my @recent_w_regs = ("null", "null", "null");
 my $ind = 0;

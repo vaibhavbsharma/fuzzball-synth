@@ -15,7 +15,7 @@ int g_code_ind=0;
 extern "C" int f1(int _x1, int _x2, int _x3, int _x4, 
 		  int a0, int a1, int a2, int a3, int a4, int a5,
 		  int a6, int a7, int a8, int a9,
-		  int a10) {
+		  int a10, int a11, int a12) {
   // unsigned char code[] = {
   //   // 0x48, 0x00, 0x1b, 0xe5,  // ldr r0, [fp, #-56]  ; 0x38
   //   // 0x4c, 0x10, 0x1b, 0xe5,  // ldr r1, [fp, #-60]  ; 0x3c
@@ -50,8 +50,8 @@ extern "C" int f1(int _x1, int _x2, int _x3, int _x4,
   register int p8 __asm__("r8") = a8;
   register int p9 __asm__("r9") = a9;
   register int p10 __asm__("r10") = a10;
-  // register int p11 __asm__("r11") = a11;
-  // register int p12 __asm__("r12") = a12;
+  register int p11 __asm__("r11") = a11;
+  register int p12 __asm__("r12") = a12;
   return ((int (*) ())g_code)();
 	
   // // int clamp_component(int x)
@@ -94,12 +94,13 @@ int f2num;
 
 extern "C" int compare(long *r1p, long *r2p,
 		       int a0, int a1, int a2, int a3, int a4, int a5,
-		       int a6, int a7, int a8, int a9, int a10) {
+		       int a6, int a7, int a8, int a9, int a10, int a11, 
+		       int a12) {
   
   printf("Starting f1\n");  
   fflush(stdout);
   
-  long r1 = f1(0, 0, 0, 0, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
+  long r1 = f1(0, 0, 0, 0, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
   
   printf("Completed f1\n");
   fflush(stdout);
@@ -114,8 +115,8 @@ extern "C" int compare(long *r1p, long *r2p,
   register int p8 __asm__("r8") = a8;
   register int p9 __asm__("r9") = a9;
   register int p10 __asm__("r10") = a10;
-  // register int p11 __asm__("r11") = a11;
-  // register int p12 __asm__("r12") = a12;
+  register int p11 __asm__("r11") = a11;
+  register int p12 __asm__("r12") = a12;
   long r2 = f2(a0, a1, a2, a3);
   
   printf("Completed adapted_f1\n");
@@ -232,7 +233,8 @@ int main(int argc, char **argv) {
 	}
 	compare(&r1, &r2,
 		args[0], args[1], args[2], args[3], args[4], args[5],
-		args[6], args[7], args[8], args[9], args[10]);
+		args[6], args[7], args[8], args[9], args[10], args[11],
+		args[12]);
 	if (r1 == r2) {
 	    printf("Both %ld\n", r1);
 	} else {
@@ -249,9 +251,10 @@ int main(int argc, char **argv) {
       	      global_arg0, global_arg1, global_arg2,
       	      global_arg3, global_arg4, global_arg5,
       	      global_arg6, global_arg7, global_arg8,
-      	      global_arg9, global_arg10);
+      	      global_arg9, global_arg10, global_arg11,
+	      global_arg12);
     } else if (argv[3][0] == 'f') {
-      int a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10;
+      int a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12;
         if (argv[4][0] == '-' && argv[4][1] == 0) {
             fh = stdin;
         } else {
@@ -264,10 +267,10 @@ int main(int argc, char **argv) {
         }
 	while (fscanf(fh, "%x %x %x %x %x %x %x %x %x %x %x",
 		      &a0, &a1, &a2, &a3, &a4, &a5, &a6, &a7,
-		      &a8, &a9, &a10) != EOF) {
+		      &a8, &a9, &a10, &a11, &a12) != EOF) {
 	  printf("read a test\n");
 	  fflush(stdout);
-	  int is_eq = compare(0, 0, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
+	  int is_eq = compare(0, 0, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
 	    if (!is_eq)
 		exit(1);
 	}
