@@ -12,7 +12,7 @@ for (my $dir_suffix = 1; $dir_suffix <= 16; $dir_suffix++) {
     printf("grepping on $file_name\n");
     open(LOG, "<" . $file_name) or die "could not open $file_name";
     while(<LOG>) {
-	if(/Final adaptor for \.\.\/arm\/fragments6\/\/.*\.frag is.*/) {
+	if(/Final adaptor for \.\.\/arm\/fragments7\/\/.*\.frag is.*/) {
 	    # printf("line = $_\n");
 	    my @arr = split /\s+/, $_;
 	    my @s1 = split /\//, $arr[3];

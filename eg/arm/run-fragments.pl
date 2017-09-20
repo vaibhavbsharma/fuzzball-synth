@@ -7,7 +7,7 @@ die "Usage: run-fragments.pl <fragments-dir> <bucket-num(1-16)> <min-fragment-le
   unless @ARGV == 5;
 
 
-my $success = setrlimit(RLIMIT_VMEM, 4000000000, 4000000000);
+my $success = setrlimit(RLIMIT_VMEM, 2000000000, 2000000000);
 my $rss = getrlimit(RLIMIT_RSS);
 my $vmem = getrlimit(RLIMIT_VMEM);
 my $as = getrlimit(RLIMIT_AS);
