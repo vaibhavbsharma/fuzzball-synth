@@ -171,7 +171,6 @@ if($const_lb != $const_ub) {
 	}
 	push @const_bounds_ec, ("-extra-condition", $s1);
 	push @const_bounds_ec, ("-extra-condition", $s2);
-	#push @const_bounds_ec, ('-extra-condition '.$n.'_val:reg64_t<=$'.$const_ub.':reg64_t ');
     }
 }
 
@@ -213,7 +212,6 @@ sub check_adaptor {
 		"-symbolic-word", "$arg_addr[10]=k",
 		"-symbolic-word", "$arg_addr[11]=l",
 		"-symbolic-word", "$arg_addr[12]=m",
-		# "-extra-condition","a:reg64_t<0x80000000:reg64_t",
 		"-dont-compare-memory-sideeffects",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
@@ -339,11 +337,11 @@ sub check_adaptor {
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
-	} elsif (/Address [a-m]_([0-9])+:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
+	} elsif (/Address [a-m]_([0-9])+:reg32_t is region ([0-9]+)/ and $f1_completed == 0 ) {
 	    my $add_line = $_;
 	    my $add_var = -1;
 	    for my $v (split(/ /, $add_line)) {
-		if ($v =~ /^[a-m]_([0-9]+):reg64_t$/) { # matches argument name
+		if ($v =~ /^[a-m]_([0-9]+):reg32_t$/) { # matches argument name
 		    $add_var = ord($v) - ord('a');
 		} elsif ($v =~ /^[0-9]$/) { # matches region number
 		    if ($add_var < $f1nargs and $add_var >= 0) {

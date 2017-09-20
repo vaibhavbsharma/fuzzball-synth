@@ -23,7 +23,7 @@ my $region_limit = 936;
 my $sane_addr = 0x42420000;
 
 my @fuzzball_extra_args_arr;
-
+my $numTests = 0;
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
 my $fuzzball="fuzzball";
@@ -31,7 +31,7 @@ my $stp="stp";
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
-
+my $adaptor_score = 0;
 my $bin = "./test_" . $arch_str;
 
 if ($arch_flag==0) {
@@ -117,23 +117,23 @@ my($fields_addr);
 
 my @fields =
   (["a_type",  "reg8_t", "%01x"],
-   ["a_val",      "reg64_t", "%016x"],
+   ["a_val",      "reg32_t", "%016x"],
    ["b_type",  "reg8_t", "%01x"],
-   ["b_val",      "reg64_t", "%016x"],
+   ["b_val",      "reg32_t", "%016x"],
    ["c_type",  "reg8_t", "%01x"],
-   ["c_val",      "reg64_t", "%016x"],
+   ["c_val",      "reg32_t", "%016x"],
    ["d_type",  "reg8_t", "%01x"],
-   ["d_val",      "reg64_t", "%016x"],
+   ["d_val",      "reg32_t", "%016x"],
    ["e_type",  "reg8_t", "%01x"],
-   ["e_val",      "reg64_t", "%016x"],
+   ["e_val",      "reg32_t", "%016x"],
    ["f_type",  "reg8_t", "%01x"],
-   ["f_val",      "reg64_t", "%016x"],
+   ["f_val",      "reg32_t", "%016x"],
 );
 
 my @ret_fields = 
 (
    ["ret_type",  "reg8_t", "%01x"],
-   ["ret_val",   "reg64_t", "%016x"],
+   ["ret_val",   "reg32_t", "%016x"],
 );
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
@@ -152,7 +152,7 @@ my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "typeconv", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
 
 my @synth_ret_opt = ("-synthesize-return-adaptor",
-		 join(":", "return-typeconv", $f2_addr, $post_f2_call, $f2nargs));
+		 join(":", "return-typeconv", $f2_call_addr, $post_f2_call, $f2nargs));
 
 print "synth_ret_opt = @synth_ret_opt\n";
 
@@ -163,16 +163,15 @@ if($const_lb != $const_ub) {
 	my $s1='';
 	my $s2='';
 	if($f1nargs != 0) {
-	    $s1 = sprintf("%s_type:reg8_t==0:reg8_t | %s_val:reg64_t>=\$0x%Lx:reg64_t",$n,$n,$const_lb);
-	    $s2 = sprintf("%s_type:reg8_t==0:reg8_t | %s_val:reg64_t<=\$0x%Lx:reg64_t",$n,$n,$const_ub);
+	    $s1 = sprintf("%s_type:reg8_t==0:reg8_t | %s_val:reg32_t>=\$0x%Lx:reg32_t",$n,$n,$const_lb);
+	    $s2 = sprintf("%s_type:reg8_t==0:reg8_t | %s_val:reg32_t<=\$0x%Lx:reg32_t",$n,$n,$const_ub);
 	}
 	else {
-	    $s1 = sprintf("%s_val:reg64_t>=\$0x%016x:reg64_t",$n,$const_lb);
-	    $s2 = sprintf("%s_val:reg64_t<=\$0x%016x:reg64_t",$n,$const_ub);
+	    $s1 = sprintf("%s_val:reg32_t>=\$0x%016x:reg32_t",$n,$const_lb);
+	    $s2 = sprintf("%s_val:reg32_t<=\$0x%016x:reg32_t",$n,$const_ub);
 	}
 	push @const_bounds_ec, ("-extra-condition", $s1);
 	push @const_bounds_ec, ("-extra-condition", $s2);
-	#push @const_bounds_ec, ('-extra-condition '.$n.'_val:reg64_t<=$'.$const_ub.':reg64_t ');
     }
 }
 
@@ -213,8 +212,8 @@ sub check_adaptor {
 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
 	push @conc_ret_adapt, ("-extra-condition", $s);
     }
-    my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch,
-		"load-base", "0x8000",
+    my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch_str,
+		"-load-base", "0x8000",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
 		"-symbolic-word", "$arg_addr[0]=a",
@@ -230,6 +229,7 @@ sub check_adaptor {
 		"-symbolic-word", "$arg_addr[10]=k",
 		"-symbolic-word", "$arg_addr[11]=l",
 		"-symbolic-word", "$arg_addr[12]=m",
+		"-dont-compare-memory-sideeffects",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
 		"-trace-syscalls",
@@ -242,16 +242,19 @@ sub check_adaptor {
 		#"-save-decision-tree-interval", 1,
 		#"-trace-decision-tree",
 		"-trace-binary-paths-bracketed", #"-narrow-bitwidth-cutoff","1",
-		#"-trace-offset-limit",
 		"-trace-basic",
-		#"-trace-eip",
-		#"-trace-registers",
+		# "-trace-eip",
+		# "-trace-registers",
 		#"-trace-stmts",
-		#"-trace-insns",
-		#"-trace-loads",
-		#"-trace-stores",
+		# "-trace-ir",
+		# "-trace-insns",
+		# "-trace-loads",
+		# "-trace-eval",
+		# "-trace-stores",
+		# "-trace-offset-limit",
 		"-trace-conditions",
 		"-trace-decisions",
+		# "-tracepoint","0x27dac:R2:reg32_t",
 		#"-trace-solver",
 		#"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
@@ -262,13 +265,13 @@ sub check_adaptor {
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		"-region-limit", $region_limit,
-		"-nonzero-divisors",
 		"-branch-preference", "$match_jne_addr:1",
+		"-redirect-stderr-to-stdout",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"-fragments",
-		"--", $bin, $f1num, $f2num, "g", $frag_file_name);
+	    "--", $bin, $f1num, $f2num, "g", $frag_file_name);
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
@@ -386,11 +389,11 @@ sub check_adaptor {
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
-	} elsif (/Address [a-m]_([0-9])+:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
+	} elsif (/Address [a-m]_([0-9])+:reg32_t is region ([0-9]+)/ and $f1_completed == 0 ) {
 	    my $add_line = $_;
 	    my $add_var = -1;
 	    for my $v (split(/ /, $add_line)) {
-		if ($v =~ /^[a-m]_([0-9]+):reg64_t$/) { # matches argument name
+		if ($v =~ /^[a-m]_([0-9]+):reg32_t$/) { # matches argument name
 		    $add_var = ord($v) - ord('a');
 		    printf("add_var = $add_var\n");
 		} elsif ($v =~ /^[0-9]$/) { # matches region number
