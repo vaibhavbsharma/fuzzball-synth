@@ -83,7 +83,7 @@ my $post_f1_call = sprintf("0x%x",hex($f1_call_addr)+0x4);
 my $post_f2_call = sprintf("0x%x",hex($f2_call_addr)+0x4);
 
 my @arg_addr;
-for my $i (0 .. 10) {
+for my $i (0 .. 12) {
     $arg_addr[$i] =
       "0x" . substr(`nm $bin | egrep -e " B global_arg$i\$"`, 0, 8);
 }
@@ -101,7 +101,7 @@ print "fuzz-start-addr: $fuzz_start_addr\n";
 print "f1:   $f1_addr @ $f1_call_addr\n";
 print "f2:   $f2_addr\n";
 print "wrap_f2: $wrap_f2_addr @ $f2_call_addr\n";
-for my $i (0 .. 10) {
+for my $i (0 .. 12) {
     print "arg$i: $arg_addr[$i]\n";
 }
 print "branch: $match_jne_addr\n";
@@ -211,6 +211,8 @@ sub check_adaptor {
 		"-symbolic-word", "$arg_addr[8]=i",
 		"-symbolic-word", "$arg_addr[9]=j",
 		"-symbolic-word", "$arg_addr[10]=k",
+		"-symbolic-word", "$arg_addr[11]=l",
+		"-symbolic-word", "$arg_addr[12]=m",
 		# "-extra-condition","a:reg64_t<0x80000000:reg64_t",
 		"-dont-compare-memory-sideeffects",
 		"-trace-sym-addr-details",
@@ -303,7 +305,7 @@ sub check_adaptor {
 	    my $vars = $1;
 	    @ce = (0) x $f1nargs;
 	    for my $v (split(/ /, $vars)) {
-		if ($v =~ /^([a-k])=(0x[0-9a-f]+)$/) {
+		if ($v =~ /^([a-m])=(0x[0-9a-f]+)$/) {
 		    my $index = ord($1) - ord("a");
 		    $ce[$index] = hex $2;
 		    if ($arg_to_regnum[$index] != 0) {
@@ -337,11 +339,11 @@ sub check_adaptor {
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
-	} elsif (/Address [a-k]_([0-9])+:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
+	} elsif (/Address [a-m]_([0-9])+:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
 	    my $add_line = $_;
 	    my $add_var = -1;
 	    for my $v (split(/ /, $add_line)) {
-		if ($v =~ /^[a-k]_([0-9]+):reg64_t$/) { # matches argument name
+		if ($v =~ /^[a-m]_([0-9]+):reg64_t$/) { # matches argument name
 		    $add_var = ord($v) - ord('a');
 		} elsif ($v =~ /^[0-9]$/) { # matches region number
 		    if ($add_var < $f1nargs and $add_var >= 0) {
@@ -381,8 +383,8 @@ sub try_synth {
     }
     open(TESTS, ">tests");
     for my $t (@$testsr) {
-	my @vals = (@$t, (0) x 11);
-	splice(@vals, 11);
+	my @vals = (@$t, (0) x 13);
+	splice(@vals, 13);
 	my $test_str = join(" ", map(sprintf("0x%x", $_), @vals));
 	print TESTS $test_str, "\n";
     }
@@ -554,7 +556,7 @@ while (!$done) {
 	print "Success!\n";
 	print "Final test set:\n";
 	for my $tr (@tests) {
-	    print " $tr->[0], $tr->[1], $tr->[2], $tr->[3], $tr->[4], $tr->[5], $tr->[6], $tr->[7], $tr->[8], $tr->[9], $tr->[10]\n";
+	    print " $tr->[0], $tr->[1], $tr->[2], $tr->[3], $tr->[4], $tr->[5], $tr->[6], $tr->[7], $tr->[8], $tr->[9], $tr->[10], $tr->[11], $tr->[12]\n";
 	}
 	my $verified="partial";
 	if ($f1_completed_count == $iteration_count) { $verified="complete"; }
@@ -573,8 +575,8 @@ while (!$done) {
     }
 
     ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
-    print "Synthesized arg adaptor ".join(",",@$adapt).
-	" and return adaptor ".join(",",@$ret_adapt)."\n";
+    print "Synthesized arg adaptor ".get_adaptor_str($adapt).
+	" and return adaptor ".get_adaptor_str($ret_adapt)."\n";
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last AS search time = $diff1\n";
