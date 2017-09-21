@@ -137,12 +137,10 @@ my @ret_fields =
 );
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
-#$f1nargs=6;
-#$f2nargs=6;
 
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", 
+my @solver_opts = ("-solver", "smtlib", 
 		   # "-save-solver-files",
 		   "-solver-path", $stp, 
 		   # "-solver-timeout",5,"-timeout-as-unsat"
@@ -271,7 +269,8 @@ sub check_adaptor {
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"-fragments",
-	    "--", $bin, $f1num, $f2num, "g", $frag_file_name);
+		"-adaptor-ivc",
+		"--", $bin, $f1num, $f2num, "g", $frag_file_name);
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
@@ -568,8 +567,8 @@ if ($f1nargs==0) {
 }
 
 # Set these to test a specific adaptor
-$adapt->[0]=1;
-$adapt->[1]=0;
+# $adapt->[0]=0;
+# $adapt->[1]=4;
 # $adapt->[2]=1;
 # $adapt->[3]=0;
 # $adapt->[4]=1;
@@ -596,6 +595,7 @@ sub get_adaptor_str {
     return $a_str;
 }
 
+`rm str_arg*`;
 while (!$done) {
     my $adapt_s = get_adaptor_str($adapt);
     my $ret_adapt_s = get_adaptor_str($ret_adapt); #join(",", @$ret_adapt);
