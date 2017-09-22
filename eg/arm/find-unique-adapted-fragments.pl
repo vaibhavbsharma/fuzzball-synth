@@ -2,12 +2,12 @@
 
 use strict;
 
-die "Usage: find-unique-adaptors.pl <log-file-to-be-grepped-to-extract-unique-adaptors>"
+die "Usage: find-unique-adaptors.pl <log-file-to-be-grepped-to-extract-unique-adaptors> <number of bucket directories>"
   unless @ARGV == 1;
-my($log_file_name) = @ARGV;
+my($log_file_name,$num_dirs) = @ARGV;
 
 my %adaptors_str = ();
-for (my $dir_suffix = 1; $dir_suffix <= 16; $dir_suffix++) {
+for (my $dir_suffix = 1; $dir_suffix <= $num_dirs; $dir_suffix++) {
     my $file_name = "../arm-".$dir_suffix."/logs/".$log_file_name;
     printf("grepping on $file_name\n");
     open(LOG, "<" . $file_name) or die "could not open $file_name";

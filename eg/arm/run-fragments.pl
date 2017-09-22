@@ -3,8 +3,8 @@
 use strict;
 use BSD::Resource;
 
-die "Usage: run-fragments.pl <fragments-dir> <bucket-num(1-16)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, any other value=avoid identity fragments using <fragments-dir>/identity-fragments.lst>"
-  unless @ARGV == 5;
+die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buckets)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, any other value=avoid identity fragments using <fragments-dir>/identity-fragments.lst> <1=argsub, 2=typeconv adaptor>"
+  unless @ARGV == 7;
 
 
 my $success = setrlimit(RLIMIT_VMEM, 2000000000, 2000000000);
@@ -13,12 +13,12 @@ my $vmem = getrlimit(RLIMIT_VMEM);
 my $as = getrlimit(RLIMIT_AS);
 printf("rss = $rss, vmem = $vmem, as = $as\n");
 
-my ($fragments_dir,$bucket_num,$min_frag_size,$max_frag_size,$find_identity_frag) = @ARGV;
+my ($fragments_dir,$max_buckets,$bucket_num,$min_frag_size,$max_frag_size,$find_identity_frag,$adaptor_family) = @ARGV;
 
 my $rand_seed = 1;
 my $const_lb = 0;
 my $const_ub = 255;
-my $num_secs_to_timeout=60; # https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
+my $num_secs_to_timeout=120; # https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
 
 my @identity_fragments = ();
 if($find_identity_frag != 1) {
@@ -58,7 +58,7 @@ for(my $i = 0; $i < scalar(@fragments); $i++) {
 }
 printf("# of frags = %d\n", scalar(@filtered_fragments));
 
-my $bucket_size = scalar(@filtered_fragments)/16;
+my $bucket_size = scalar(@filtered_fragments)/$max_buckets;
 my $starting_frag = ($bucket_num-1)*$bucket_size;
 my $ending_frag = $starting_frag + $bucket_size;
 if($ending_frag > scalar(@filtered_fragments)) { $ending_frag = scalar(@filtered_fragments)-1; }
@@ -69,7 +69,7 @@ if($ending_frag > scalar(@filtered_fragments)) { $ending_frag = scalar(@filtered
 # } 
 
 my @this_bucket_fragments = ();
-for(my $i = $bucket_num-1; $i < scalar(@filtered_fragments); $i += 16) {
+for(my $i = $bucket_num-1; $i < scalar(@filtered_fragments); $i += $max_buckets) {
    push @this_bucket_fragments, [$filtered_fragments[$i][0], $filtered_fragments[$i][1]]; 
 }
 
@@ -81,10 +81,15 @@ for(my $i = 0; $i < scalar(@this_bucket_fragments); $i++) {
     $frag_file =~ s/\n//;
     # printf("frag_file = $frag_file, distance = $distance\n");
     $frag_file = $fragments_dir . "/" . $frag_file;
+    
     my $inner_func_num = 0;
     if($find_identity_frag == 1) { $inner_func_num = 3; } 
     else { $inner_func_num = 2; }
-    my @cmd = ("perl","synth-argsub-frag.pl","1",$inner_func_num,$rand_seed, "1", $const_lb, $const_ub,
+
+    my $adaptor_driver = "synth-argsub-frag.pl";
+    if($adaptor_family==2) { $adaptor_driver = "synth-typeconv-frag.pl"; }
+    
+    my @cmd = ("perl",$adaptor_driver,"1",$inner_func_num,$rand_seed, "1", $const_lb, $const_ub,
 	       "1", "$frag_file");
     printf("cmd = @cmd\n");
     # open(LOG, "-|", @cmd);
