@@ -3,7 +3,7 @@
 use strict;
 
 die "Usage: find-unique-adaptors.pl <log-file-to-be-grepped-to-extract-unique-adaptors> <number of bucket directories>"
-  unless @ARGV == 1;
+  unless @ARGV == 2;
 my($log_file_name,$num_dirs) = @ARGV;
 
 my %adaptors_str = ();
@@ -12,11 +12,12 @@ for (my $dir_suffix = 1; $dir_suffix <= $num_dirs; $dir_suffix++) {
     printf("grepping on $file_name\n");
     open(LOG, "<" . $file_name) or die "could not open $file_name";
     while(<LOG>) {
-	if(/Final adaptor for \.\.\/arm\/fragments7\/\/.*\.frag is.*/) {
+	if(/Final adaptor for \.\.\/arm\/fragments7\/.*\.frag is.*/) {
 	    # printf("line = $_\n");
 	    my @arr = split /\s+/, $_;
 	    my @s1 = split /\//, $arr[3];
-	    my @s2 = split /_/, $s1[4];
+	    my @s2 = split /_/, $s1[3];
+	    # printf("s1 = @s1, s2 = @s2\n");
 	    if(exists $adaptors_str{$s2[0]}) {
 		push $adaptors_str{$s2[0]}, ($s2[1], $s1[4]);
 	    } else {
