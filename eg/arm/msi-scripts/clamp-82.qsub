@@ -1,0 +1,22 @@
+#!/bin/bash -l        
+#PBS -l walltime=04:00:00,nodes=1:ppn=8,pmem=2gb 
+#PBS -m abe 
+#PBS -M vaibhav@umn.edu 
+cd ~/clamp
+cd $HOME/clamp/arm-9;
+perl run-fragments-msi.pl /home/smccaman/vaibhav/fuzzball-synth/eg/arm/fragments7 16 9 3 20 0 2 constant-bounds.lst >> logs/6-ty.log &
+cd $HOME/clamp/arm-10;
+perl run-fragments-msi.pl /home/smccaman/vaibhav/fuzzball-synth/eg/arm/fragments7 16 10 3 20 0 2 constant-bounds.lst >>logs/6-ty.log &
+cd $HOME/clamp/arm-11;
+perl run-fragments-msi.pl /home/smccaman/vaibhav/fuzzball-synth/eg/arm/fragments7 16 11 3 20 0 2 constant-bounds.lst >>logs/6-ty.log &
+cd $HOME/clamp/arm-12;
+perl run-fragments-msi.pl /home/smccaman/vaibhav/fuzzball-synth/eg/arm/fragments7 16 12 3 20 0 2 constant-bounds.lst >>logs/6-ty.log &
+cd $HOME/clamp/arm-13;
+perl run-fragments-msi.pl /home/smccaman/vaibhav/fuzzball-synth/eg/arm/fragments7 16 13 3 20 0 2 constant-bounds.lst >>logs/6-ty.log &
+cd $HOME/clamp/arm-14;
+perl run-fragments-msi.pl /home/smccaman/vaibhav/fuzzball-synth/eg/arm/fragments7 16 14 3 20 0 2 constant-bounds.lst >>logs/6-ty.log &
+cd $HOME/clamp/arm-15;
+perl run-fragments-msi.pl /home/smccaman/vaibhav/fuzzball-synth/eg/arm/fragments7 16 15 3 20 0 2 constant-bounds.lst >>logs/6-ty.log &
+cd $HOME/clamp/arm-16;
+perl run-fragments-msi.pl /home/smccaman/vaibhav/fuzzball-synth/eg/arm/fragments7 16 16 3 20 0 2 constant-bounds.lst >>logs/6-ty.log &
+wait
