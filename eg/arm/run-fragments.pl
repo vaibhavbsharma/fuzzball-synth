@@ -3,8 +3,8 @@
 use strict;
 use BSD::Resource;
 
-die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buckets)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, any other value=avoid identity fragments using <fragments-dir>/identity-fragments.lst> <1=argsub, 2=typeconv adaptor>"
-  unless @ARGV == 7;
+die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buckets)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, any other value=avoid identity fragments using <fragments-dir>/identity-fragments.lst> <1=argsub, 2=typeconv adaptor> <constant bounds file>"
+  unless @ARGV == 8;
 
 
 my $success = setrlimit(RLIMIT_VMEM, 2000000000, 2000000000);
@@ -13,11 +13,9 @@ my $vmem = getrlimit(RLIMIT_VMEM);
 my $as = getrlimit(RLIMIT_AS);
 printf("rss = $rss, vmem = $vmem, as = $as\n");
 
-my ($fragments_dir,$max_buckets,$bucket_num,$min_frag_size,$max_frag_size,$find_identity_frag,$adaptor_family) = @ARGV;
+my ($fragments_dir,$max_buckets,$bucket_num,$min_frag_size,$max_frag_size,$find_identity_frag,$adaptor_family,$const_bounds_file) = @ARGV;
 
 my $rand_seed = 1;
-my $const_lb = 0;
-my $const_ub = 255;
 my $num_secs_to_timeout;
 if($adaptor_family == 1) { $num_secs_to_timeout = 60; }
 else { $num_secs_to_timeout = 120; }# https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
@@ -91,7 +89,7 @@ for(my $i = 0; $i < scalar(@this_bucket_fragments); $i++) {
     my $adaptor_driver = "synth-argsub-frag.pl";
     if($adaptor_family==2) { $adaptor_driver = "synth-typeconv-frag.pl"; }
     
-    my @cmd = ("perl",$adaptor_driver,"1",$inner_func_num,$rand_seed, "1", $const_lb, $const_ub,
+    my @cmd = ("perl",$adaptor_driver,"1",$inner_func_num,$rand_seed, "1", $const_bounds_file,
 	       "1", "$frag_file");
     printf("cmd = @cmd\n");
     # open(LOG, "-|", @cmd);

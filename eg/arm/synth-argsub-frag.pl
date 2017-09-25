@@ -2,9 +2,9 @@
 
 use strict;
 
-die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>] (0=x64,any other val=arm) <fragment file name>"
-  unless @ARGV == 8;
-my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub, $arch_flag, $frag_file_name) = @ARGV;
+die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) <constant bounds file> (0=x64,any other val=arm) <fragment file name>"
+  unless @ARGV == 7;
+my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_bounds_file, $arch_flag, $frag_file_name) = @ARGV;
 
 srand($rand_seed);
 
@@ -155,23 +155,40 @@ my @synth_ret_opt = ("-synthesize-return-adaptor",
 
 print "synth_ret_opt = @synth_ret_opt\n";
 
-my @const_bounds_ec = ();
-if($const_lb != $const_ub) {
-    for (my $i=0; $i<$f2nargs; $i++) {
-	my $n = chr(97 + $i);
-	my $s1='';
-	my $s2='';
-	if($f1nargs != 0) {
-	    $s1 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg32_t>=\$0x%Lx:reg32_t",$n,$n,$const_lb);
-	    $s2 = sprintf("%s_is_const:reg1_t==0:reg1_t | %s_val:reg32_t<=\$0x%Lx:reg32_t",$n,$n,$const_ub);
-	}
-	else {
-	    $s1 = sprintf("%s_val:reg32_t>=\$0x%016x:reg32_t",$n,$const_lb);
-	    $s2 = sprintf("%s_val:reg32_t<=\$0x%016x:reg32_t",$n,$const_ub);
-	}
-	push @const_bounds_ec, ("-extra-condition", $s1);
-	push @const_bounds_ec, ("-extra-condition", $s2);
+open(F, "<$const_bounds_file") or die "cannot open constant bounds file";
+my @const_bounds = ();
+my @const_vals = ();
+while(<F>) {
+    if(/^.*-.*$/) {
+	my @a = split /-/, $_;
+	push @const_bounds, ($a[0], $a[1]);
+    } else { 
+	my $c = $_ + 0;
+	push @const_vals, $c;
     }
+}
+if(scalar(@const_bounds)==0 && scalar(@const_vals)==0) {
+    die "no constant bounds specified in $const_bounds_file";
+}
+my @const_bounds_ec = ();
+for (my $i=0; $i<$f2nargs; $i++) {
+    my $n = chr(97 + $i);
+    my $s1 = sprintf("%s_is_const:reg1_t==0:reg1_t ", $n);
+    my $s2 = sprintf("%s_is_const:reg1_t==0:reg1_t ", $n);
+    if($f1nargs == 0) {
+	$s1 = "1:reg1_t == 0:reg1_t";
+	$s2 = "1:reg1_t == 0:reg1_t";
+    }
+    for (my $i=0; $i < scalar(@const_bounds); $i+=2) {
+	$s1 .= sprintf(" | %s_val:reg32_t>=\$0x%Lx:reg32_t",$n,$const_bounds[$i]);
+	$s2 .= sprintf(" | %s_val:reg32_t<=\$0x%Lx:reg32_t",$n,$const_bounds[$i+1]);
+    }
+    for (my $i=0; $i < scalar(@const_vals); $i++) {
+	$s1 .= sprintf(" | %s_val==0x%Lx:reg32_t", $n, $const_vals[$i]);
+	$s2 .= sprintf(" | %s_val==0x%Lx:reg32_t", $n, $const_vals[$i]);
+    }
+    push @const_bounds_ec, ("-extra-condition", $s1);
+    push @const_bounds_ec, ("-extra-condition", $s2);
 }
 
 #print "const_bounds_ec = @const_bounds_ec\n";
