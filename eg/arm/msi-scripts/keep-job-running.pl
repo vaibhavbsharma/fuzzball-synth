@@ -14,7 +14,7 @@ if( substr($job_name, length($job_name)-5) =~ ".qsub") {
 my $output = `ssh itasca "qstat -u vaibhav"`;
 my $found = 0;
 if(index($output, $job_name) != -1) { $found = 1; }
-printf("found = $found\n");
+# printf("found = $found\n");
 if($found == 0) {
     my $o = `ssh itasca "qsub $dir/$job_name.qsub"`;
     printf("new job queued: output = $o\n");

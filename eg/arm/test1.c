@@ -12,6 +12,9 @@
 unsigned char g_code[MAX_FRAG_SIZE];
 int g_code_ind=0;
 
+
+int *saved_sp;
+int ret_val;
 extern "C" int f1(int _x1, int _x2, int _x3, int _x4, 
 		  int a0, int a1, int a2, int a3, int a4, int a5,
 		  int a6, int a7, int a8, int a9,
@@ -39,6 +42,9 @@ extern "C" int f1(int _x1, int _x2, int _x3, int _x4,
   //   0x1e, 0xff, 0x2f, 0xe1,  // bx lr
   //   0x00, 0x00, 0xa0, 0xe1,   // nop
   // };
+  
+  // https://stackoverflow.com/questions/2114163/reading-a-register-value-into-a-c-variable
+  asm ("mov %0, %%sp" : "=r" (saved_sp) );
   register int p0 __asm__("r0") = a0;
   register int p1 __asm__("r1") = a1;
   register int p2 __asm__("r2") = a2;
@@ -52,7 +58,11 @@ extern "C" int f1(int _x1, int _x2, int _x3, int _x4,
   register int p10 __asm__("r10") = a10;
   register int p11 __asm__("r11") = a11;
   register int p12 __asm__("r12") = a12;
-  return ((int (*) ())g_code)();
+  
+  ret_val = ((int (*) ())g_code)();
+  register int *_sp __asm__("sp") = saved_sp;
+  
+  return ret_val;
 	
   // // int clamp_component(int x)
   // if ((unsigned) x > 255)
@@ -85,6 +95,7 @@ struct func_info funcs[] = {
   /* 1 */ {"boost_clamp", (func*)&boost_clamp, 4, 0, 0}, // placeholder
   /* 2 */ {"boost_clamp", (func*)&boost_clamp, 4, 0, 0},
   /* 3 */ {"identity_fn", (func*)&identity_fn, 4, 0, 0},
+  /* 4 */ {"abs",         (func*)&abs,         3, 0, 0},
 };
 int f2num; 
 
@@ -99,7 +110,7 @@ extern "C" int compare(long *r1p, long *r2p,
   
   printf("Starting f1\n");  
   fflush(stdout);
-  
+ 
   long r1 = f1(0, 0, 0, 0, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
   
   printf("Completed f1\n");

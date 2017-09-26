@@ -2,3 +2,4 @@
 1 13  f1 int (unsigned char *, int)
 2 4  f2 int (unsigned char *, int)
 3 4  f3 int (unsigned char *, int)
+4 3  abs int (unsigned char *, int)
