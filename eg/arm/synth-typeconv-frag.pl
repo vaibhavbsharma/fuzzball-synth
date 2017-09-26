@@ -141,7 +141,7 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 splice(@fields, 2 * $f2nargs);
 
 my @solver_opts = ("-solver", "smtlib", 
-		   # "-save-solver-files",
+		   "-save-solver-files",
 		   "-solver-path", $stp, 
 		   # "-solver-timeout",5,"-timeout-as-unsat"
     );
@@ -260,8 +260,8 @@ sub check_adaptor {
 		"-symbolic-word", "$arg_addr[11]=l",
 		"-symbolic-word", "$arg_addr[12]=m",
 		"-dont-compare-memory-sideeffects",
-    @verbose_args,
-    # "-trace-temps",#"-narrow-bitwidth-cutoff","1",
+		@verbose_args,
+		# "-trace-temps",#"-narrow-bitwidth-cutoff","1",
 		"-trace-regions",
 		"-omit-pf-af",
 		"-table-limit","12",
@@ -295,15 +295,17 @@ sub check_adaptor {
 		"-fragments",
 		"-adaptor-ivc",
 		"--", $bin, $f1num, $f2num, "g", $frag_file_name);
-#    my @printable;
-#    for my $a (@args) {
-#	if ($a =~ /[\s|<>]/) {
-#	    push @printable, "'$a'";
-#	} else {
-#	    push @printable, $a;
-#	}
-#    }
-#    print "@printable\n";
+    if($verbose == 1) {
+	my @printable;
+	for my $a (@args) {
+	    if ($a =~ /[\s|<>]/) {
+		push @printable, "'$a'";
+	    } else {
+		push @printable, $a;
+	    }
+	}
+	print "@printable\n";
+    }
     open(LOG, "-|", @args);
     my($matches, $fails) = (0, 0);
     my(@ce, $this_ce);
@@ -503,15 +505,17 @@ sub try_synth {
 		"-trace-stopping",
 		"-fragments",
 		"--", $bin, $f1num, $f2num, "f", "tests", $frag_file_name);
-#    my @printable;
-#    for my $a (@args) {
-#	if ($a =~ /[\s|<>]/) {
-#	    push @printable, "'$a'";
-#	} else {
-#	    push @printable, $a;
-#	}
-#    }
-#    print "@printable\n";
+    if($verbose == 1) {
+	my @printable;
+	for my $a (@args) {
+	    if ($a =~ /[\s|<>]/) {
+		push @printable, "'$a'";
+	    } else {
+		push @printable, $a;
+	    }
+	}
+	print "@printable\n";
+    }
     open(LOG, "-|", @args);
     my($success, %fields);
     $success = 0;
