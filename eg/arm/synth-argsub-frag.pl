@@ -159,14 +159,15 @@ open(F, "<$const_bounds_file") or die "cannot open constant bounds file";
 my @const_bounds = ();
 my @const_vals = ();
 while(<F>) {
-    if(/^.*-.*$/) {
-	my @a = split /-/, $_;
-	push @const_bounds, ($a[0], $a[1]);
+  if(/^([-0-9]+)-([-0-9]+)$/) {
+  my ($lb,$ub) = ($1,$2);
+	push @const_bounds, ($lb, $ub);
     } else { 
 	my $c = $_ + 0;
 	push @const_vals, $c;
     }
 }
+
 if(scalar(@const_bounds)==0 && scalar(@const_vals)==0) {
     die "no constant bounds specified in $const_bounds_file";
 }
