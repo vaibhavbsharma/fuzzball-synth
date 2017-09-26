@@ -208,6 +208,9 @@ if($verbose == 1) {
   "-trace-adaptor"); 
 }
 
+my ($total_ce_time,$total_as_time) = (0,0);
+my ($total_ce_steps,$total_as_steps) = (0,0);
+
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
@@ -486,6 +489,10 @@ sub try_synth {
     }
     close LOG;
     if (!$success) {
+	printf("total time (ce,as,total) = ($total_ce_time,$total_as_time,%d)\n",
+	       $total_as_time + $total_ce_time);
+	printf("total steps (ce,as,total) = ($total_ce_steps,$total_as_steps,%d)\n",
+	       $total_ce_steps + $total_as_steps);
 	print "Synthesis failure: seems the functions are not equivalent.\n";
 	exit 2;
     }
@@ -544,8 +551,8 @@ my @tests = ();
 my $done = 0;
 my $start_time = time();
 my $reset_time = time();
-my $total_ce_time = 0;
-my $total_as_time = 0;
+my ($total_ce_time,$total_as_time) = (0,0);
+my ($total_ce_steps,$total_as_steps) = (0,0);
 my $diff;
 my $diff1;
 
@@ -565,6 +572,7 @@ while (!$done) {
     my $ret_adapt_s = get_adaptor_str($ret_adapt); #join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
     my($res, $cer, $_fuzzball_extra_args, $stp_timeout, $fatal_error) = check_adaptor($adapt,$ret_adapt);
+    $total_ce_steps++;
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last CE search time = $diff1\n";
@@ -581,8 +589,10 @@ while (!$done) {
 	if ($stp_timeout == 1) { $verified = "timed-out"; }
 	if ($fatal_error == 1) { $verified = "fatal-error"; }
 	print "Final adaptor for $frag_file_name is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
-	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
-	get_adaptor_str($adapt);
+	printf("total time (ce,as,total) = ($total_ce_time,$total_as_time,%d)\n",
+	       $total_as_time + $total_ce_time);
+	printf("total steps (ce,as,total) = ($total_ce_steps,$total_as_steps,%d)\n",
+	       $total_ce_steps + $total_as_steps);
 	$done = 1;
 	last;
     } else {
@@ -593,6 +603,7 @@ while (!$done) {
     }
 
     ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
+    $total_as_steps++;
     print "Synthesized arg adaptor ".get_adaptor_str($adapt).
 	" and return adaptor ".get_adaptor_str($ret_adapt)."\n";
     $diff = time() - $start_time;
