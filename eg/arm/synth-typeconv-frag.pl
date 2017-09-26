@@ -2,9 +2,9 @@
 
 use strict;
 
-die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [constant bounds file] (0=x64,any other val=arm) <fragment file name>"
-  unless @ARGV == 7;
-my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_bounds_file, $arch_flag, $frag_file_name) = @ARGV;
+die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [constant bounds file] (0=x64,any other val=arm) <fragment file name> <1=verbose, else non-verbose mode>"
+  unless @ARGV == 8;
+my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_bounds_file, $arch_flag, $frag_file_name, $verbose) = @ARGV;
 
 srand($rand_seed);
 
@@ -208,6 +208,21 @@ sub generate_new_file
     }
     close(BIN);
 }
+
+my @verbose_args = ();
+if($verbose == 1) {
+  @verbose_args = ("-trace-sym-addr-details", 
+  "-trace-sym-addrs", 
+  "-trace-syscalls", 
+  "-trace-memory-snapshots", 
+  "-trace-tables", 
+  "-trace-binary-paths-bracketed", 
+  "-trace-basic", 
+  "-trace-conditions", 
+  "-trace-decisions", 
+  "-trace-adaptor"); 
+}
+
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
@@ -245,19 +260,13 @@ sub check_adaptor {
 		"-symbolic-word", "$arg_addr[11]=l",
 		"-symbolic-word", "$arg_addr[12]=m",
 		"-dont-compare-memory-sideeffects",
-		"-trace-sym-addr-details",
-		"-trace-sym-addrs",
-		"-trace-syscalls",
-		"-omit-pf-af",
-		# "-trace-temps",
+    @verbose_args,
+    # "-trace-temps",#"-narrow-bitwidth-cutoff","1",
 		"-trace-regions",
-		"-trace-memory-snapshots",
-		"-trace-tables",
+		"-omit-pf-af",
 		"-table-limit","12",
 		#"-save-decision-tree-interval", 1,
 		#"-trace-decision-tree",
-		"-trace-binary-paths-bracketed", #"-narrow-bitwidth-cutoff","1",
-		"-trace-basic",
 		# "-trace-eip",
 		# "-trace-registers",
 		#"-trace-stmts",
@@ -267,8 +276,6 @@ sub check_adaptor {
 		# "-trace-eval",
 		# "-trace-stores",
 		# "-trace-offset-limit",
-		"-trace-conditions",
-		"-trace-decisions",
 		# "-tracepoint","0x27dac:R2:reg32_t",
 		#"-trace-solver",
 		#"-save-solver-files", 
@@ -288,15 +295,15 @@ sub check_adaptor {
 		"-fragments",
 		"-adaptor-ivc",
 		"--", $bin, $f1num, $f2num, "g", $frag_file_name);
-    my @printable;
-    for my $a (@args) {
-	if ($a =~ /[\s|<>]/) {
-	    push @printable, "'$a'";
-	} else {
-	    push @printable, $a;
-	}
-    }
-    print "@printable\n";
+#    my @printable;
+#    for my $a (@args) {
+#	if ($a =~ /[\s|<>]/) {
+#	    push @printable, "'$a'";
+#	} else {
+#	    push @printable, $a;
+#	}
+#    }
+#    print "@printable\n";
     open(LOG, "-|", @args);
     my($matches, $fails) = (0, 0);
     my(@ce, $this_ce);
@@ -398,7 +405,7 @@ sub check_adaptor {
 			$str_arg_contents .= "00";
 		    }
 		}
-		printf("str_arg_contents = $str_arg_contents\n");;
+    if($verbose==1) { printf("str_arg_contents = $str_arg_contents\n"); }
 		my @data_ary = split //, $str_arg_contents;
 		generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
@@ -475,21 +482,12 @@ sub try_synth {
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:0",
+    "-omit-pf-af",
 		"-redirect-stderr-to-stdout",
-		"-trace-conditions", "-omit-pf-af",
-		"-trace-syscalls",
+    @verbose_args,
 		#"-trace-decision-tree",
 		#"-save-decision-tree-interval","1",
-		"-trace-decisions",
-		"-trace-stopping",
-		"-trace-regions",
-		"-trace-binary-paths-bracketed",
-		"-trace-memory-snapshots",
-		"-trace-sym-addr-details",
-		"-trace-sym-addrs",
-		"-trace-tables",
 		#"-trace-offset-limit",
-		"-trace-basic",
 		# "-trace-eip",
 		# "-trace-registers",
 		#"-trace-stmts",
@@ -502,17 +500,18 @@ sub try_synth {
 		@fuzzball_extra_args,
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
+		"-trace-stopping",
 		"-fragments",
 		"--", $bin, $f1num, $f2num, "f", "tests", $frag_file_name);
-    my @printable;
-    for my $a (@args) {
-	if ($a =~ /[\s|<>]/) {
-	    push @printable, "'$a'";
-	} else {
-	    push @printable, $a;
-	}
-    }
-    print "@printable\n";
+#    my @printable;
+#    for my $a (@args) {
+#	if ($a =~ /[\s|<>]/) {
+#	    push @printable, "'$a'";
+#	} else {
+#	    push @printable, $a;
+#	}
+#    }
+#    print "@printable\n";
     open(LOG, "-|", @args);
     my($success, %fields);
     $success = 0;
@@ -591,7 +590,7 @@ if ($f1nargs==0) {
 # $adapt->[4]=1;
 # $adapt->[5]=255;
 
-print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
+# print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();
 my $done = 0;
 my $start_time = time();

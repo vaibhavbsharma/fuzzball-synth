@@ -105,7 +105,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     if($adaptor_family==2) { $adaptor_driver = "synth-typeconv-frag.pl"; }
     
     my @cmd = ("perl",$adaptor_driver,"1",$inner_func_num,$rand_seed, "1", $const_bounds_file,
-	       "1", "$frag_file");
+	       "1", "$frag_file", "0");
     printf("cmd = @cmd\n");
     # open(LOG, "-|", @cmd);
     # while(<LOG>) {
