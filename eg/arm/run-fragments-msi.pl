@@ -222,5 +222,4 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     open (FILE, ">> $checkpoint_file") || die "problem opening checkpoint file: $checkpoint_file\n";
     print FILE $i . "\n";
     close FILE;
-    exit(1);
 }
