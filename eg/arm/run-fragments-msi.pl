@@ -5,6 +5,8 @@ use strict;
 die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buckets)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, any other value=avoid identity fragments using <fragments-dir>/identity-fragments.lst> <1=argsub, 2=typeconv adaptor> <constant bounds file>"
   unless @ARGV == 8;
 
+$|=1;
+
 my $this_fragments_file = "this_fragments.lst";
 my $checkpoint_file = "checkpoint";
 
@@ -96,7 +98,7 @@ my ($total_as_steps,$total_ce_steps,$total_steps) = (0,0,0);
 my ($total_as_solver_time,$last_as_solver_time) = (0.0,0.0);
 my ($total_ce_solver_time,$last_ce_solver_time) = (0.0,0.0);
 my $total_solver_time = 0.0;
-my ($found_adaptor,$not_equivalent) = (0,0);
+my ($found_adaptor,$not_equivalent,$fatal_error) = (0,0,0);
 sub report_time_stats {
     my $stopping_step="";
     my $stopping_str = "";
@@ -116,6 +118,8 @@ sub report_time_stats {
     }
     elsif($not_equivalent == 1) {
 	$stopping_str = "found inequivalence\n";
+    } elsif($fatal_error == 1) {
+	$stopping_str = "found fatal error\n";
     }
     print $stopping_str;
     printf("time (ce-total,ce-last,as-total,as-last,ce-as-total) = (%d,%d,%d,%d,%d)\n",
@@ -160,7 +164,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     $total_as_solver_time = $last_as_solver_time = 0.0;
     $total_ce_solver_time = $last_ce_solver_time = 0.0;
     $total_solver_time = 0.0;
-    $found_adaptor = $not_equivalent = 0;
+    $found_adaptor = $not_equivalent = $fatal_error = 0;
     my $timed_out = 0;
     my $pid = open(LOG, "-|", @cmd);
     eval{
@@ -206,6 +210,8 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
 		$found_adaptor = 1;
 	    } elsif(/.*not equivalent.*/) {
 		$not_equivalent = 1;
+	    } elsif(/.*Fatal error.*/) {
+		$fatal_error = 1;
 	    }
 	    print " $_";
 	}
