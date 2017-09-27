@@ -29,7 +29,11 @@ my @fuzzball_extra_args_arr;
 my $numTests = 0;
 # Paths to binaries: these probably differ on your system. You can add
 # your locations to the list, or set the environment variable.
-my $fuzzball="fuzzball";
+my $fuzzball;
+
+if (exists $ENV{FUZZBALL_LOC}) {
+    $fuzzball = $ENV{FUZZBALL_LOC};
+} else { $fuzzball = "fuzzball"; }
 my $stp="stp";
 
 my $f1_completed_count = 0;
