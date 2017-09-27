@@ -13,7 +13,7 @@ my ($fragments_dir,$max_buckets,$bucket_num,$min_frag_size,$max_frag_size,$find_
 my $rand_seed = 1;
 my $num_secs_to_timeout;
 if($adaptor_family == 1) { $num_secs_to_timeout = 60; }
-else { $num_secs_to_timeout = 120; }# https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
+else { $num_secs_to_timeout = 300; }# https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
 
 my @identity_fragments = ();
 if($find_identity_frag != 1) {
@@ -37,6 +37,7 @@ sub is_identity_fragment  {
     }
     return 0;
 }
+
 
 my @this_bucket_fragments = ();
 my $open_failed = 0;
@@ -88,6 +89,47 @@ while (<FILE>) {
 }
 
 
+my ($running_as) = (0,0);
+my ($last_ce_time,$last_as_time) = (0,0);
+my ($total_ce_time,$total_as_time,$total_time) = (0,0,0);
+my ($total_as_steps,$total_ce_steps,$total_steps) = (0,0,0);
+my ($total_as_solver_time,$last_as_solver_time) = (0.0,0.0);
+my ($total_ce_solver_time,$last_ce_solver_time) = (0.0,0.0);
+my $total_solver_time = 0.0;
+my ($found_adaptor,$not_equivalent) = (0,0);
+sub report_time_stats {
+    my $stopping_step="";
+    my $stopping_str = "";
+    my $query_time=0;
+    if($running_as == 1) { 
+	$stopping_step = "Adaptor-Search"; 
+	$query_time = $last_as_solver_time;
+	$stopping_str = "stopped during $stopping_step with solver time = $query_time\n"
+    }
+    else { 
+	$stopping_step = "CounterExample-Search"; 
+	$query_time = $last_ce_solver_time;
+	$stopping_str = "stopped during $stopping_step with solver time = $query_time\n";
+    }
+    if($found_adaptor == 1) {
+	$stopping_str = "found an adaptor\n";
+    }
+    elsif($not_equivalent == 1) {
+	$stopping_str = "found inequivalence\n";
+    }
+    print $stopping_str;
+    printf("time (ce-total,ce-last,as-total,as-last,ce-as-total) = (%d,%d,%d,%d,%d)\n",
+	   $total_ce_time,$last_ce_time,
+	   $total_as_time,$last_as_time,
+	   $total_as_time + $total_ce_time);
+    printf("total steps (ce,as,total) = ($total_ce_steps,$total_as_steps,%d)\n",
+	   $total_ce_steps + $total_as_steps);
+    printf("solver times (ce-total,ce-last,as-total,as-last) = (%f,%f,%f,%f)\n",
+	   $total_ce_solver_time,$last_ce_solver_time,
+	   $total_as_solver_time,$last_as_solver_time);
+}
+
+
 for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     my $frag_file = $this_bucket_fragments[$i];
     if(($find_identity_frag != 1) && 
@@ -111,23 +153,68 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     # while(<LOG>) {
     # 	print $_;
     # }
-    my $retval;
-    my $pid = fork;
-    if ($pid > 0){ # parent process
-    	eval{
-    	    local $SIG{ALRM} = 
-    		sub {kill 9, -$pid; print STDOUT "TIME OUT!$/"; $retval = 124;};
-    	    alarm $num_secs_to_timeout;
-    	    waitpid($pid, 0);
-    	    alarm 0;
-    	};
-    }
-    elsif ($pid == 0){ # child process
-    	setpgrp(0,0);
-    	exec(@cmd);
-    } else { # forking not successful
-    }
+    $running_as = 0;
+    $last_ce_time = $last_as_time = 0;
+    $total_ce_time = $total_as_time = $total_time = 0;
+    $total_as_steps = $total_ce_steps = $total_steps = 0;
+    $total_as_solver_time = $last_as_solver_time = 0.0;
+    $total_ce_solver_time = $last_ce_solver_time = 0.0;
+    $total_solver_time = 0.0;
+    $found_adaptor = $not_equivalent = 0;
+    my $timed_out = 0;
+    my $pid = open(LOG, "-|", @cmd);
+    eval{
+	local $SIG{ALRM} = 
+	    sub {
+		kill 9, -$pid; 
+		print STDOUT "TIME OUT!$/";
+		$timed_out = 1;
+		report_time_stats ();
+	};
+	alarm $num_secs_to_timeout;
+	while(<LOG>) {
+	    if($timed_out == 1) { 
+		printf("timing out!!\n");
+		last;
+	    }
+	    if(/^elapsed time = (.*), last CE search time = (.*)$/) {
+		# printf("seen last CE\n");
+		$running_as = 1;
+		$last_ce_time = $2;
+		$total_ce_time += $2;
+		$total_time = $1;
+		$total_ce_steps++;
+		$total_ce_solver_time += $last_ce_solver_time;
+		$last_as_solver_time = 0;
+	    } elsif(/^elapsed time = (.*), last AS search time = (.*)$/) {
+		# printf("seen last AS\n");
+		$running_as = 0;
+		$last_as_time = $2;
+		$total_as_time += $2;
+		$total_time = $1;
+		$total_as_steps++;
+		$total_as_solver_time += $last_as_solver_time;
+		$last_ce_solver_time = 0;
+	    } elsif(/.*Query time = (.*) sec$/) {
+		# printf("seen Query time\n");
+		if($running_as == 1) { 
+		    $last_as_solver_time += $1;
+		} else { 
+		    $last_ce_solver_time += $1;
+		}
+	    } elsif(/.*Final adaptor.*/) {
+		$found_adaptor = 1;
+	    } elsif(/.*not equivalent.*/) {
+		$not_equivalent = 1;
+	    }
+	    print " $_";
+	}
+	close(LOG);
+	waitpid($pid, 0);
+	if($timed_out != 1) { report_time_stats (); }
+    };
     open (FILE, ">> $checkpoint_file") || die "problem opening checkpoint file: $checkpoint_file\n";
     print FILE $i . "\n";
     close FILE;
+    exit(1);
 }

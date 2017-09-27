@@ -11,7 +11,7 @@ if( substr($job_name, length($job_name)-5) =~ ".qsub") {
     $job_name = substr($job_name, 0, length($job_name)-5);
 }
 
-my $output = `ssh itasca "qstat -u vaibhav"`;
+my $output = `ssh itasca "qstat -u vaibhav -f"`;
 if(index($output, "Connection closed") != -1) { printf("Connection closed!\n"); exit(1); }
 my $found = 0;
 if(index($output, $job_name) != -1) { $found = 1; }

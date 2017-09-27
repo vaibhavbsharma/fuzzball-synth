@@ -6,6 +6,9 @@ die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identi
   unless @ARGV == 8;
 my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_bounds_file, $arch_flag, $frag_file_name, $verbose) = @ARGV;
 
+$|=1;
+
+setpgrp(0,0);
 srand($rand_seed);
 
 my $arch_str = "";
@@ -224,16 +227,9 @@ if($verbose == 1) {
   "-trace-adaptor"); 
 }
 
-my ($last_ce_time,$last_as_time) = (0,0);
-my ($total_ce_time,$total_as_time) = (0,0);
-my ($total_as_steps,$total_ce_steps) = (0,0);
-my ($total_as_solver_time,$last_as_solver_time) = (0.0,0.0);
-my ($total_ce_solver_time,$last_ce_solver_time) = (0.0,0.0);
-
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
-    $last_ce_solver_time = 0.0;
     my($adapt,$ret_adapt) = (@_);
     #print "checking arg-adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
     my @conc_adapt = ();
@@ -298,6 +294,7 @@ sub check_adaptor {
 		"-branch-preference", "$match_jne_addr:1",
 		"-redirect-stderr-to-stdout",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
+		"-time-stats",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"-fragments",
@@ -444,8 +441,6 @@ sub check_adaptor {
 	    $stp_timeout = 1;
 	} elsif (/.*Fatal error.*/) {
 	    $fatal_error = 1;
-	} elsif (/.*Query time = (.*) sec$/) {
-	    $last_ce_solver_time += $1;
 	}
 	print "  $_";
     }
@@ -464,7 +459,6 @@ sub check_adaptor {
 # Given a set of tests, run with the adaptor symbolic to see if we can
 # synthesize an adaptor that works for those tests.
 sub try_synth {
-    $last_as_solver_time = 0.0;
     my($testsr, $_fuzzball_extra_args) = @_;
     my @fuzzball_extra_args = @{ $_fuzzball_extra_args };
     foreach my $i (0 .. $#fuzzball_extra_args) {
@@ -495,9 +489,9 @@ sub try_synth {
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:0",
-    "-omit-pf-af",
+		"-omit-pf-af",
 		"-redirect-stderr-to-stdout",
-    @verbose_args,
+		@verbose_args,
 		#"-trace-decision-tree",
 		#"-save-decision-tree-interval","1",
 		#"-trace-offset-limit",
@@ -514,6 +508,7 @@ sub try_synth {
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
 		"-trace-stopping",
+		"-time-stats",
 		"-fragments",
 		"--", $bin, $f1num, $f2num, "f", "tests", $frag_file_name);
     if($verbose == 1) {
@@ -548,22 +543,11 @@ sub try_synth {
 	    last;
 	} elsif (/^adaptor_score = (.*)$/ and $success) {
 	    $adaptor_score = $1;
-	} elsif (/.*Query time = (.*) sec$/) {
-	    $last_as_solver_time += $1;
 	}
 	print "  $_" unless /^Input vars:/;
     }
     close LOG;
     if (!$success) {
-	printf("time (ce-total,ce-last,as-total,as-last,ce-as-total) = (%d,%d,%d,%d,%d)\n",
-	       $total_ce_time,$last_ce_time,
-	       $total_as_time,$last_as_time,
-	       $total_as_time + $total_ce_time);
-	printf("total steps (ce,as,total) = ($total_ce_steps,$total_as_steps,%d)\n",
-	       $total_ce_steps + $total_as_steps);
-	printf("solver times (ce-total,ce-last,as-total,as-last) = (%f,%f,%f,%f)\n",
-	       $total_ce_solver_time,$last_ce_solver_time,
-	       $total_as_solver_time,$last_as_solver_time);
 	print "Synthesis failure: seems the functions are not equivalent.\n";
 	exit 2;
     }
@@ -641,13 +625,9 @@ while (!$done) {
     my $ret_adapt_s = get_adaptor_str($ret_adapt); #join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
     my($res, $cer, $_fuzzball_extra_args, $stp_timeout, $fatal_error) = check_adaptor($adapt,$ret_adapt);
-    $total_ce_solver_time += $last_ce_solver_time;
-    $total_ce_steps++;
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last CE search time = $diff1\n";
-    $last_ce_time = $diff1;
-    $total_ce_time += $diff1;
     $reset_time = time();
     if ($res) {
 	print "Success!\n";
@@ -660,15 +640,6 @@ while (!$done) {
 	if ($stp_timeout == 1) { $verified = "timed-out"; }
 	if ($fatal_error == 1) { $verified = "fatal-error"; }
 	print "Final adaptor for $frag_file_name is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified\n";
-	printf("time (ce-total,ce-last,as-total,as-last,ce-as-total) = (%d,%d,%d,%d,%d)\n",
-	       $total_ce_time,$last_ce_time,
-	       $total_as_time,$last_as_time,
-	       $total_as_time + $total_ce_time);
-	printf("total steps (ce,as,total) = ($total_ce_steps,$total_as_steps,%d)\n",
-	       $total_ce_steps + $total_as_steps);
-	printf("solver times (ce-total,ce-last,as-total,as-last) = (%f,%f,%f,%f)\n",
-	       $total_ce_solver_time,$last_ce_solver_time,
-	       $total_as_solver_time,$last_as_solver_time);
 	$done = 1;
 	last;
     } else {
@@ -679,14 +650,10 @@ while (!$done) {
     }
 
     ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
-    $total_as_solver_time += $last_as_solver_time;
-    $total_as_steps++;
     print "Synthesized arg adaptor ".get_adaptor_str($adapt).
 	" and return adaptor ".get_adaptor_str($ret_adapt)."\n";
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last AS search time = $diff1\n";
-    $last_as_time = $diff1;
-    $total_as_time += $diff1;
     $reset_time = time();
 }
