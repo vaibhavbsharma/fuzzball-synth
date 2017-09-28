@@ -2,9 +2,9 @@
 
 use strict;
 
-die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [constant bounds file] (0=x64,any other val=arm) <fragment file name> <1=verbose, else non-verbose mode>"
-  unless @ARGV == 8;
-my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_bounds_file, $arch_flag, $frag_file_name, $verbose) = @ARGV;
+die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [constant bounds file] (0=x64,any other val=arm) <fragment file name> <return=>enable ret.val.sub.)> <1=verbose, else non-verbose mode>"
+  unless @ARGV == 9;
+my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_bounds_file, $arch_flag, $frag_file_name, $is_ret_enabled, $verbose) = @ARGV;
 
 $|=1;
 
@@ -157,28 +157,32 @@ my @solver_opts = ("-solver", "smtlib",
 my @synth_opt = ("-synthesize-adaptor",
 		 join(":", "typeconv", $f2_call_addr, $f1nargs, $f2_addr, $f2nargs));
 
-my @synth_ret_opt = ("-synthesize-return-adaptor",
+my @synth_ret_opt = ();
+if($is_ret_enabled eq "return") {
+  @synth_ret_opt = ("-synthesize-return-adaptor",
 		 join(":", "return-typeconv", $f2_call_addr, $post_f2_call, $f2nargs));
+}
 
-# print "synth_ret_opt = @synth_ret_opt\n";
-
-open(F, "<$const_bounds_file") or die "cannot open constant bounds file";
 my @const_bounds = ();
 my @const_vals = ();
-while(<F>) {
-  if(/^([-0-9]+)-([-0-9]+)$/) {
-  my ($lb,$ub) = ($1,$2);
-	push @const_bounds, ($lb, $ub);
-    } else { 
-	my $c = $_ + 0;
-	push @const_vals, $c;
-    }
-}
-if(scalar(@const_bounds)==0 && scalar(@const_vals)==0) {
-    die "no constant bounds specified in $const_bounds_file";
-}
 my @const_bounds_ec = ();
-for (my $i=0; $i<$f2nargs; $i++) {
+if($const_bounds_file ne "-") {
+  open(F, "<$const_bounds_file") or die "cannot open constant bounds file";
+  while(<F>) {
+    if(/^([-0-9]+)-([-0-9]+)$/) {
+    my ($lb,$ub) = ($1,$2);
+  	push @const_bounds, ($lb, $ub);
+      } else { 
+  	my $c = $_ + 0;
+  	push @const_vals, $c;
+      }
+  }
+  if(scalar(@const_bounds)==0 && scalar(@const_vals)==0) {
+      die "no constant bounds specified in $const_bounds_file";
+  }
+}
+
+for (my $i=0; $i<$f2nargs && ($const_bounds_file ne "-"); $i++) {
     my $n = chr(97 + $i);
     my $s1 = sprintf("%s_type:reg8_t==0:reg8_t ", $n);
     my $s2 = sprintf("%s_type:reg8_t==0:reg8_t ", $n);
@@ -244,12 +248,14 @@ sub check_adaptor {
 	push @conc_adapt, ("-extra-condition", $s);
     }
     my @conc_ret_adapt = ();
-    for my $i (0 .. $#$ret_adapt) {
-	my($name, $ty, $fmt) = @{$ret_fields[$i]};
-	my $val = $ret_adapt->[$i];
-	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
-	push @conc_ret_adapt, ("-extra-condition", $s);
-    }
+    if($is_ret_enabled eq "return") {
+      for my $i (0 .. $#$ret_adapt) {
+	  my($name, $ty, $fmt) = @{$ret_fields[$i]};
+	  my $val = $ret_adapt->[$i];
+	  my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+	  push @conc_ret_adapt, ("-extra-condition", $s);
+      }
+	}
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch_str,
 		"-load-base", "0x8000",
 		$bin,
