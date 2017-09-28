@@ -58,7 +58,7 @@ sub calc_average_4 {
 	my $val1 = $arr[$i];
 	my $val2 = $arr[$i+1];
 	my $val3 = $arr[$i+2];
-	my $val3 = $arr[$i+3];
+	my $val4 = $arr[$i+3];
 	$sum1 += $val1; $sum2 += $val2; $sum3 += $val3; $sum4 += $val4;
 	$count++;
     }
@@ -172,4 +172,31 @@ my ($cef_tm_ce_avg,$cef_tm_as_avg,$cef_tm_t_avg) = calc_average_5(\@ce_fail_time
 print "$cef_tm_ce_avg, $cef_tm_as_avg, $cef_tm_t_avg\n";
 
 print "Average# timeout stops = ", calc_average_1(\@timeout_stopped_during), 
-    ", (1=AS,2=CE)";
+    ", (1=AS,2=CE)\n";
+
+print "Adaptor times:\n";
+my @arr = @adaptor_time;
+for(my $i=0; $i < scalar(@arr); $i+=5) {
+	my $val1 = $arr[$i];
+	my $val2 = $arr[$i+1];
+	my $val3 = $arr[$i+2];
+	my $val4 = $arr[$i+3];
+	my $val5 = $arr[$i+4];
+  print "$val5\n";
+}
+print "Adaptor steps:\n";
+my @arr = @adaptor_steps;
+for(my $i=0; $i < scalar(@arr); $i+=3) {
+	my $val1 = $arr[$i];
+	my $val2 = $arr[$i+1];
+	my $val3 = $arr[$i+2];
+  print "$val3\n";
+}
+print "Timeout steps:\n";
+my @arr = @timeout_steps;
+for(my $i=0; $i < scalar(@arr); $i+=3) {
+	my $val1 = $arr[$i];
+	my $val2 = $arr[$i+1];
+	my $val3 = $arr[$i+2];
+  print "$val3\n";
+}
