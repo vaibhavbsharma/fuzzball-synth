@@ -13,9 +13,9 @@ my $checkpoint_file = "checkpoint";
 my ($fragments_dir,$max_buckets,$bucket_num,$min_frag_size,$max_frag_size,$find_identity_frag,$adaptor_family,$const_bounds_file,$is_return_enabled) = @ARGV;
 
 my $rand_seed = 1;
-my $num_secs_to_timeout;
-if($adaptor_family == 1) { $num_secs_to_timeout = 60; }
-else { $num_secs_to_timeout = 300; }# https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
+my $num_secs_to_timeout = 300;
+# if($adaptor_family == 1) { $num_secs_to_timeout = 60; }
+# else { $num_secs_to_timeout = 300; }# https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
 
 my @identity_fragments = ();
 if($find_identity_frag != 1) {
