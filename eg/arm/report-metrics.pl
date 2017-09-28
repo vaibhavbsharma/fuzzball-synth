@@ -27,14 +27,16 @@ my @ce_fail_time = ();
 my @ce_fail_steps = ();
 my @ce_fail_solver = ();
 
-sub calc_average_1 {
+sub calc_count {
     my @arr = @{$_[0]};
-    my ($sum1,$count) = (0,0);
-    foreach my $val (@arr) {
-	my ($val1) = $val;
-	$sum1 += $val1; $count++;
+    my $val1 = $_[1];
+    my $val2 = $_[2];
+    my ($count1,$count2) = (0,0);
+	  for(my $i = 0; $i < scalar(@arr); $i++) {
+      if($val1 == $arr[$i]) { $count1++; }
+      if($val2 == $arr[$i]) { $count2++; }
     }
-    return ($sum1/$count);
+    return ($count1,$count2);
 }
 
 sub calc_average_3 {
@@ -92,8 +94,8 @@ for(my $i=1; $i <= $num_dirs; $i++) {
 	if(/^found timeout$/) { $result = 0; next; }
 	if(/^found an adaptor$/) { $result = 1; next; }
 	if(/^found inequivalence$/) { $result = 2; next; }
-	if(/^found fatal error$/) { $result = 3; next; }
-	if(/^found ce failure$/) { $result = 4; next; }
+	if(/.*found fatal error.*/) { $result = 3; next; }
+	if(/.*found ce failure.*/) { $result = 4; next; }
 	if($result != -1 && /^cmd = .*$/) {
 	    $result = -1;
 	    $count = 0;
@@ -140,26 +142,26 @@ for(my $i=1; $i <= $num_dirs; $i++) {
 
 
 my ($t_st_ce_avg,$t_st_as_avg,$t_st_t_avg) = calc_average_3(\@timeout_steps);
-printf("$t_st_ce_avg, $t_st_as_avg, $t_st_t_avg, %d\n",scalar(@timeout_steps)/5);
+printf("$t_st_ce_avg, $t_st_as_avg, $t_st_t_avg, %d\n",scalar(@timeout_steps)/3);
 my ($a_st_ce_avg,$a_st_as_avg,$a_st_t_avg) = calc_average_3(\@adaptor_steps);
-printf("$a_st_ce_avg, $a_st_as_avg, $a_st_t_avg, %d\n", scalar(@adaptor_steps)/5);
+printf("$a_st_ce_avg, $a_st_as_avg, $a_st_t_avg, %d\n", scalar(@adaptor_steps)/3);
 my ($i_st_ce_avg,$i_st_as_avg,$i_st_t_avg) = calc_average_3(\@inequiv_steps);
-printf("$i_st_ce_avg, $i_st_as_avg, $i_st_t_avg, %d\n", scalar(@inequiv_steps)/5);
+printf("$i_st_ce_avg, $i_st_as_avg, $i_st_t_avg, %d\n", scalar(@inequiv_steps)/3);
 my ($f_st_ce_avg,$f_st_as_avg,$f_st_t_avg) = calc_average_3(\@fatal_steps);
-printf("$f_st_ce_avg, $f_st_as_avg, $f_st_t_avg, %d\n", scalar(@fatal_steps)/5);
+printf("$f_st_ce_avg, $f_st_as_avg, $f_st_t_avg, %d\n", scalar(@fatal_steps)/3);
 my ($cef_st_ce_avg,$cef_st_as_avg,$cef_st_t_avg) = calc_average_3(\@ce_fail_steps);
-printf("$cef_st_ce_avg, $cef_st_as_avg, $cef_st_t_avg, %d\n", scalar(@ce_fail_steps)/5);
+printf("$cef_st_ce_avg, $cef_st_as_avg, $cef_st_t_avg, %d\n", scalar(@ce_fail_steps)/3);
 
 my ($t_so_ce_avg,$t_so_as_avg,$t_so_t_avg) = calc_average_4(\@timeout_solver);
-printf("$t_so_ce_avg, $t_so_as_avg, $t_so_t_avg, %d\n", scalar(@timeout_solver)/5);
+printf("$t_so_ce_avg, $t_so_as_avg, $t_so_t_avg, %d\n", scalar(@timeout_solver)/4);
 my ($a_so_ce_avg,$a_so_as_avg,$a_so_t_avg) = calc_average_4(\@adaptor_solver);
-printf("$a_so_ce_avg, $a_so_as_avg, $a_so_t_avg, %d\n", scalar(@adaptor_solver)/5);
+printf("$a_so_ce_avg, $a_so_as_avg, $a_so_t_avg, %d\n", scalar(@adaptor_solver)/4);
 my ($i_so_ce_avg,$i_so_as_avg,$i_so_t_avg) = calc_average_4(\@inequiv_solver);
-printf("$i_so_ce_avg, $i_so_as_avg, $i_so_t_avg, %d\n", scalar(@inequiv_solver)/5);
+printf("$i_so_ce_avg, $i_so_as_avg, $i_so_t_avg, %d\n", scalar(@inequiv_solver)/4);
 my ($f_so_ce_avg,$f_so_as_avg,$f_so_t_avg) = calc_average_4(\@fatal_solver);
-printf("$f_so_ce_avg, $f_so_as_avg, $f_so_t_avg, %d\n", scalar(@fatal_solver)/5);
+printf("$f_so_ce_avg, $f_so_as_avg, $f_so_t_avg, %d\n", scalar(@fatal_solver)/4);
 my ($cef_so_ce_avg,$cef_so_as_avg,$cef_so_t_avg) = calc_average_4(\@ce_fail_solver);
-printf("$cef_so_ce_avg, $cef_so_as_avg, $cef_so_t_avg, %d\n", scalar(@ce_fail_solver)/5);
+printf("$cef_so_ce_avg, $cef_so_as_avg, $cef_so_t_avg, %d\n", scalar(@ce_fail_solver)/4);
 
 my ($t_tm_ce_avg,$t_tm_as_avg,$t_tm_t_avg) = calc_average_5(\@timeout_time);
 printf("$t_tm_ce_avg, $t_tm_as_avg, $t_tm_t_avg, %d\n", scalar(@timeout_time)/5);
@@ -171,9 +173,8 @@ my ($f_tm_ce_avg,$f_tm_as_avg,$f_tm_t_avg) = calc_average_5(\@fatal_time);
 printf("$f_tm_ce_avg, $f_tm_as_avg, $f_tm_t_avg, %d\n", scalar(@fatal_time)/5);
 my ($cef_tm_ce_avg,$cef_tm_as_avg,$cef_tm_t_avg) = calc_average_5(\@ce_fail_time);
 printf("$cef_tm_ce_avg, $cef_tm_as_avg, $cef_tm_t_avg, %d\n", scalar(@ce_fail_time)/5);
-
-printf("Average# timeout stopped during = %f, %d, (1=AS,2=CE)", 
-       calc_average_1(\@timeout_stopped_during), scalar(@timeout_stopped_during));
+my ($as_count,$ce_count) = calc_count(\@timeout_stopped_during,1,2);
+printf("Average# timeout stopped during = AS(%d), CE(%d)", $as_count,$ce_count); 
 
 print "Adaptor times:\n";
 my @arr = @adaptor_time;
