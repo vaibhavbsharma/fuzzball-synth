@@ -2,15 +2,15 @@
 
 use strict;
 
-die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buckets)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, any other value=avoid identity fragments using <fragments-dir>/identity-fragments.lst> <1=argsub, 2=typeconv adaptor> <constant bounds file>"
-  unless @ARGV == 8;
+die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buckets)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, any other value=avoid identity fragments using <fragments-dir>/identity-fragments.lst> <1=argsub, 2=typeconv adaptor> <constant bounds file> <return => ret.val.sub.>"
+  unless @ARGV == 9;
 
 $|=1;
 
 my $this_fragments_file = "this_fragments.lst";
 my $checkpoint_file = "checkpoint";
 
-my ($fragments_dir,$max_buckets,$bucket_num,$min_frag_size,$max_frag_size,$find_identity_frag,$adaptor_family,$const_bounds_file) = @ARGV;
+my ($fragments_dir,$max_buckets,$bucket_num,$min_frag_size,$max_frag_size,$find_identity_frag,$adaptor_family,$const_bounds_file,$is_return_enabled) = @ARGV;
 
 my $rand_seed = 1;
 my $num_secs_to_timeout;
@@ -156,7 +156,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     if($adaptor_family==2) { $adaptor_driver = "synth-typeconv-frag.pl"; }
     
     my @cmd = ("perl",$adaptor_driver,"1",$inner_func_num,$rand_seed, "1", $const_bounds_file,
-	       "1", "$frag_file", "0");
+	       "1", "$frag_file", $is_return_enabled, "0");
     printf("cmd = @cmd\n");
     # open(LOG, "-|", @cmd);
     # while(<LOG>) {
