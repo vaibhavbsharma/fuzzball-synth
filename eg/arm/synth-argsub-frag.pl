@@ -394,6 +394,7 @@ sub check_adaptor {
     }
     close LOG;
     if ($matches == 0 and $fails == 0) {
+	print "CounterExample search failed";
 	die "Missing results from check run";
     }
     if ($fails == 0) {

@@ -98,28 +98,32 @@ my ($total_as_steps,$total_ce_steps,$total_steps) = (0,0,0);
 my ($total_as_solver_time,$last_as_solver_time) = (0.0,0.0);
 my ($total_ce_solver_time,$last_ce_solver_time) = (0.0,0.0);
 my $total_solver_time = 0.0;
-my ($found_adaptor,$not_equivalent,$fatal_error) = (0,0,0);
+my ($result) = (0);
 sub report_time_stats {
     my $stopping_step="";
+    my $extra_stopping_str="";
     my $stopping_str = "";
     my $query_time=0;
     if($running_as == 1) { 
 	$stopping_step = "Adaptor-Search"; 
 	$query_time = $last_as_solver_time;
-	$stopping_str = "stopped during $stopping_step with solver time = $query_time\n"
+	$extra_stopping_str = "stopped during $stopping_step with solver time = $query_time\n"
     }
     else { 
 	$stopping_step = "CounterExample-Search"; 
 	$query_time = $last_ce_solver_time;
-	$stopping_str = "stopped during $stopping_step with solver time = $query_time\n";
+	$extra_stopping_str = "stopped during $stopping_step with solver time = $query_time\n";
     }
-    if($found_adaptor == 1) {
+    if($result == 0) {
+	$stopping_str = "found timeout\n";
+    } elsif($result == 1) {
 	$stopping_str = "found an adaptor\n";
-    }
-    elsif($not_equivalent == 1) {
+    } elsif($result == 2) {
 	$stopping_str = "found inequivalence\n";
-    } elsif($fatal_error == 1) {
+    } elsif($result == 3) {
 	$stopping_str = "found fatal error\n";
+    } elsif($result == 4) {
+	$stopping_str = "found ce failure\n";
     }
     print $stopping_str;
     printf("time (ce-total,ce-last,as-total,as-last,ce-as-total) = (%d,%d,%d,%d,%d)\n",
@@ -131,6 +135,7 @@ sub report_time_stats {
     printf("solver times (ce-total,ce-last,as-total,as-last) = (%f,%f,%f,%f)\n",
 	   $total_ce_solver_time,$last_ce_solver_time,
 	   $total_as_solver_time,$last_as_solver_time);
+    print $extra_stopping_str;
 }
 
 
@@ -164,7 +169,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     $total_as_solver_time = $last_as_solver_time = 0.0;
     $total_ce_solver_time = $last_ce_solver_time = 0.0;
     $total_solver_time = 0.0;
-    $found_adaptor = $not_equivalent = $fatal_error = 0;
+    $result = 0;
     my $timed_out = 0;
     my $pid = open(LOG, "-|", @cmd);
     eval{
@@ -207,11 +212,13 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
 		    $last_ce_solver_time += $1;
 		}
 	    } elsif(/.*Final adaptor.*/) {
-		$found_adaptor = 1;
+		$result = 1;
 	    } elsif(/.*not equivalent.*/) {
-		$not_equivalent = 1;
+		$result = 2;
 	    } elsif(/.*Fatal error.*/) {
-		$fatal_error = 1;
+		$result = 3;
+	    } elsif(/.*CounterExample search failed.*/) {
+		$result = 4;
 	    }
 	    print " $_";
 	}
@@ -222,5 +229,5 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     open (FILE, ">> $checkpoint_file") || die "problem opening checkpoint file: $checkpoint_file\n";
     print FILE $i . "\n";
     close FILE;
-    exit(1);
+    # exit(1);
 }
