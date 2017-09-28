@@ -183,7 +183,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
 	alarm $num_secs_to_timeout;
 	while(<LOG>) {
 	    if($timed_out == 1) { 
-		printf("timing out!!\n");
+		# printf("timing out!!\n");
 		last;
 	    }
 	    if(/^elapsed time = (.*), last CE search time = (.*)$/) {
