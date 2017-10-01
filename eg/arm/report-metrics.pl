@@ -154,7 +154,7 @@ printf("$cef_st_ce, $cef_st_as, $cef_st_t, %d\n", scalar(@ce_fail_steps)/3);
 
 my ($t_so_ce_t,$t_so_ce_l, $t_so_as_t,$t_so_as_l) = calc_average_4(\@timeout_solver);
 printf("$t_so_ce_t, $t_so_ce_l, $t_so_as_t, $t_so_as_l, %d\n", scalar(@timeout_solver)/4);
-my ($a_so_ce_t,$a_so_ce_l,$a_so_as_t,$a_as_so_l) = calc_average_4(\@adaptor_solver);
+my ($a_so_ce_t,$a_so_ce_l,$a_so_as_t,$a_so_as_l) = calc_average_4(\@adaptor_solver);
 printf("$a_so_ce_t, $a_so_ce_l, $a_so_as_t, $a_so_as_l, %d\n", scalar(@adaptor_solver)/4);
 my ($i_so_ce_t,$i_so_ce_l,$i_so_as_t,$i_so_as_l) = calc_average_4(\@inequiv_solver);
 printf("$i_so_ce_t, $i_so_ce_l, $i_so_as_t, $i_so_as_l, %d\n", scalar(@inequiv_solver)/4);
