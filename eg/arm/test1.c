@@ -15,6 +15,7 @@ int g_code_ind=0;
 
 int *saved_sp;
 int ret_val;
+int a12_global;
 extern "C" int f1(int _x1, int _x2, int _x3, int _x4, 
 		  int a0, int a1, int a2, int a3, int a4, int a5,
 		  int a6, int a7, int a8, int a9,
@@ -80,12 +81,15 @@ short clamp16(short x, short lo, short hi) {
 
 // inspired from boost
 extern "C" int boost_clamp(int val, int lo, int hi, int a) {
+  // R12 gets clobbered during funcs[f2num].fptr() call
+  register int p12 __asm__("r12") = a12_global;
   return clamp32(val, lo, hi);
   // return clamp32(val, 0, 255);
   // return (val < lo) ? lo : ( hi < val) ? hi : val;
 }
 
 int identity_fn(int val, int lo, int hi, int a) {
+  register int p12 __asm__("r12") = a12_global;
   return val;
 }
 
@@ -128,6 +132,7 @@ extern "C" int compare(long *r1p, long *r2p,
   register int p10 __asm__("r10") = a10;
   register int p11 __asm__("r11") = a11;
   register int p12 __asm__("r12") = a12;
+  a12_global = a12;
   long r2 = f2(a0, a1, a2, a3);
   
   printf("Completed adapted_f1\n");

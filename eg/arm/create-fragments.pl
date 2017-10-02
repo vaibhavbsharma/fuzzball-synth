@@ -25,6 +25,7 @@ my $line_num = 1;
 
 
 my $frag_contents;
+$frag_contents .= sprintf("44 30 9d e5\n"); #  ldr     r3, [sp, #68]
 # $frag_contents .= sprintf("04 00 9b e5\n"); #   ldr     r0 [fp #4]\n");
 # $frag_contents .= sprintf("08 10 9b e5\n"); #   ldr     r1 [fp #8]\n");
 # $frag_contents .= sprintf("0c 20 9b e5\n"); #   ldr     r2 [fp #12]\n");
@@ -70,7 +71,7 @@ while (<F>) {
 		# printf("comma_pos = $comma_pos, space_pos = $space_pos, ");
 		$write_reg = substr($insn_str, $space_pos+1, $comma_pos-$space_pos-1); 
 	    }
-	    if($write_reg ne "") {
+	    if($write_reg ne "" && !( $write_reg =~ /sp/) && !($write_reg =~ /lr/)) {
 		# printf("reg = $write_reg, ");
 		if ( !grep( /^$write_reg$/, @recent_w_regs ) ) {
 		    $recent_w_regs[$ind] = $write_reg;
@@ -103,39 +104,38 @@ my $ret_reg_byte = 0;
 for my $str (@recent_w_regs) {
     my $added_ret_reg = 1;
     my $ret_insn = "";
-    if ($str =~ "r0") {
+    if ($str =~ /r0/) {
 	$ret_insn = sprintf("00 00 a0 e1\n"); #   nop\n");
 	$added_ret_reg = 1;
-    } elsif ($str =~ "r1") {
+    } elsif ($str =~ /r1/) {
 	$ret_insn = sprintf("01 00 a0 e1\n"); #   mov    r0 r1\n"); 
-    } elsif ($str =~ "r2") {
+    } elsif ($str =~ /r2/) {
 	$ret_insn = sprintf("02 00 a0 e1\n"); #   mov    r0 r2\n"); 
-    } elsif ($str =~ "r3") {
+    } elsif ($str =~ /r3/) {
 	$ret_insn = sprintf("03 00 a0 e1\n"); #   mov    r0 r3\n"); 
-    } elsif ($str =~ "r4") {
+    } elsif ($str =~ /r4/) {
 	$ret_insn = sprintf("04 00 a0 e1\n"); #   mov    r0 r4\n"); 
-    } elsif ($str =~ "r5") {
+    } elsif ($str =~ /r5/) {
 	$ret_insn = sprintf("05 00 a0 e1\n"); #   mov    r0 r5\n"); 
-    } elsif ($str =~ "r6") {
+    } elsif ($str =~ /r6/) {
 	$ret_insn = sprintf("06 00 a0 e1\n"); #   mov    r0 r6\n"); 
-    } elsif ($str =~ "r7") {
+    } elsif ($str =~ /r7/) {
 	$ret_insn = sprintf("07 00 a0 e1\n"); #   mov    r0 r7\n"); 
-    } elsif ($str =~ "r8") {
+    } elsif ($str =~ /r8/) {
 	$ret_insn = sprintf("08 00 a0 e1\n"); #   mov    r0 r8\n"); 
-    } elsif ($str =~ "r9") {
+    } elsif ($str =~ /r9/) {
 	$ret_insn = sprintf("09 00 a0 e1\n"); #   mov    r0 r9\n"); 
-    } elsif ($str =~ "sl") {
+    } elsif ($str =~ /sl/) {
 	$ret_insn = sprintf("0a 00 a0 e1\n"); #   mov    r0 sl\n"); 
-    } elsif ($str =~ "fp") {
+    } elsif ($str =~ /fp/) {
 	$ret_insn = sprintf("0b 00 a0 e1\n"); #   mov    r0 fp\n"); 
-    } elsif ($str =~ "ip") {
+    } elsif ($str =~ /ip/) {
 	$ret_insn = sprintf("0c 00 a0 e1\n"); #   mov    r0 ip\n"); 
-    } elsif ($str =~ "sp") {
-	$ret_insn = sprintf("0d 00 a0 e1\n"); #   mov    r0 sp\n"); 
-    } elsif ($str =~ "lr") {
-	$ret_insn = sprintf("0e 00 a0 e1\n"); #   mov    r0 lr\n"); 
+    } elsif ($str =~ /sp/) {
+	$added_ret_reg = 0;
+    } elsif ($str =~ /lr/) {
+	$added_ret_reg = 0;
     } else {
-	$ret_insn = sprintf("00 00 a0 e1\n"); #   nop\n");
 	$added_ret_reg = 0;
     }
     my $distance = calc_distance ();
