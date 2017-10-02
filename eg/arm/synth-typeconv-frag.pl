@@ -223,16 +223,17 @@ sub generate_new_file
 
 my @verbose_args = ();
 if($verbose == 1) {
-  @verbose_args = ("-trace-sym-addr-details", 
-  "-trace-sym-addrs", 
-  "-trace-syscalls", 
-  "-trace-memory-snapshots", 
-  "-trace-tables", 
-  "-trace-binary-paths-bracketed", 
-  "-trace-basic", 
-  "-trace-conditions", 
-  "-trace-decisions", 
-  "-trace-adaptor"); 
+    @verbose_args = ("-trace-sym-addr-details",
+		     "-trace-sym-addrs",
+		     "-trace-temps",
+		     "-trace-syscalls", 
+		     "-trace-memory-snapshots", 
+		     "-trace-tables", 
+		     "-trace-binary-paths-bracketed", 
+		     "-trace-basic", 
+		     "-trace-conditions", 
+		     "-trace-decisions", 
+		     "-trace-adaptor"); 
 }
 
 # Given the specification of an adaptor, execute it with symbolic
@@ -275,7 +276,7 @@ sub check_adaptor {
 		"-symbolic-word", "$arg_addr[12]=m",
 		"-dont-compare-memory-sideeffects",
 		@verbose_args,
-		# "-trace-temps",#"-narrow-bitwidth-cutoff","1",
+		#"-narrow-bitwidth-cutoff","1",
 		"-trace-regions",
 		"-omit-pf-af",
 		"-table-limit","12",
@@ -488,7 +489,6 @@ sub try_synth {
 		"-dont-compare-memory-sideeffects",
 		@solver_opts, 
 		"-fuzz-start-addr", $fuzz_start_addr,
-		# "-trace-temps",
 		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 		#counter example search mode otherwise
 		"-adaptor-search-mode",
