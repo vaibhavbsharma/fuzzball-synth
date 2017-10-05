@@ -21,7 +21,8 @@ while(1) {
 # printf("found = $found\n");
     if($found == 0) {
 	my $output= `ssh itasca "qsub $dir/$job_name.qsub"`;
-	printf("new job queued: output = $output\n");
+	my $now_string = localtime;
+	printf("new job queued: output = $output at time = %s\n", $now_string);
     }
-    sleep 60;
+    sleep 120;
 }
