@@ -205,7 +205,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
 		$total_as_steps++;
 		$total_as_solver_time += $last_as_solver_time;
 		$last_ce_solver_time = 0;
-	    } elsif(/.*Query time = (.*) sec$/) {
+	    } elsif(/.*total query time = (.*) sec$/) {
 		# printf("seen Query time\n");
 		if($running_as == 1) { 
 		    $last_as_solver_time += $1;
