@@ -91,7 +91,10 @@ while (<FILE>) {
 }
 
 print "last index = $last_index\n";
-
+if ( $last_index+1 >= scalar(@this_bucket_fragments)) {
+	`touch done$bucket_num`;
+	exit(0);
+}
 my ($running_as) = (0,0);
 my ($last_ce_time,$last_as_time) = (0,0);
 my ($total_ce_time,$total_as_time,$total_time) = (0,0,0);
@@ -205,7 +208,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
 		$total_as_steps++;
 		$total_as_solver_time += $last_as_solver_time;
 		$last_ce_solver_time = 0;
-	    } elsif(/.*Query time = (.*) sec$/) {
+	    } elsif(/.*Qt = (.*) sec$/) {
 		# printf("seen Query time\n");
 		if($running_as == 1) { 
 		    $last_as_solver_time += $1;
