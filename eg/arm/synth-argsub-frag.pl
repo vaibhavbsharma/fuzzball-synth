@@ -133,6 +133,20 @@ my @fields =
    ["e_val",      "reg32_t", "%016x"],
    ["f_is_const",  "reg1_t", "%01x"],
    ["f_val",      "reg32_t", "%016x"],
+   ["g_is_const",  "reg1_t", "%01x"],
+   ["g_val",      "reg32_t", "%016x"],
+   ["h_is_const",  "reg1_t", "%01x"],
+   ["h_val",      "reg32_t", "%016x"],
+   ["i_is_const",  "reg1_t", "%01x"],
+   ["i_val",      "reg32_t", "%016x"],
+   ["j_is_const",  "reg1_t", "%01x"],
+   ["j_val",      "reg32_t", "%016x"],
+   ["k_is_const",  "reg1_t", "%01x"],
+   ["k_val",      "reg32_t", "%016x"],
+   ["l_is_const",  "reg1_t", "%01x"],
+   ["l_val",      "reg32_t", "%016x"],
+   ["m_is_const",  "reg1_t", "%01x"],
+   ["m_val",      "reg32_t", "%016x"],
 );
 
 my @ret_fields = 

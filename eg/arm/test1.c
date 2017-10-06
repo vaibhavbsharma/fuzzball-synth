@@ -103,8 +103,20 @@ struct func_info funcs[] = {
 };
 int f2num; 
 
- extern "C" int f2(int a, int b, int c, int d) {
-  return (funcs[f2num].fptr)(a, b, c, d);
+extern "C" int f2(int a, int b, int c, int d,
+		  int e, int f, int g, int h,
+		  int i, int j, int k, int l,
+		  int m) {
+  asm ("mov %0, %%r4" : "=r" (e) );
+  asm ("mov %0, %%r5" : "=r" (f) );
+  asm ("mov %0, %%r6" : "=r" (g) );
+  asm ("mov %0, %%r7" : "=r" (h) );
+  asm ("mov %0, %%r8" : "=r" (i) );
+  asm ("mov %0, %%r9" : "=r" (j) );
+  asm ("mov %0, %%r10" : "=r" (k) );
+  asm ("mov %0, %%r11" : "=r" (l) );
+  asm ("mov %0, %%r12" : "=r" (m) );
+  return (funcs[f2num].fptr)(a, b, c, d, e, f, g, h, i, j, k, l, m);
 }
 
 extern "C" int compare(long *r1p, long *r2p,
@@ -133,7 +145,7 @@ extern "C" int compare(long *r1p, long *r2p,
   register int p11 __asm__("r11") = a11;
   register int p12 __asm__("r12") = a12;
   a12_global = a12;
-  long r2 = f2(a0, a1, a2, a3);
+  long r2 = f2(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
   
   printf("Completed adapted_f1\n");
   fflush(stdout);
