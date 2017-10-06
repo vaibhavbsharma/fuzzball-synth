@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <boost/algorithm/clamp.hpp>
 #include "test1.h"
+#include "vlc_candidates_filtered.h"
 //#include "popCount.h"
 
 #define MAX_FRAG_SIZE 1024
@@ -82,7 +83,7 @@ short clamp16(short x, short lo, short hi) {
 // inspired from boost
 extern "C" int boost_clamp(int val, int lo, int hi, int a) {
   // R12 gets clobbered during funcs[f2num].fptr() call
-  register int p12 __asm__("r12") = a12_global;
+  //register int p12 __asm__("r12") = a12_global;
   return clamp32(val, lo, hi);
   // return clamp32(val, 0, 255);
   // return (val < lo) ? lo : ( hi < val) ? hi : val;
@@ -95,11 +96,21 @@ int identity_fn(int val, int lo, int hi, int a) {
 
 struct func_info funcs[] = {
   // must match types-no-float-1204.lst
-  /* 0 */ {"boost_clamp", (func*)&boost_clamp, 4, 0, 0}, // placeholder
-  /* 1 */ {"boost_clamp", (func*)&boost_clamp, 4, 0, 0}, // placeholder
-  /* 2 */ {"boost_clamp", (func*)&boost_clamp, 4, 0, 0},
-  /* 3 */ {"identity_fn", (func*)&identity_fn, 4, 0, 0},
-  /* 4 */ {"abs",         (func*)&abs,         3, 0, 0},
+  /* 0 */  {"identity_fn", (func*)&identity_fn, 4, 0, 0},
+  /* 1 */  {"identity_fn", (func*)&identity_fn, 4, 0, 0},
+  /* 2 */  {"boost_clamp", (func*)&boost_clamp, 4, 0, 0}, // placeholder
+  /* 3 */  {"ref1",         (func*)&ref1,       3, 0, 0},
+  /* 4 */  {"ref2",         (func*)&ref2,       3, 0, 0},
+  /* 5 */  {"ref3",         (func*)&ref3,       3, 0, 0},
+  /* 6 */  {"ref4",         (func*)&ref4,       3, 0, 0},
+  /* 7 */  {"ref5",         (func*)&ref5,       3, 0, 0},
+  /* 8 */  {"ref6",         (func*)&ref6,       3, 0, 0},
+  /* 9 */  {"ref7",         (func*)&ref7,       3, 0, 0},
+  /* 10 */ {"ref8",         (func*)&ref8,       3, 0, 0},
+  /* 11 */ {"ref9",         (func*)&ref9,       3, 0, 0},
+  /* 12 */ {"ref10",        (func*)&ref10,      3, 0, 0},
+  /* 13 */ {"ref11",        (func*)&ref11,      3, 0, 0},
+  /* 14 */ {"ref12",        (func*)&ref12,      3, 0, 0},
 };
 int f2num; 
 
@@ -124,16 +135,16 @@ extern "C" int compare(long *r1p, long *r2p,
 		       int a6, int a7, int a8, int a9, int a10, int a11, 
 		       int a12) {
   
-  printf("Starting f1\n");  
-  fflush(stdout);
+  // printf("Starting f1\n");  
+  // fflush(stdout);
  
   long r1 = f1(0, 0, 0, 0, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
   
   printf("Completed f1\n");
   fflush(stdout);
   
-  printf("Starting adapted_f1\n");
-  fflush(stdout);
+  // printf("Starting adapted_f1\n");
+  // fflush(stdout);
   
   register int p4 __asm__("r4") = a4;
   register int p5 __asm__("r5") = a5;
@@ -147,8 +158,8 @@ extern "C" int compare(long *r1p, long *r2p,
   a12_global = a12;
   long r2 = f2(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
   
-  printf("Completed adapted_f1\n");
-  fflush(stdout);
+  // printf("Completed adapted_f1\n");
+  // fflush(stdout);
   
   if (r1 == r2) {
     printf("Match\n");
@@ -230,10 +241,10 @@ int main(int argc, char **argv) {
     g_code[g_code_ind++]=b3;
     g_code[g_code_ind++]=b4;
   }
-  for(int i=0; i < g_code_ind; i+=4) {
-    printf("0x%x 0x%x 0x%x 0x%x\n", 
-	   g_code[i], g_code[i+1], g_code[i+2], g_code[i+3]);
-  }
+  // for(int i=0; i < g_code_ind; i+=4) {
+  //   printf("0x%x 0x%x 0x%x 0x%x\n", 
+	//    g_code[i], g_code[i+1], g_code[i+2], g_code[i+3]);
+  // }
  
   fuzz_start();
 
@@ -296,8 +307,8 @@ int main(int argc, char **argv) {
 	while (fscanf(fh, "%x %x %x %x %x %x %x %x %x %x %x %x %x",
 		      &a0, &a1, &a2, &a3, &a4, &a5, &a6, &a7,
 		      &a8, &a9, &a10, &a11, &a12) != EOF) {
-	  printf("read a test\n");
-	  fflush(stdout);
+	  // printf("read a test\n");
+	  // fflush(stdout);
 	  int is_eq = compare(0, 0, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
 	    if (!is_eq)
 		exit(1);

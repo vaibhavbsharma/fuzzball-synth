@@ -102,19 +102,20 @@ if ($arch_flag == 0) {
   $match_jne_addr = "0x" . substr(`objdump -dr $bin | grep 'bne.*compare+'`, 4, 4);
 }
 
-print "$fuzzball\n";
-print "$stp\n";
-print "fuzz-start-addr: $fuzz_start_addr\n";
-print "f1:   $f1_addr @ $f1_call_addr\n";
-print "f2:   $f2_addr\n";
-print "wrap_f2: $wrap_f2_addr @ $f2_call_addr\n";
-for my $i (0 .. 12) {
-    print "arg$i: $arg_addr[$i]\n";
+if($verbose == 1) {
+  print "$fuzzball\n";
+  print "$stp\n";
+  print "fuzz-start-addr: $fuzz_start_addr\n";
+  print "f1:   $f1_addr @ $f1_call_addr\n";
+  print "f2:   $f2_addr\n";
+  print "wrap_f2: $wrap_f2_addr @ $f2_call_addr\n";
+  for my $i (0 .. 12) {
+      print "arg$i: $arg_addr[$i]\n";
+  }
+  print "branch: $match_jne_addr\n";
+  printf "%d = %s(%d)\n", $f1num, $func_info[$f1num][2], $func_info[$f1num][1];
+  printf "%d = %s(%d)\n", $f2num, $func_info[$f2num][2], $func_info[$f2num][1];
 }
-print "branch: $match_jne_addr\n";
-printf "%d = %s(%d)\n", $f1num, $func_info[$f1num][2], $func_info[$f1num][1];
-printf "%d = %s(%d)\n", $f2num, $func_info[$f2num][2], $func_info[$f2num][1];
-
 
 my($fields_addr);
 
@@ -165,7 +166,7 @@ my @solver_opts = ("-solver", "smtlib",
 		   # "-save-solver-files",
 		   "-solver-path", $stp, 
 		   # "-solver-timeout",5,"-timeout-as-unsat"
-		   "-solver-stats"
+		   # "-solver-stats"
     );
 
 my @synth_opt = ("-synthesize-adaptor",
@@ -239,6 +240,7 @@ my @verbose_args = ();
 if($verbose == 1) {
     @verbose_args = ("-trace-sym-addr-details",
 		     "-trace-sym-addrs",
+		     "-time-stats",
 		     "-trace-temps",
 		     "-trace-syscalls", 
 		     "-trace-memory-snapshots", 
@@ -319,7 +321,6 @@ sub check_adaptor {
 		"-branch-preference", "$match_jne_addr:1",
 		"-redirect-stderr-to-stdout",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
-		"-time-stats",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"-fragments",
@@ -533,7 +534,6 @@ sub try_synth {
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
 		"-trace-stopping",
-		"-time-stats",
 		"-fragments",
 		"--", $bin, $f1num, $f2num, "f", "tests", $frag_file_name);
     if($verbose == 1) {
@@ -655,10 +655,12 @@ while (!$done) {
     print "elapsed time = $diff, last CE search time = $diff1\n";
     $reset_time = time();
     if ($res) {
-	print "Success!\n";
-	print "Final test set:\n";
-	for my $tr (@tests) {
-	    print " $tr->[0], $tr->[1], $tr->[2], $tr->[3], $tr->[4], $tr->[5], $tr->[6], $tr->[7], $tr->[8], $tr->[9], $tr->[10], $tr->[11], $tr->[12]\n";
+	if($verbose == 1) {
+	    print "Success!\n";
+	    print "Final test set:\n";
+	    for my $tr (@tests) {
+		print " $tr->[0], $tr->[1], $tr->[2], $tr->[3], $tr->[4], $tr->[5], $tr->[6], $tr->[7], $tr->[8], $tr->[9], $tr->[10], $tr->[11], $tr->[12]\n";
+	    }
 	}
 	my $verified="partial";
 	if ($f1_completed_count == $iteration_count) { $verified="complete"; }

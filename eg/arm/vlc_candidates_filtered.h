@@ -1,7 +1,10 @@
+#include <math.h>
+
 //flip lowest integer bit
 
 // src fragment taken from vlc-2.2.6/access/jack.c:474-482
-int prev_pow_2(size_t i_read) {
+//int prev_pow_2(size_t i_read) {
+int ref1(size_t i_read) {
   //Find the previous power of 2, this algo assumes size_t has the same size on all arch
   i_read >>= 1;
   i_read--;
@@ -15,7 +18,8 @@ int prev_pow_2(size_t i_read) {
 }
 
 // next_pow taken from bit-twiddling hacks
-int next_pow_2(unsigned int v) {
+//int next_pow_2(unsigned int v) {
+int ref2(unsigned int v) {
   v--;
   v |= v >> 1;
   v |= v >> 2;
@@ -27,22 +31,29 @@ int next_pow_2(unsigned int v) {
 }
 
 //from stdlib/abs.c
-int my_abs (int i) {
+//int my_abs (int i) {
+int ref3(int i) {
   return i < 0 ? -i : i;
 }
 
-int abs_diff(int x, int y) { 
+// common function inspired from Matlab
+//int abs_diff(int x, int y) { 
+int ref4(int x, int y) { 
   return abs(x-y); 
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/include/vlc_common.h: 
-uint16_t bswap16 (uint16_t x)
+//uint16_t bswap16 (uint16_t x)
+#define uint16_t    unsigned short
+uint16_t ref5 (uint16_t x)
 {
     return (x << 8) | (x >> 8);
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/include/vlc_common.h: 
-uint32_t bswap32 (uint32_t x)
+//uint32_t bswap32 (uint32_t x)
+typedef unsigned int		uint32_t;
+uint32_t ref6 (uint32_t x)
 {
     return ((x & 0x000000FF) << 24)
          | ((x & 0x0000FF00) <<  8)
@@ -51,37 +62,42 @@ uint32_t bswap32 (uint32_t x)
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/lib/libvlc_internal.h: 
-int from_mtime(int t, int c_val1, int c_val2)
+//int64_t from_mtime(mtime_t time)
+typedef int64_t mtime_t;
+int64_t ref7(mtime_t time)
 {
-    return (time + c_val1)/ c_val2;
+    return (time + 500ULL)/ 1000ULL;
 }
-
 //small function in /export/scratch/vaibhav/vlc-2.2.6/src/video_output/vout_subpictures.c: 
-int IntegerCmp(int i0, int i1)
+//int IntegerCmp(int i0, int i1)
+int ref8(int i0, int i1)
 {
     return i0 < i1 ? -1 : i0 > i1 ? 1 : 0;
 }
 
 //small function from boost
-extern "C" int boost_clamp(int val, int lo, int hi) {
-  return clamp32(val, lo, hi);
-}
+//extern "C" int boost_clamp(int val, int lo, int hi) {
+//  return clamp32(val, lo, hi);
+//}
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/include/vlc_common.h: 
-int clip_uint8_vlc( int a, int c_val1, int c_val2 )
+//int clip_uint8_vlc( int a, int c_val1, int c_val2 )
+int ref9( int a, int c_val1, int c_val2 )
 {
     if( a&(~c_val1) ) return (-a)>>c_val2;
     else           return a;
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/demux/avi/avi.c: 
-int __EVEN( int i )
+//int __EVEN( int i )
+int ref10( int i )
 {
     return (i & 1) ? i + 1 : i;
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/video_filter/blend.cpp: 
-unsigned div255(unsigned v)
+//unsigned div255(unsigned v)
+unsigned ref11(unsigned v)
 {
     /* It is exact for 8 bits, and has a max error of 1 for 9 and 10 bits
      * while respecting full opacity/transparency */
@@ -90,7 +106,9 @@ unsigned div255(unsigned v)
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/stream_out/langfromtelx.c: 
-uint8_t bytereverse( int n )
+//uint8_t bytereverse( int n )
+typedef unsigned char		uint8_t;
+uint8_t ref12( int n )
 {
     n = (((n >> 1) & 0x55) | ((n << 1) & 0xaa));
     n = (((n >> 2) & 0x33) | ((n << 2) & 0xcc));
@@ -176,18 +194,18 @@ bool isAllowedChar( char c )
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/access/dvb/scan.c: 
-int scan_service_type( int service_type, int case1, int ret1,
-		       int case2, int ret2,
-		       int case3, int ret3,
-		       int case4, int ret4, 
+int scan_service_type( int service_type, int ret1,
+		       int ret2,
+		       int ret3,
+		       int ret4, 
 		       int ret5)
 {
     switch( service_type )
     {
-    case case1: return ret1; break;
-    case case2: return ret2; break;
-    case case3: return ret3; break;
-    case case4: return ret4; break;
+    case 0x01: return ret1; break;
+    case 0x02: return ret2; break;
+    case 0x16: return ret3; break;
+    case 0x19: return ret4; break;
     default:   return ret5; break;
     }
 }
@@ -205,27 +223,38 @@ uint32_t GetDescriptorLength24b( int i_length )
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/cdg.c: 
 uint32_t RenderRGB( int r, int g, int b )
 {
+#define CDG_COLOR_R_SHIFT  0
+#define CDG_COLOR_G_SHIFT  8
+#define CDG_COLOR_B_SHIFT 16
     return ( r << CDG_COLOR_R_SHIFT ) | ( g << CDG_COLOR_G_SHIFT ) | ( b << CDG_COLOR_B_SHIFT );
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/qsv.c: 
-int qsv_timestamp_to_mtime(int32 mfx_ts, int c_val1, int c_val2)
+mtime_t qsv_timestamp_to_mtime(int64_t mfx_ts)
 {
-    return mfx_ts / c_val1 * c_val2;
+#  define INT64_C(c)	c ## L
+    return mfx_ts / INT64_C(9) * INT64_C(100);
+}
+
+//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/qsv.c: 
+typedef unsigned long int	uint64_t;
+uint64_t qsv_mtime_to_timestamp(int64_t vlc_ts, int64_t c_val1, int64_t c_val2)
+{
+    return vlc_ts / c_val1 * c_val2;
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.h: 
-int32_t fixmul32(int32_t x, int32_t y, int c_val)
+int32_t fixmul32(int32_t x, int32_t y)
 {
     int64_t temp;
     temp = x;
     temp *= y;
-    temp >>= c_val;
+    temp >>= 16;
     return (int32_t)temp;
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.c: 
-int32_t fixdiv32(int32_t x, int32_t y, int c_val)
+int32_t fixdiv32(int32_t x, int32_t y)
 {
     int64_t temp;
     if(x == 0)
@@ -233,12 +262,12 @@ int32_t fixdiv32(int32_t x, int32_t y, int c_val)
     if(y == 0)
         return 0x7fffffff;
     temp = x;
-    temp <<= c_val;
+    temp <<= 16;
     return (int32_t)(temp / y);
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.c: 
-int64_t fixdiv64(int64_t x, int64_t y, int c_val)
+int64_t fixdiv64(int64_t x, int64_t y)
 {
     int64_t temp;
 
@@ -247,7 +276,7 @@ int64_t fixdiv64(int64_t x, int64_t y, int c_val)
     if(y == 0)
         return 0x07ffffffffffffffLL;
     temp = x;
-    temp <<= c_val;
+    temp <<= 16;
     return (int64_t)(temp / y);
 }
 
@@ -346,7 +375,6 @@ int ps_id_to_tk( unsigned i_id )
 uint32_t rtp_compute_ts( unsigned i_clock_rate, int64_t i_pts )
 {
 #define CLOCK_FREQ INT64_C(1000000)
-#define INT64_C(c)  c ## LL
     /* This is an overflow-proof way of doing:
      * return i_pts * (int64_t)i_clock_rate / CLOCK_FREQ;
      *
@@ -515,5 +543,4 @@ bool isMouseEvent( int type, int constant_val1, int constant_val2)
     return type >= constant_val1 &&
            type <= constant_val2;
 }
-g
 

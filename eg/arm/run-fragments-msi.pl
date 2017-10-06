@@ -2,7 +2,7 @@
 
 use strict;
 
-die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buckets)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, any other value=avoid identity fragments using <fragments-dir>/identity-fragments.lst> <1=argsub, 2=typeconv adaptor> <constant bounds file> <return => ret.val.sub.>"
+die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buckets)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, 2=boost_clamp,3-14=vlc ref. fns.> <1=argsub, 2=typeconv adaptor> <constant bounds file> <return => ret.val.sub.>"
   unless @ARGV == 9;
 
 $|=1;
@@ -87,9 +87,10 @@ my $last_index = -1;
 open (FILE, "< $checkpoint_file");
 while (<FILE>) {
   $last_index = $_ + 0;
-  print "last index = $last_index\n";
+  # print "last index = $last_index\n";
 }
 
+print "last index = $last_index\n";
 
 my ($running_as) = (0,0);
 my ($last_ce_time,$last_as_time) = (0,0);
@@ -150,7 +151,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     
     my $inner_func_num = 0;
     if($find_identity_frag == 1) { $inner_func_num = 3; } 
-    else { $inner_func_num = 2; }
+    else { $inner_func_num = $find_identity_frag; }
 
     my $adaptor_driver = "synth-argsub-frag.pl";
     if($adaptor_family==2) { $adaptor_driver = "synth-typeconv-frag.pl"; }
