@@ -515,10 +515,6 @@ sub try_synth {
 	print "  $_" unless /^Input vars:/;
     }
     close LOG;
-    if (!$success) {
-	print "Synthesis failure: seems the functions are not equivalent.\n";
-	exit 2;
-    }
     my @afields;
     my @bfields;
     for my $fr (@fields) {
@@ -529,7 +525,7 @@ sub try_synth {
 	push @bfields, $fields{$fr->[0]};
 	#print "try_synth: pushing $fr->[0] = $fields{$fr->[0]}\n";
     }
-    return ([@afields],[@bfields]);
+    return ($success,[@afields],[@bfields]);
 }
 
 
@@ -576,6 +572,7 @@ my $start_time = time();
 my $reset_time = time();
 my $diff;
 my $diff1;
+my $success;
 
 sub get_adaptor_str {
     my $a = shift(@_);
@@ -619,11 +616,15 @@ while (!$done) {
 	push @tests, [@$cer];
     }
 
-    ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
+    ($success,$adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
     print "Synthesized arg adaptor ".get_adaptor_str($adapt).
 	" and return adaptor ".get_adaptor_str($ret_adapt)."\n";
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last AS search time = $diff1\n";
+    if(!$success) {
+     	print "Synthesis failure: seems the functions are not equivalent.\n";
+	exit 2;
+    }
     $reset_time = time();
 }
