@@ -255,7 +255,7 @@ int main(int argc, char **argv) {
 	exit(1);
     }
     f2num = atoi(argv[2]);
-    if (f2num < 1 || f2num > 3) {
+    if (f2num < 1 || f2num > 14) {
 	fprintf(stderr, "Error: f2num %d out of range\n", f2num);
     }
     if (argv[3][0] == 'a') {
