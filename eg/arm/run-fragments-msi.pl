@@ -198,7 +198,6 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
 		$total_time = $1;
 		$total_ce_steps++;
 		$total_ce_solver_time += $last_ce_solver_time;
-		$last_as_solver_time = 0;
 	    } elsif(/^elapsed time = (.*), last AS search time = (.*)$/) {
 		# printf("seen last AS\n");
 		$running_as = 0;
@@ -207,13 +206,12 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
 		$total_time = $1;
 		$total_as_steps++;
 		$total_as_solver_time += $last_as_solver_time;
-		$last_ce_solver_time = 0;
 	    } elsif(/.*total query time = (.*) sec$/) {
 		# printf("seen Query time\n");
 		if($running_as == 1) { 
-		    $last_as_solver_time += $1;
+		    $last_as_solver_time = $1 + 0;
 		} else { 
-		    $last_ce_solver_time += $1;
+		    $last_ce_solver_time = $1 + 0;
 		}
 	    } elsif(/.*Final adaptor.*/) {
 		$result = 1;
