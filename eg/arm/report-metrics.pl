@@ -2,9 +2,19 @@
 
 use strict;
 
-die "Usage: report-metrics.pl <log file name> <number of bucket directories> <base dir. absolute path>"
-  unless @ARGV == 3;
-my($log_file_name,$num_dirs,$dir_path) = @ARGV;
+die "Usage: report-metrics.pl <log file name> <number of bucket directories> <base dir. absolute paths file>"
+  unless @ARGV >= 3;
+my($log_file_name,$num_dirs,$dir_paths_file) = @ARGV;
+my $log_file_name = $ARGV[0];
+my $num_dirs = $ARGV[1];
+my $dir_path = $ARGV[2];
+my ($adaptor_steps_f, $adaptor_times_f, $timeout_steps_f) = (0,0,0);
+foreach $argnum (0 .. $#ARGV) {
+    print "$ARGV[$argnum]\n";
+    if($ARGV[$argnum] -eq "-adaptor-times") { $adaptor_times_f = 1; }
+    if($ARGV[$argnum] -eq "-adaptor-steps") { $adaptor_steps_f = 1; }
+    if($ARGV[$argnum] -eq "-timeout-steps") { $timeout_steps_f = 1; }
+}
 
 my @timeout_time = ();
 my @timeout_steps = ();
@@ -87,128 +97,144 @@ sub calc_average_5 {
     } else { return (0,0,0,0,0); }
 }
 
-my $total_results = 0;
-my $total_cmds = 0;
+sub report_metrics {
+    my $dir_path = shift(@_);
+    my $log_file_name = shift(@_);
+    my $num_dirs = shift(@_);
+    my $total_results = 0;
+    my $total_cmds = 0;
 
-for(my $i=1; $i <= $num_dirs; $i++) {
-    open(LOG,"<$dir_path/arm-$i/logs/$log_file_name");
-    my ($result,$count) = (-1,0);
-    my $saved_cmd = "";
-    while(<LOG>) {
-	if(/.*cmd =.*/) { $total_cmds++; $saved_cmd = $_; chomp $saved_cmd;}
-	if(/^found timeout$/) { $total_results++; $result = 0; next; }
-	if(/^found an adaptor$/) { $total_results++; $result = 1; next; }
-	if(/^found inequivalence$/) { $total_results++; $result = 2; next; }
-	if(/.*found fatal error.*/) { $total_results++; $result = 3; next; }
-	if(/.*found ce failure.*/) { $total_results++; $result = 4; next; }
-	if($result != -1 && /^cmd = .*$/) {
-	    $result = -1;
-	    $count = 0;
-	}
-	if($result >= 0 && $result <= 4 && $count < 4) {
-	    $count++;
-	    if(/^time \(ce-total,ce-last,as-total,as-last,ce-as-total\) = \((.*),(.*),(.*),(.*),(.*)\)$/ ) {
-		my ($v1,$v2,$v3,$v4,$v5) = ($1,$2,$3,$4,$5);
-		for($result) {
-		    /0/ && do { push @timeout_time, ($v1,$v2,$v3,$v4,$v5); last; };
-		    /1/ && do { push @adaptor_time, ($v1,$v2,$v3,$v4,$v5); last; };
-		    /2/ && do { push @inequiv_time, ($v1,$v2,$v3,$v4,$v5); last; };
-		    /3/ && do { push @fatal_time,   ($v1,$v2,$v3,$v4,$v5); last; };
-		    /4/ && do { push @ce_fail_time, ($v1,$v2,$v3,$v4,$v5); last; };
-		}
-	    } elsif(/^total steps \(ce,as,total\) = \((.*),(.*),(.*)\)$/) {
-		my ($v1,$v2,$v3) = ($1,$2,$3);
-		for($result) {
-		    /0/ && do { push @timeout_steps, ($v1,$v2,$v3); last; };
-		    /1/ && do { push @adaptor_steps, ($v1,$v2,$v3); last; };
-		    /2/ && do { push @inequiv_steps, ($v1,$v2,$v3); last; };
-		    /3/ && do { push @fatal_steps,   ($v1,$v2,$v3); last; };
-		    /4/ && do { push @ce_fail_steps, ($v1,$v2,$v3); last; };
-		}
-	    } elsif(/^solver times \(ce-total,ce-last,as-total,as-last\) = \((.*),(.*),(.*),(.*)\)$/) {
-		my ($v1,$v2,$v3,$v4) = ($1,$2,$3,$4);
-		for($result) {
-		    /0/ && do { push @timeout_solver, ($v1,$v2,$v3,$v4); last; };
-		    /1/ && do { push @adaptor_solver, ($v1,$v2,$v3,$v4); last; };
-		    /2/ && do { push @inequiv_solver, ($v1,$v2,$v3,$v4); last; };
-		    /3/ && do { push @fatal_solver,   ($v1,$v2,$v3,$v4); last; };
-		    /4/ && do { push @ce_fail_solver, ($v1,$v2,$v3,$v4); last; };
-		}
-	    } elsif(/^stopped during (.*) with solver time = .*$/ && $result == 0) {
-		if($1 =~ "Adaptor-Search") {
-		    push @timeout_stopped_during, 1;
-		} elsif($1 =~ "CounterExample-Search") {
-		    push @timeout_stopped_during, 2;
-		}
+    for(my $i=1; $i <= $num_dirs; $i++) {
+	open(LOG,"<$dir_path/arm-$i/logs/$log_file_name");
+	my ($result,$count) = (-1,0);
+	my $saved_cmd = "";
+	while(<LOG>) {
+	    if(/.*cmd =.*/) { $total_cmds++; $saved_cmd = $_; chomp $saved_cmd;}
+	    if(/^found timeout$/) { $total_results++; $result = 0; next; }
+	    if(/^found an adaptor$/) { $total_results++; $result = 1; next; }
+	    if(/^found inequivalence$/) { $total_results++; $result = 2; next; }
+	    if(/.*found fatal error.*/) { $total_results++; $result = 3; next; }
+	    if(/.*found ce failure.*/) { $total_results++; $result = 4; next; }
+	    if($result != -1 && /^cmd = .*$/) {
+		$result = -1;
+		$count = 0;
 	    }
-	} # end if result >= 0 && <= 4
-    } # end while(<LOG>)
+	    if($result >= 0 && $result <= 4 && $count < 4) {
+		if(/^time \(ce-total,ce-last,as-total,as-last,ce-as-total\) = \((.*),(.*),(.*),(.*),(.*)\)$/ ) {
+		    my ($v1,$v2,$v3,$v4,$v5) = ($1,$2,$3,$4,$5);
+		    for($result) {
+			/0/ && do { push @timeout_time, ($v1,$v2,$v3,$v4,$v5); last; };
+			/1/ && do { push @adaptor_time, ($v1,$v2,$v3,$v4,$v5); last; };
+			/2/ && do { push @inequiv_time, ($v1,$v2,$v3,$v4,$v5); last; };
+			/3/ && do { push @fatal_time,   ($v1,$v2,$v3,$v4,$v5); last; };
+			/4/ && do { push @ce_fail_time, ($v1,$v2,$v3,$v4,$v5); last; };
+		    }
+		} elsif(/^total steps \(ce,as,total\) = \((.*),(.*),(.*)\)$/) {
+		    my ($v1,$v2,$v3) = ($1,$2,$3);
+		    for($result) {
+			/0/ && do { push @timeout_steps, ($v1,$v2,$v3); last; };
+			/1/ && do { push @adaptor_steps, ($v1,$v2,$v3); last; };
+			/2/ && do { push @inequiv_steps, ($v1,$v2,$v3); last; };
+			/3/ && do { push @fatal_steps,   ($v1,$v2,$v3); last; };
+			/4/ && do { push @ce_fail_steps, ($v1,$v2,$v3); last; };
+		    }
+		} elsif(/^solver times \(ce-total,ce-last,as-total,as-last\) = \((.*),(.*),(.*),(.*)\)$/) {
+		    my ($v1,$v2,$v3,$v4) = ($1,$2,$3,$4);
+		    for($result) {
+			/0/ && do { push @timeout_solver, ($v1,$v2,$v3,$v4); last; };
+			/1/ && do { push @adaptor_solver, ($v1,$v2,$v3,$v4); last; };
+			/2/ && do { push @inequiv_solver, ($v1,$v2,$v3,$v4); last; };
+			/3/ && do { push @fatal_solver,   ($v1,$v2,$v3,$v4); last; };
+			/4/ && do { push @ce_fail_solver, ($v1,$v2,$v3,$v4); last; };
+		    }
+		} elsif(/^stopped during (.*) with solver time = .*$/ && $result == 0) {
+		    if($1 =~ "Adaptor-Search") {
+			push @timeout_stopped_during, 1;
+		    } elsif($1 =~ "CounterExample-Search") {
+			push @timeout_stopped_during, 2;
+		    }
+		}
+	    } # end if result >= 0 && <= 4
+	} # end while(<LOG>)
+    }
+
+    print "total cmds = $total_cmds, total results = $total_results\n";
+    print "steps: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
+    my ($t_st_ce,$t_st_as,$t_st_t) = calc_average_3(\@timeout_steps);
+    printf("$t_st_ce, $t_st_as, $t_st_t, %d\n",scalar(@timeout_steps)/3);
+    my ($a_st_ce,$a_st_as,$a_st_t) = calc_average_3(\@adaptor_steps);
+    printf("$a_st_ce, $a_st_as, $a_st_t, %d\n", scalar(@adaptor_steps)/3);
+    my ($i_st_ce,$i_st_as,$i_st_t) = calc_average_3(\@inequiv_steps);
+    printf("$i_st_ce, $i_st_as, $i_st_t, %d\n", scalar(@inequiv_steps)/3);
+    my ($f_st_ce,$f_st_as,$f_st_t) = calc_average_3(\@fatal_steps);
+    printf("$f_st_ce, $f_st_as, $f_st_t, %d\n", scalar(@fatal_steps)/3);
+    my ($cef_st_ce,$cef_st_as,$cef_st_t) = calc_average_3(\@ce_fail_steps);
+    printf("$cef_st_ce, $cef_st_as, $cef_st_t, %d\n", scalar(@ce_fail_steps)/3);
+    print "\n";
+
+    print "solver: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
+    my ($t_so_ce_t,$t_so_ce_l, $t_so_as_t,$t_so_as_l) = calc_average_4(\@timeout_solver);
+    printf("$t_so_ce_t, $t_so_ce_l, $t_so_as_t, $t_so_as_l, %d\n", scalar(@timeout_solver)/4);
+    my ($a_so_ce_t,$a_so_ce_l,$a_so_as_t,$a_so_as_l) = calc_average_4(\@adaptor_solver);
+    printf("$a_so_ce_t, $a_so_ce_l, $a_so_as_t, $a_so_as_l, %d\n", scalar(@adaptor_solver)/4);
+    my ($i_so_ce_t,$i_so_ce_l,$i_so_as_t,$i_so_as_l) = calc_average_4(\@inequiv_solver);
+    printf("$i_so_ce_t, $i_so_ce_l, $i_so_as_t, $i_so_as_l, %d\n", scalar(@inequiv_solver)/4);
+    my ($f_so_ce_t,$f_so_ce_l,$f_so_as_t,$f_so_as_l) = calc_average_4(\@fatal_solver);
+    printf("$f_so_ce_t, $f_so_ce_l, $f_so_as_t, $f_so_as_l, %d\n", scalar(@fatal_solver)/4);
+    my ($cef_so_ce_t,$cef_so_ce_l,$cef_so_as_t,$cef_so_as_l) = calc_average_4(\@ce_fail_solver);
+    printf("$cef_so_ce_t, $cef_so_ce_l, $cef_so_as_t, $cef_so_as_l, %d\n", scalar(@ce_fail_solver)/4);
+    print "\n";
+
+    print "time: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
+    my ($t_tm_ce_t, $t_tm_ce_l,$t_tm_as_t, $t_tm_as_l,$t_tm_t) = calc_average_5(\@timeout_time);
+    printf("$t_tm_ce_t, $t_tm_ce_l, $t_tm_as_t, $t_tm_as_l, $t_tm_t, %d\n", scalar(@timeout_time)/5);
+    my ($a_tm_ce_t, $a_tm_ce_l,$a_tm_as_t, $a_tm_as_l,$a_tm_t) = calc_average_5(\@adaptor_time);
+    printf("$a_tm_ce_t, $a_tm_ce_l, $a_tm_as_t, $a_tm_as_l, $a_tm_t, %d\n", scalar(@adaptor_time)/5);
+    my ($i_tm_ce_t, $i_tm_ce_l,$i_tm_as_t, $i_tm_as_l,$i_tm_t) = calc_average_5(\@inequiv_time);
+    printf("$i_tm_ce_t, $i_tm_ce_l, $i_tm_as_t, $i_tm_as_l, $i_tm_t, %d\n", scalar(@inequiv_time)/5);
+    my ($f_tm_ce_t, $f_tm_ce_l,$f_tm_as_t, $f_tm_as_l,$f_tm_t) = calc_average_5(\@fatal_time);
+    printf("$f_tm_ce_t, $f_tm_ce_l, $f_tm_as_t, $f_tm_as_l, $f_tm_t, %d\n", scalar(@fatal_time)/5);
+    my ($cef_tm_ce_t, $cef_tm_ce_l,$cef_tm_as_t, $cef_tm_as_l,$cef_tm_t) = calc_average_5(\@ce_fail_time);
+    printf("$cef_tm_ce_t, $cef_tm_ce_l, $cef_tm_as_t, $cef_tm_as_l, $cef_tm_t, %d\n", scalar(@ce_fail_time)/5);
+    my ($as_count,$ce_count) = calc_count(\@timeout_stopped_during,1,2);
+    printf("Average# timeout stopped during = AS(%d), CE(%d)\n\n", $as_count,$ce_count); 
+
+    if($adaptor_times_f == 1) {
+	print "Adaptor times:\n";
+	my @arr = @adaptor_time;
+	for(my $i=0; $i < scalar(@arr); $i+=5) {
+	    my $val1 = $arr[$i];
+	    my $val2 = $arr[$i+1];
+	    my $val3 = $arr[$i+2];
+	    my $val4 = $arr[$i+3];
+	    my $val5 = $arr[$i+4];
+	    print "$val5\n";
+	}
+    }
+    if($adaptor_steps_f == 1) {
+	print "Adaptor steps:\n";
+	my @arr = @adaptor_steps;
+	for(my $i=0; $i < scalar(@arr); $i+=3) {
+	    my $val1 = $arr[$i];
+	    my $val2 = $arr[$i+1];
+	    my $val3 = $arr[$i+2];
+	    print "$val3\n";
+	}
+    }
+    if($adaptor_steps_f == 1) {
+	print "Timeout steps:\n";
+	my @arr = @timeout_steps;
+	for(my $i=0; $i < scalar(@arr); $i+=3) {
+	    my $val1 = $arr[$i];
+	    my $val2 = $arr[$i+1];
+	    my $val3 = $arr[$i+2];
+	    print "$val3\n";
+	}
+    }
 }
 
-print "total cmds = $total_cmds, total results = $total_results\n";
-print "steps: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
-my ($t_st_ce,$t_st_as,$t_st_t) = calc_average_3(\@timeout_steps);
-printf("$t_st_ce, $t_st_as, $t_st_t, %d\n",scalar(@timeout_steps)/3);
-my ($a_st_ce,$a_st_as,$a_st_t) = calc_average_3(\@adaptor_steps);
-printf("$a_st_ce, $a_st_as, $a_st_t, %d\n", scalar(@adaptor_steps)/3);
-my ($i_st_ce,$i_st_as,$i_st_t) = calc_average_3(\@inequiv_steps);
-printf("$i_st_ce, $i_st_as, $i_st_t, %d\n", scalar(@inequiv_steps)/3);
-my ($f_st_ce,$f_st_as,$f_st_t) = calc_average_3(\@fatal_steps);
-printf("$f_st_ce, $f_st_as, $f_st_t, %d\n", scalar(@fatal_steps)/3);
-my ($cef_st_ce,$cef_st_as,$cef_st_t) = calc_average_3(\@ce_fail_steps);
-printf("$cef_st_ce, $cef_st_as, $cef_st_t, %d\n", scalar(@ce_fail_steps)/3);
-print "\n";
-
-print "solver: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
-my ($t_so_ce_t,$t_so_ce_l, $t_so_as_t,$t_so_as_l) = calc_average_4(\@timeout_solver);
-printf("$t_so_ce_t, $t_so_ce_l, $t_so_as_t, $t_so_as_l, %d\n", scalar(@timeout_solver)/4);
-my ($a_so_ce_t,$a_so_ce_l,$a_so_as_t,$a_so_as_l) = calc_average_4(\@adaptor_solver);
-printf("$a_so_ce_t, $a_so_ce_l, $a_so_as_t, $a_so_as_l, %d\n", scalar(@adaptor_solver)/4);
-my ($i_so_ce_t,$i_so_ce_l,$i_so_as_t,$i_so_as_l) = calc_average_4(\@inequiv_solver);
-printf("$i_so_ce_t, $i_so_ce_l, $i_so_as_t, $i_so_as_l, %d\n", scalar(@inequiv_solver)/4);
-my ($f_so_ce_t,$f_so_ce_l,$f_so_as_t,$f_so_as_l) = calc_average_4(\@fatal_solver);
-printf("$f_so_ce_t, $f_so_ce_l, $f_so_as_t, $f_so_as_l, %d\n", scalar(@fatal_solver)/4);
-my ($cef_so_ce_t,$cef_so_ce_l,$cef_so_as_t,$cef_so_as_l) = calc_average_4(\@ce_fail_solver);
-printf("$cef_so_ce_t, $cef_so_ce_l, $cef_so_as_t, $cef_so_as_l, %d\n", scalar(@ce_fail_solver)/4);
-print "\n";
-
-print "time: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
-my ($t_tm_ce_t, $t_tm_ce_l,$t_tm_as_t, $t_tm_as_l,$t_tm_t) = calc_average_5(\@timeout_time);
-printf("$t_tm_ce_t, $t_tm_ce_l, $t_tm_as_t, $t_tm_as_l, $t_tm_t, %d\n", scalar(@timeout_time)/5);
-my ($a_tm_ce_t, $a_tm_ce_l,$a_tm_as_t, $a_tm_as_l,$a_tm_t) = calc_average_5(\@adaptor_time);
-printf("$a_tm_ce_t, $a_tm_ce_l, $a_tm_as_t, $a_tm_as_l, $a_tm_t, %d\n", scalar(@adaptor_time)/5);
-my ($i_tm_ce_t, $i_tm_ce_l,$i_tm_as_t, $i_tm_as_l,$i_tm_t) = calc_average_5(\@inequiv_time);
-printf("$i_tm_ce_t, $i_tm_ce_l, $i_tm_as_t, $i_tm_as_l, $i_tm_t, %d\n", scalar(@inequiv_time)/5);
-my ($f_tm_ce_t, $f_tm_ce_l,$f_tm_as_t, $f_tm_as_l,$f_tm_t) = calc_average_5(\@fatal_time);
-printf("$f_tm_ce_t, $f_tm_ce_l, $f_tm_as_t, $f_tm_as_l, $f_tm_t, %d\n", scalar(@fatal_time)/5);
-my ($cef_tm_ce_t, $cef_tm_ce_l,$cef_tm_as_t, $cef_tm_as_l,$cef_tm_t) = calc_average_5(\@ce_fail_time);
-printf("$cef_tm_ce_t, $cef_tm_ce_l, $cef_tm_as_t, $cef_tm_as_l, $cef_tm_t, %d\n", scalar(@ce_fail_time)/5);
-my ($as_count,$ce_count) = calc_count(\@timeout_stopped_during,1,2);
-printf("Average# timeout stopped during = AS(%d), CE(%d)\n\n", $as_count,$ce_count); 
-
-print "Adaptor times:\n";
-my @arr = @adaptor_time;
-for(my $i=0; $i < scalar(@arr); $i+=5) {
-	my $val1 = $arr[$i];
-	my $val2 = $arr[$i+1];
-	my $val3 = $arr[$i+2];
-	my $val4 = $arr[$i+3];
-	my $val5 = $arr[$i+4];
-  print "$val5\n";
-}
-print "Adaptor steps:\n";
-my @arr = @adaptor_steps;
-for(my $i=0; $i < scalar(@arr); $i+=3) {
-	my $val1 = $arr[$i];
-	my $val2 = $arr[$i+1];
-	my $val3 = $arr[$i+2];
-  print "$val3\n";
-}
-print "Timeout steps:\n";
-my @arr = @timeout_steps;
-for(my $i=0; $i < scalar(@arr); $i+=3) {
-	my $val1 = $arr[$i];
-	my $val2 = $arr[$i+1];
-	my $val3 = $arr[$i+2];
-  print "$val3\n";
+open(FILES, "<$dir_paths_file");
+while(<FILES>) {
+    chomp $_;
+    report_metrics($_, $log_file_name, $num_dirs);
 }
