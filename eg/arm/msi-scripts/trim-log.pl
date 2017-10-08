@@ -3,7 +3,7 @@
 use strict;
 
 die "Usage: trim-log.pl <log file name> <number of \"identity-fragments\" to skip> <number of directories> <base dir. absolute path>"
-  unless @ARGV == 3;
+  unless @ARGV == 4;
 my($log_file_name,$skip_num, $num_dirs,$dir_path) = @ARGV;
 
 for(my $i=1; $i <= $num_dirs; $i++) {
@@ -18,6 +18,7 @@ for(my $i=1; $i <= $num_dirs; $i++) {
 	   print TRIM_LOG $_; 
 	}
     }
+  print "Wrote to $dir_path/arm-$i/logs/$log_file_name.trimmed\n";
     close LOG;
     close TRIM_LOG;
 }
