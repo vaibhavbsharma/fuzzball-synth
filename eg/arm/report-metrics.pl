@@ -105,6 +105,27 @@ sub calc_average_5 {
 }
 
 sub report_metrics {
+    @timeout_time = ();
+    @timeout_steps = ();
+    @timeout_solver = ();
+    @timeout_stopped_during = ();
+
+    @adaptor_time = ();
+    @adaptor_steps = ();
+    @adaptor_solver = ();
+
+    @inequiv_time = ();
+    @inequiv_steps = ();
+    @inequiv_solver = ();
+
+    @fatal_time = ();
+    @fatal_steps = ();
+    @fatal_solver = ();
+
+    @ce_fail_time = ();
+    @ce_fail_steps = ();
+    @ce_fail_solver = ();
+
     my $dir_path = shift(@_);
     my $log_file_name = shift(@_);
     my $num_dirs = shift(@_);
@@ -160,30 +181,30 @@ sub report_metrics {
 		    if($1 =~ "Adaptor-Search") {
 			push @timeout_stopped_during, 1;
 			if($result == 0) {
-			   $timeout_steps[scalar(@timeout_steps)-2]++;
-			   $timeout_steps[scalar(@timeout_steps)-1]++;
-			   $timeout_solver[scalar(@timeout_solver)-3]+=$2;
-			   my $last_run_time = 
-			       (300 - $timeout_time[scalar(@timeout_time)-1]); 
-			   $timeout_time[scalar(@timeout_time)-2]=
-			       $last_run_time;
-			   $timeout_time[scalar(@timeout_time)-3]+=
-			       $last_run_time;
-			   $timeout_time[scalar(@timeout_time)-1] = 300;
+			    $timeout_steps[scalar(@timeout_steps)-2]++;
+			    $timeout_steps[scalar(@timeout_steps)-1]++;
+			    $timeout_solver[scalar(@timeout_solver)-3]+=$2;
+			    my $last_run_time = 
+				(300 - $timeout_time[scalar(@timeout_time)-1]); 
+			    $timeout_time[scalar(@timeout_time)-2]=
+				$last_run_time;
+			    $timeout_time[scalar(@timeout_time)-3]+=
+				$last_run_time;
+			    $timeout_time[scalar(@timeout_time)-1] = 300;
 			}
 		    } elsif($1 =~ "CounterExample-Search") {
 			push @timeout_stopped_during, 2;
 			if($result == 0) {
-			   $timeout_steps[scalar(@timeout_steps)-3]++;
-			   $timeout_steps[scalar(@timeout_steps)-1]++;
-			   $timeout_solver[scalar(@timeout_solver)-5]+=$2; 
-			   my $last_run_time = 
-			       (300 - $timeout_time[scalar(@timeout_time)-1]); 
-			   $timeout_time[scalar(@timeout_time)-4]=
-			       $last_run_time;
-			   $timeout_time[scalar(@timeout_time)-5]+=
-			       $last_run_time;
-			   $timeout_time[scalar(@timeout_time)-1] = 300;
+			    $timeout_steps[scalar(@timeout_steps)-3]++;
+			    $timeout_steps[scalar(@timeout_steps)-1]++;
+			    $timeout_solver[scalar(@timeout_solver)-5]+=$2; 
+			    my $last_run_time = 
+				(300 - $timeout_time[scalar(@timeout_time)-1]); 
+			    $timeout_time[scalar(@timeout_time)-4]=
+				$last_run_time;
+			    $timeout_time[scalar(@timeout_time)-5]+=
+				$last_run_time;
+			    $timeout_time[scalar(@timeout_time)-1] = 300;
 			}
 		    }
 		}
@@ -238,7 +259,7 @@ sub report_metrics {
        scalar(@adaptor_solver)/5 != scalar(@adaptor_steps)/3) {
 	die "number of timeouts or inequiv or adaptor instances dont match between time, solver, or steps\n";
     }
-       
+    
     my ($as_count,$ce_count) = calc_count(\@timeout_stopped_during,1,2);
     # printf("Average# timeout stopped during = AS(%d), CE(%d)\n\n", $as_count,$ce_count);
     $timeout_table .= 
