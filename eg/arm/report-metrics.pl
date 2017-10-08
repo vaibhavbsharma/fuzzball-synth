@@ -9,12 +9,19 @@ my $log_file_name = $ARGV[0];
 my $num_dirs = $ARGV[1];
 my $dir_path = $ARGV[2];
 my ($adaptor_steps_f, $adaptor_times_f, $timeout_steps_f) = (0,0,0);
+my $argnum;
 foreach $argnum (0 .. $#ARGV) {
-    print "$ARGV[$argnum]\n";
-    if($ARGV[$argnum] -eq "-adaptor-times") { $adaptor_times_f = 1; }
-    if($ARGV[$argnum] -eq "-adaptor-steps") { $adaptor_steps_f = 1; }
-    if($ARGV[$argnum] -eq "-timeout-steps") { $timeout_steps_f = 1; }
+    # print "$ARGV[$argnum]\n";
+    if($ARGV[$argnum] eq "-adaptor-times") { $adaptor_times_f = 1; }
+    if($ARGV[$argnum] eq "-adaptor-steps") { $adaptor_steps_f = 1; }
+    if($ARGV[$argnum] eq "-timeout-steps") { $timeout_steps_f = 1; }
 }
+my $timeout_table .= "timeout:\n";
+$timeout_table .= "fn_name, #, steps, total time (solver), CE total time (solver), CE last time (solver), AS total time (solver), AS last time (solver), AS-stops/CE-stops\n";
+my $inequiv_table .= "inequiv:\n";
+$inequiv_table .= "fn_name, #, steps, total time (solver), CE total time (solver), CE last time (solver), AS total time (solver), AS last time (solver)\n";
+my $adaptor_table .= "adaptor:\n";
+$adaptor_table .= "fn_name, #, steps, total time (solver), CE total time (solver), CE last time (solver), AS total time (solver), AS last time (solver)\n";
 
 my @timeout_time = ();
 my @timeout_steps = ();
@@ -103,6 +110,8 @@ sub report_metrics {
     my $num_dirs = shift(@_);
     my $total_results = 0;
     my $total_cmds = 0;
+    my @tmp_arr = split /\//, $dir_path;
+    my $fn_name = $tmp_arr[$#tmp_arr];
 
     for(my $i=1; $i <= $num_dirs; $i++) {
 	open(LOG,"<$dir_path/arm-$i/logs/$log_file_name");
@@ -141,63 +150,126 @@ sub report_metrics {
 		} elsif(/^solver times \(ce-total,ce-last,as-total,as-last\) = \((.*),(.*),(.*),(.*)\)$/) {
 		    my ($v1,$v2,$v3,$v4) = ($1,$2,$3,$4);
 		    for($result) {
-			/0/ && do { push @timeout_solver, ($v1,$v2,$v3,$v4); last; };
-			/1/ && do { push @adaptor_solver, ($v1,$v2,$v3,$v4); last; };
-			/2/ && do { push @inequiv_solver, ($v1,$v2,$v3,$v4); last; };
-			/3/ && do { push @fatal_solver,   ($v1,$v2,$v3,$v4); last; };
-			/4/ && do { push @ce_fail_solver, ($v1,$v2,$v3,$v4); last; };
+			/0/ && do { push @timeout_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
+			/1/ && do { push @adaptor_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
+			/2/ && do { push @inequiv_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
+			/3/ && do { push @fatal_solver,   ($v1,$v2,$v3,$v4,$v1+$v3); last; };
+			/4/ && do { push @ce_fail_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
 		    }
-		} elsif(/^stopped during (.*) with solver time = .*$/ && $result == 0) {
+		} elsif(/^stopped during (.*) with solver time = (.*)$/ && $result == 0) {
 		    if($1 =~ "Adaptor-Search") {
 			push @timeout_stopped_during, 1;
+			if($result == 0) {
+			   $timeout_steps[scalar(@timeout_steps)-2]++;
+			   $timeout_steps[scalar(@timeout_steps)-1]++;
+			   $timeout_solver[scalar(@timeout_solver)-3]+=$2;
+			   my $last_run_time = 
+			       (300 - $timeout_time[scalar(@timeout_time)-1]); 
+			   $timeout_time[scalar(@timeout_time)-2]=
+			       $last_run_time;
+			   $timeout_time[scalar(@timeout_time)-3]+=
+			       $last_run_time;
+			   $timeout_time[scalar(@timeout_time)-1] = 300;
+			}
 		    } elsif($1 =~ "CounterExample-Search") {
 			push @timeout_stopped_during, 2;
+			if($result == 0) {
+			   $timeout_steps[scalar(@timeout_steps)-3]++;
+			   $timeout_steps[scalar(@timeout_steps)-1]++;
+			   $timeout_solver[scalar(@timeout_solver)-5]+=$2; 
+			   my $last_run_time = 
+			       (300 - $timeout_time[scalar(@timeout_time)-1]); 
+			   $timeout_time[scalar(@timeout_time)-4]=
+			       $last_run_time;
+			   $timeout_time[scalar(@timeout_time)-5]+=
+			       $last_run_time;
+			   $timeout_time[scalar(@timeout_time)-1] = 300;
+			}
 		    }
 		}
 	    } # end if result >= 0 && <= 4
 	} # end while(<LOG>)
     }
 
-    print "total cmds = $total_cmds, total results = $total_results\n";
-    print "steps: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
+    # print "total cmds = $total_cmds, total results = $total_results\n";
+    #print "steps: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
     my ($t_st_ce,$t_st_as,$t_st_t) = calc_average_3(\@timeout_steps);
-    printf("$t_st_ce, $t_st_as, $t_st_t, %d\n",scalar(@timeout_steps)/3);
+    #printf("$t_st_ce, $t_st_as, $t_st_t, %d\n",scalar(@timeout_steps)/3);
     my ($a_st_ce,$a_st_as,$a_st_t) = calc_average_3(\@adaptor_steps);
-    printf("$a_st_ce, $a_st_as, $a_st_t, %d\n", scalar(@adaptor_steps)/3);
+    #printf("$a_st_ce, $a_st_as, $a_st_t, %d\n", scalar(@adaptor_steps)/3);
     my ($i_st_ce,$i_st_as,$i_st_t) = calc_average_3(\@inequiv_steps);
-    printf("$i_st_ce, $i_st_as, $i_st_t, %d\n", scalar(@inequiv_steps)/3);
+    #printf("$i_st_ce, $i_st_as, $i_st_t, %d\n", scalar(@inequiv_steps)/3);
     my ($f_st_ce,$f_st_as,$f_st_t) = calc_average_3(\@fatal_steps);
-    printf("$f_st_ce, $f_st_as, $f_st_t, %d\n", scalar(@fatal_steps)/3);
+    #printf("$f_st_ce, $f_st_as, $f_st_t, %d\n", scalar(@fatal_steps)/3);
     my ($cef_st_ce,$cef_st_as,$cef_st_t) = calc_average_3(\@ce_fail_steps);
-    printf("$cef_st_ce, $cef_st_as, $cef_st_t, %d\n", scalar(@ce_fail_steps)/3);
-    print "\n";
+    #printf("$cef_st_ce, $cef_st_as, $cef_st_t, %d\n", scalar(@ce_fail_steps)/3);
+    #print "\n";
 
-    print "solver: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
-    my ($t_so_ce_t,$t_so_ce_l, $t_so_as_t,$t_so_as_l) = calc_average_4(\@timeout_solver);
-    printf("$t_so_ce_t, $t_so_ce_l, $t_so_as_t, $t_so_as_l, %d\n", scalar(@timeout_solver)/4);
-    my ($a_so_ce_t,$a_so_ce_l,$a_so_as_t,$a_so_as_l) = calc_average_4(\@adaptor_solver);
-    printf("$a_so_ce_t, $a_so_ce_l, $a_so_as_t, $a_so_as_l, %d\n", scalar(@adaptor_solver)/4);
-    my ($i_so_ce_t,$i_so_ce_l,$i_so_as_t,$i_so_as_l) = calc_average_4(\@inequiv_solver);
-    printf("$i_so_ce_t, $i_so_ce_l, $i_so_as_t, $i_so_as_l, %d\n", scalar(@inequiv_solver)/4);
-    my ($f_so_ce_t,$f_so_ce_l,$f_so_as_t,$f_so_as_l) = calc_average_4(\@fatal_solver);
-    printf("$f_so_ce_t, $f_so_ce_l, $f_so_as_t, $f_so_as_l, %d\n", scalar(@fatal_solver)/4);
-    my ($cef_so_ce_t,$cef_so_ce_l,$cef_so_as_t,$cef_so_as_l) = calc_average_4(\@ce_fail_solver);
-    printf("$cef_so_ce_t, $cef_so_ce_l, $cef_so_as_t, $cef_so_as_l, %d\n", scalar(@ce_fail_solver)/4);
-    print "\n";
+    #print "solver: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
+    my ($t_so_ce_t,$t_so_ce_l, $t_so_as_t,$t_so_as_l,$t_so_t) = calc_average_5(\@timeout_solver);
+    #printf("$t_so_ce_t, $t_so_ce_l, $t_so_as_t, $t_so_as_l, %d\n", scalar(@timeout_solver)/4);
+    my ($a_so_ce_t,$a_so_ce_l,$a_so_as_t,$a_so_as_l,$a_so_t) = calc_average_5(\@adaptor_solver);
+    #printf("$a_so_ce_t, $a_so_ce_l, $a_so_as_t, $a_so_as_l, %d\n", scalar(@adaptor_solver)/4);
+    my ($i_so_ce_t,$i_so_ce_l,$i_so_as_t,$i_so_as_l,$i_so_t) = calc_average_5(\@inequiv_solver);
+    #printf("$i_so_ce_t, $i_so_ce_l, $i_so_as_t, $i_so_as_l, %d\n", scalar(@inequiv_solver)/4);
+    my ($f_so_ce_t,$f_so_ce_l,$f_so_as_t,$f_so_as_l,$f_so_t) = calc_average_5(\@fatal_solver);
+    #printf("$f_so_ce_t, $f_so_ce_l, $f_so_as_t, $f_so_as_l, %d\n", scalar(@fatal_solver)/4);
+    my ($cef_so_ce_t,$cef_so_ce_l,$cef_so_as_t,$cef_so_as_l,$cef_so_t) = calc_average_5(\@ce_fail_solver);
+    #printf("$cef_so_ce_t, $cef_so_ce_l, $cef_so_as_t, $cef_so_as_l, %d\n", scalar(@ce_fail_solver)/4);
+    #print "\n";
 
-    print "time: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
+    #print "time: (timeout,adaptor,inequiv,fatal,ce_fail)\n";
     my ($t_tm_ce_t, $t_tm_ce_l,$t_tm_as_t, $t_tm_as_l,$t_tm_t) = calc_average_5(\@timeout_time);
-    printf("$t_tm_ce_t, $t_tm_ce_l, $t_tm_as_t, $t_tm_as_l, $t_tm_t, %d\n", scalar(@timeout_time)/5);
+    #printf("$t_tm_ce_t, $t_tm_ce_l, $t_tm_as_t, $t_tm_as_l, $t_tm_t, %d\n", scalar(@timeout_time)/5);
     my ($a_tm_ce_t, $a_tm_ce_l,$a_tm_as_t, $a_tm_as_l,$a_tm_t) = calc_average_5(\@adaptor_time);
-    printf("$a_tm_ce_t, $a_tm_ce_l, $a_tm_as_t, $a_tm_as_l, $a_tm_t, %d\n", scalar(@adaptor_time)/5);
+    #printf("$a_tm_ce_t, $a_tm_ce_l, $a_tm_as_t, $a_tm_as_l, $a_tm_t, %d\n", scalar(@adaptor_time)/5);
     my ($i_tm_ce_t, $i_tm_ce_l,$i_tm_as_t, $i_tm_as_l,$i_tm_t) = calc_average_5(\@inequiv_time);
-    printf("$i_tm_ce_t, $i_tm_ce_l, $i_tm_as_t, $i_tm_as_l, $i_tm_t, %d\n", scalar(@inequiv_time)/5);
+    #printf("$i_tm_ce_t, $i_tm_ce_l, $i_tm_as_t, $i_tm_as_l, $i_tm_t, %d\n", scalar(@inequiv_time)/5);
     my ($f_tm_ce_t, $f_tm_ce_l,$f_tm_as_t, $f_tm_as_l,$f_tm_t) = calc_average_5(\@fatal_time);
-    printf("$f_tm_ce_t, $f_tm_ce_l, $f_tm_as_t, $f_tm_as_l, $f_tm_t, %d\n", scalar(@fatal_time)/5);
+    #printf("$f_tm_ce_t, $f_tm_ce_l, $f_tm_as_t, $f_tm_as_l, $f_tm_t, %d\n", scalar(@fatal_time)/5);
     my ($cef_tm_ce_t, $cef_tm_ce_l,$cef_tm_as_t, $cef_tm_as_l,$cef_tm_t) = calc_average_5(\@ce_fail_time);
-    printf("$cef_tm_ce_t, $cef_tm_ce_l, $cef_tm_as_t, $cef_tm_as_l, $cef_tm_t, %d\n", scalar(@ce_fail_time)/5);
+    #printf("$cef_tm_ce_t, $cef_tm_ce_l, $cef_tm_as_t, $cef_tm_as_l, $cef_tm_t, %d\n", scalar(@ce_fail_time)/5);
+
+    if(scalar(@timeout_time)/5 != scalar(@timeout_solver)/5 ||
+       scalar(@timeout_solver)/5 != scalar(@timeout_steps)/3 ||
+       scalar(@inequiv_time)/5 != scalar(@inequiv_solver)/5 ||
+       scalar(@inequiv_solver)/5 != scalar(@inequiv_steps)/3 ||
+       scalar(@adaptor_time)/5 != scalar(@adaptor_solver)/5 ||
+       scalar(@adaptor_solver)/5 != scalar(@adaptor_steps)/3) {
+	die "number of timeouts or inequiv or adaptor instances dont match between time, solver, or steps\n";
+    }
+       
     my ($as_count,$ce_count) = calc_count(\@timeout_stopped_during,1,2);
-    printf("Average# timeout stopped during = AS(%d), CE(%d)\n\n", $as_count,$ce_count); 
+    # printf("Average# timeout stopped during = AS(%d), CE(%d)\n\n", $as_count,$ce_count);
+    $timeout_table .= 
+	sprintf("$fn_name, %d, %.3f, %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), $as_count/$ce_count\n",
+		scalar(@timeout_time)/5,
+		$t_st_t, $t_tm_t, $t_so_t, 
+		$t_tm_ce_t, $t_so_ce_t, 
+		$t_tm_ce_l ,$t_so_ce_l, 
+		$t_tm_as_t ,$t_so_as_t, 
+		$t_tm_as_l ,$t_so_as_l);
+
+    $inequiv_table .= 
+	sprintf("$fn_name, %d, %.3f, %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f)\n", 
+		scalar(@inequiv_time)/5,
+		$i_st_t, $i_tm_t, $i_so_t, 
+		$i_tm_ce_t, $i_so_ce_t, 
+		$i_tm_ce_l ,$i_so_ce_l, 
+		$i_tm_as_t ,$i_so_as_t, 
+		$i_tm_as_l ,$i_so_as_l);
+
+
+    $adaptor_table .= 
+	sprintf("$fn_name, %d, %.3f, %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f)\n", 
+		scalar(@adaptor_time)/5,
+		$a_st_t, $a_tm_t, $a_so_t, 
+		$a_tm_ce_t, $a_so_ce_t, 
+		$a_tm_ce_l ,$a_so_ce_l, 
+		$a_tm_as_t ,$a_so_as_t, 
+		$a_tm_as_l ,$a_so_as_l);
+
+
 
     if($adaptor_times_f == 1) {
 	print "Adaptor times:\n";
@@ -238,3 +310,6 @@ while(<FILES>) {
     chomp $_;
     report_metrics($_, $log_file_name, $num_dirs);
 }
+print "$timeout_table\n";
+print "$inequiv_table\n";
+print "$adaptor_table\n";
