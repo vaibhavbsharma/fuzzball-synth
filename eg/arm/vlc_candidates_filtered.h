@@ -19,7 +19,7 @@ int ref1(size_t i_read) {
 
 // next_pow taken from bit-twiddling hacks
 //int next_pow_2(unsigned int v) {
-int ref2(unsigned int v) {
+unsigned int ref2(unsigned int v) {
   v--;
   v |= v >> 1;
   v |= v >> 2;
@@ -117,12 +117,80 @@ uint8_t ref12( int n )
 }
 
 //small function from not sure where 
-int MOD(int a, int b) {
+//int MOD(int a, int b) {
+int ref13(int a, int b) {
     return ( ( a % b ) + b ) % b; 
 }
 
+//small function in /export/scratch/vaibhav/vlc-2.2.6/src/misc/es_format.c: 
+//int BinaryLog( uint32_t i )
+int ref14( uint32_t i )
+{
+    int i_log = 0;
+    if( i == 0 ) return -31337;
+    if( i & 0xffff0000 ) i_log += 16;
+    if( i & 0xff00ff00 ) i_log += 8;
+    if( i & 0xf0f0f0f0 ) i_log += 4;
+    if( i & 0xcccccccc ) i_log += 2;
+    if( i & 0xaaaaaaaa ) i_log += 1;
+    return i_log;
+}
+
+//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/video_output/opengl.c: 
+//int GetAlignedSize(unsigned size)
+unsigned int ref33(unsigned int);
+unsigned int ref15(unsigned size)
+{
+    /* Return the smallest larger or equal power of 2 */
+    unsigned int align = 1 << (8 * sizeof (unsigned int) - ref33(size));
+    return ((align >> 1) == size) ? size : align;
+}
+
+//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.h: 
+//int32_t fixmul32(int32_t x, int32_t y)
+int32_t ref16(int32_t x, int32_t y)
+{
+    int64_t temp;
+    temp = x;
+    temp *= y;
+    temp >>= 16;
+    return (int32_t)temp;
+}
+
+//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.c: 
+//int32_t fixdiv32(int32_t x, int32_t y)
+int32_t ref17(int32_t x, int32_t y)
+{
+    int64_t temp;
+    if(x == 0)
+        return 0;
+    if(y == 0)
+        return 0x7fffffff;
+    temp = x;
+    temp <<= 16;
+    return (int32_t)(temp / y);
+}
+
+//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.c: 
+//int64_t fixdiv64(int64_t x, int64_t y)
+int64_t ref18(int64_t x, int64_t y)
+{
+    int64_t temp;
+
+    if(x == 0)
+        return 0;
+    if(y == 0)
+        return 0x07ffffffffffffffLL;
+    temp = x;
+    temp <<= 16;
+    return (int64_t)(temp / y);
+}
+
+
+
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/video_filter/colorthres.c: 
-static bool IsSimilar( int u, int v,
+//static bool IsSimilar( int u, int v,
+bool ref19( int u, int v,
                        int refu, int refv, int reflength,
                        int i_satthres, int i_simthres )
 {
@@ -136,7 +204,8 @@ static bool IsSimilar( int u, int v,
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/video_filter/deinterlace/algo_x.c: 
-int median( int a, int b, int c )
+//int median( int a, int b, int c )
+int ref20( int a, int b, int c )
 {
     int min = a, max =a;
     if( b < min )
@@ -151,7 +220,8 @@ int median( int a, int b, int c )
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/misc/webservices/json.c: 
-unsigned char hex_value (unsigned char c)
+//unsigned char hex_value (unsigned char c)
+unsigned char ref21(unsigned char c)
 {
    if (c >= 'A' && c <= 'F')
       return (c - 'A') + 10;
@@ -165,25 +235,11 @@ unsigned char hex_value (unsigned char c)
    return 0xFF;
 }
 
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/gui/macosx/prefs.m: - 
-bool isSubCategoryGeneral(int category, int c_val1, int c_val2, int c_val3, int c_val4, int c_val5, int c_val6, int c_val7, int c_val8, int c_val9) 
-{
-    if (category == c_val1 ||
-          category == c_val2 ||
-          category == c_val3 ||
-          category == c_val4 ||
-          category == c_val5 ||
-          category == c_val6 ||
-          category == c_val7 ||
-          category == c_val8 ||
-          category == c_val9) {
-        return true;
-    }
-    return false;
-}
+
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/access/zip/zipstream.c: 
-bool isAllowedChar( char c )
+//bool isAllowedChar( char c )
+bool ref22( char c )
 {
     return ( c >= 'a' && c <= 'z' )
            || ( c >= 'A' && c <= 'Z' )
@@ -194,7 +250,8 @@ bool isAllowedChar( char c )
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/access/dvb/scan.c: 
-int scan_service_type( int service_type, int ret1,
+//int scan_service_type( int service_type, int ret1,
+int ref23( int service_type, int ret1,
 		       int ret2,
 		       int ret3,
 		       int ret4, 
@@ -211,7 +268,8 @@ int scan_service_type( int service_type, int ret1,
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/mux/mpeg/ts.c: 
-uint32_t GetDescriptorLength24b( int i_length )
+//uint32_t GetDescriptorLength24b( int i_length )
+uint32_t ref24( int i_length )
 {
     uint32_t i_l1, i_l2, i_l3;
     i_l1 = i_length&0x7f;
@@ -220,17 +278,9 @@ uint32_t GetDescriptorLength24b( int i_length )
     return( 0x808000 | ( i_l3 << 16 ) | ( i_l2 << 8 ) | i_l1 );
 }
 
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/cdg.c: 
-uint32_t RenderRGB( int r, int g, int b )
-{
-#define CDG_COLOR_R_SHIFT  0
-#define CDG_COLOR_G_SHIFT  8
-#define CDG_COLOR_B_SHIFT 16
-    return ( r << CDG_COLOR_R_SHIFT ) | ( g << CDG_COLOR_G_SHIFT ) | ( b << CDG_COLOR_B_SHIFT );
-}
-
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/qsv.c: 
-mtime_t qsv_timestamp_to_mtime(int64_t mfx_ts)
+//mtime_t qsv_timestamp_to_mtime(int64_t mfx_ts)
+mtime_t ref25(int64_t mfx_ts)
 {
 #  define INT64_C(c)	c ## L
     return mfx_ts / INT64_C(9) * INT64_C(100);
@@ -238,50 +288,15 @@ mtime_t qsv_timestamp_to_mtime(int64_t mfx_ts)
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/qsv.c: 
 typedef unsigned long int	uint64_t;
-uint64_t qsv_mtime_to_timestamp(int64_t vlc_ts, int64_t c_val1, int64_t c_val2)
+//uint64_t qsv_mtime_to_timestamp(int64_t vlc_ts, int64_t c_val1, int64_t c_val2)
+uint64_t ref26(int64_t vlc_ts, int64_t c_val1, int64_t c_val2)
 {
     return vlc_ts / c_val1 * c_val2;
 }
 
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.h: 
-int32_t fixmul32(int32_t x, int32_t y)
-{
-    int64_t temp;
-    temp = x;
-    temp *= y;
-    temp >>= 16;
-    return (int32_t)temp;
-}
-
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.c: 
-int32_t fixdiv32(int32_t x, int32_t y)
-{
-    int64_t temp;
-    if(x == 0)
-        return 0;
-    if(y == 0)
-        return 0x7fffffff;
-    temp = x;
-    temp <<= 16;
-    return (int32_t)(temp / y);
-}
-
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.c: 
-int64_t fixdiv64(int64_t x, int64_t y)
-{
-    int64_t temp;
-
-    if(x == 0)
-        return 0;
-    if(y == 0)
-        return 0x07ffffffffffffffLL;
-    temp = x;
-    temp <<= 16;
-    return (int64_t)(temp / y);
-}
-
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/omxil/qcom.c: 
-size_t tile_pos(size_t x, size_t y, size_t w, size_t h)
+//size_t tile_pos(size_t x, size_t y, size_t w, size_t h)
+size_t ref27(size_t x, size_t y, size_t w, size_t h)
 {
     size_t flim = x + (y & ~1) * w;
     if (y & 1) {
@@ -293,20 +308,8 @@ size_t tile_pos(size_t x, size_t y, size_t w, size_t h)
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/src/misc/es_format.c: 
-int BinaryLog( uint32_t i )
-{
-    int i_log = 0;
-    if( i == 0 ) return -31337;
-    if( i & 0xffff0000 ) i_log += 16;
-    if( i & 0xff00ff00 ) i_log += 8;
-    if( i & 0xf0f0f0f0 ) i_log += 4;
-    if( i & 0xcccccccc ) i_log += 2;
-    if( i & 0xaaaaaaaa ) i_log += 1;
-    return i_log;
-}
-
-//small function in /export/scratch/vaibhav/vlc-2.2.6/src/misc/es_format.c: 
-int transform_FromBasicOps( unsigned angle, bool hflip, 
+//int transform_FromBasicOps( unsigned angle, bool hflip, 
+int ref28( unsigned angle, bool hflip, 
   int ret1, int ret2, int ret3, int ret4, int ret5, int ret6, int ret7, int ret8)
 {
     switch ( angle )
@@ -324,7 +327,8 @@ int transform_FromBasicOps( unsigned angle, bool hflip,
 
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/video_output/mmal.c: 
-uint32_t align(uint32_t x, uint32_t y) {
+//uint32_t align(uint32_t x, uint32_t y) {
+uint32_t ref29(uint32_t x, uint32_t y) {
     uint32_t mod = x % y;
     if (mod == 0)
         return x;
@@ -333,33 +337,19 @@ uint32_t align(uint32_t x, uint32_t y) {
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/packetizer/dirac.c: 
-bool dirac_PictureNbeforeM( uint32_t u_n, uint32_t u_m, uint32_t constant_val )
+//bool dirac_PictureNbeforeM( uint32_t u_n, uint32_t u_m)
+bool ref30( uint32_t u_n, uint32_t u_m)
 {
     /* specified as: u_n occurs before u_m if:
      *   (u_m - u_n) mod (1<<32) < D */
-    return (uint32_t)(u_m - u_n) < (1u<<constant_val);
+    return (uint32_t)(u_m - u_n) < (1u<<31);
 }
 
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/demux/image.c: 
-bool IsPnmBlank(int v, int c_val1, int c_val2, int c_val3, int c_val4)
-{
-    return v == c_val1 || v == c_val2 || v == c_val3 || v == c_val4;
-}
 
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/demux/caf.c: 
-bool AACCookieChkLen( int i_length, int i_size, int i_offset )
-{
-    return ( i_offset + i_length <= i_size );
-}
-
-//small function copy 
-bool AACCookieChkLen1( int i_length, int i_size, int i_offset )
-{
-    return ( i_offset + i_length < i_size );
-}
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/demux/ps.h: 
-int ps_id_to_tk( unsigned i_id )
+//int ps_id_to_tk( unsigned i_id )
+int ref31( unsigned i_id )
 {
     if( i_id <= 0xff )
         return i_id - 0xc0;
@@ -372,7 +362,8 @@ int ps_id_to_tk( unsigned i_id )
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/stream_out/rtp.c: 
-uint32_t rtp_compute_ts( unsigned i_clock_rate, int64_t i_pts )
+//uint32_t rtp_compute_ts( unsigned i_clock_rate, int64_t i_pts )
+uint32_t ref32( unsigned i_clock_rate, int64_t i_pts )
 {
 #define CLOCK_FREQ INT64_C(1000000)
     /* This is an overflow-proof way of doing:
@@ -386,31 +377,36 @@ uint32_t rtp_compute_ts( unsigned i_clock_rate, int64_t i_pts )
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/include/vlc_common.h: 
-unsigned clz (unsigned x)
+// non-loop version obtained from http://aggregate.org/MAGIC/#Leading Zero Count
+unsigned int ref37(unsigned int);
+unsigned int ref33(unsigned int x)
 {
-    unsigned i = sizeof (x) * 8;
-    while (x)
-    {
-        x >>= 1;
-        i--;
-    }
-    return i;
+  x |= (x >> 1);
+  x |= (x >> 2);
+  x |= (x >> 4);
+  x |= (x >> 8);
+  x |= (x >> 16);
+  return(32 - ref37(x));
 }
 
-//small function in /export/scratch/vaibhav/vlc-2.2.6/include/vlc_common.h: 
-unsigned ctz (unsigned x)
-{
-    unsigned i = sizeof (x) * 8;
-    while (x)
-    {
-        x <<= 1;
-        i--;
-    }
-    return i;
+//small function in /export/scratch/vaibhav/vlc-2.2.6/include/vlc_common.h:
+// non-loop version from https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightParallel 
+//unsigned int ctz(unsigned int v) {
+unsigned int ref34(unsigned int v) {
+  unsigned int c = 32;
+  v &= - ((int) (v));
+  if (v) c--;
+  if (v & 0x0000FFFF) c -= 16;
+  if (v & 0x00FF00FF) c -= 8;
+  if (v & 0x0F0F0F0F) c -= 4;
+  if (v & 0x33333333) c -= 2;
+  if (v & 0x55555555) c -= 1;
+  return c;
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/visualization/visual/fft.c: 
-int reverseBits(unsigned int initial)
+//int reverseBits(unsigned int initial)
+int ref35(unsigned int initial)
 {
     unsigned int reversed = 0, loop;
     for(loop = 0; loop < 32; loop++) {
@@ -422,7 +418,8 @@ int reverseBits(unsigned int initial)
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/gui/qt4/components/playlist/vlc_model.cpp: 
-int metaToColumn( int _meta )
+//int metaToColumn( int _meta )
+int ref36( int _meta )
 {
     int meta = 1, column = 0;
     while( meta != 0x0800)
@@ -435,36 +432,42 @@ int metaToColumn( int _meta )
     return column;
 }
 
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/gui/skins2/utils/bezier.cpp: 
-int power( int x, int n )
-{
-    return n <= 0 ? 1 : x * power( x, n - 1 );
+// small function from http://aggregate.org/MAGIC/#Population Count (Ones Count)
+//int popcnt_32(unsigned int x) {
+unsigned int ref37(unsigned int x) {
+  x -= ((x >> 1) & 0x55555555);
+  x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
+  x = (((x >> 4) + x) & 0x0f0f0f0f);
+  x += (x >> 8);
+  x += (x >> 16);
+  return(x & 0x0000003f);
 }
 
 
-
 //small function in /export/scratch/vaibhav/vlc-2.2.6/include/vlc_common.h: 
-unsigned popcount (unsigned x)
-{
-    unsigned count = 0;
-    while (x)
-    {
-        count += x & 1;
-        x = x >> 1;
-    }
-    return count;
+//unsigned short popcnt_16(unsigned short x) {
+unsigned short ref38(unsigned short x) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> 8) & 0x0077); 
+  x= (x & 0xf)+ ((x>> 4) & 0xf); 
+  return x;
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/include/vlc_common.h: 
-unsigned parity (unsigned x)
-{
-    for (unsigned i = 4 * sizeof (x); i > 0; i /= 2)
-        x ^= x >> i;
-    return x & 1;
+// loop-free version from https://graphics.stanford.edu/~seander/bithacks.html#ParityParallel
+//unsigned int parity(unsigned int v) {
+unsigned int ref39(unsigned int v) {
+  v ^= v >> 16;
+  v ^= v >> 8;
+  v ^= v >> 4;
+  v &= 0xf;
+  return (0x6996 >> v) & 1;
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/demux/rawdv.h: 
-uint16_t dv_audio_12to16( uint16_t sample )
+//uint16_t dv_audio_12to16( uint16_t sample )
+uint16_t ref40( uint16_t sample )
 {
     uint16_t shift, result;
 
@@ -485,7 +488,8 @@ uint16_t dv_audio_12to16( uint16_t sample )
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/compat/posix_memalign.c: 
-int check_align (size_t align)
+//int check_align (size_t align)
+int ref41 (size_t align)
 {
     for (size_t i = sizeof (void *); i != 0; i *= 2)
         if (align == i)
@@ -493,16 +497,15 @@ int check_align (size_t align)
     return EINVAL;
 }
 
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/video_output/opengl.c: 
-int GetAlignedSize(unsigned size)
-{
-    /* Return the smallest larger or equal power of 2 */
-    unsigned align = 1 << (8 * sizeof (unsigned) - clz(size));
-    return ((align >> 1) == size) ? size : align;
+// small function from https://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
+//bool is_power_2(unsigned int v) {
+bool ref42(unsigned int v) {
+  return v && !(v & (v - 1));
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/access/dvb/scan.c: 
-uint32_t decode_BCD( uint32_t input )
+//uint32_t decode_BCD( uint32_t input )
+uint32_t ref43( uint32_t input )
 {
     uint32_t output = 0;
     for( short index=28; index >= 0 ; index -= 4 )
@@ -513,34 +516,59 @@ uint32_t decode_BCD( uint32_t input )
     return output;
 }
 
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/video_output/decklink.cpp: 
-int clip(int a, int c_val1, int c_val2)
+//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/cdg.c: 
+//uint32_t RenderRGB( int r, int g, int b )
+uint32_t ref44( int r, int g, int b )
 {
-    if      (a < c_val1) return c_val1;
-    else if (a > c_val2) return c_val2;
-    else               return a;
+#define CDG_COLOR_R_SHIFT  0
+#define CDG_COLOR_G_SHIFT  8
+#define CDG_COLOR_B_SHIFT 16
+    return ( r << CDG_COLOR_R_SHIFT ) | ( g << CDG_COLOR_G_SHIFT ) | ( b << CDG_COLOR_B_SHIFT );
 }
 
-//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/packetizer/dirac.c: 
-bool dirac_isEOS( uint32_t u_parse_code, uint32_t constant_val ) { 
-  return constant_val == u_parse_code; 
-}
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.c: 
-int32_t Fixed32From64(int64_t x)
+//int32_t Fixed32From64(int64_t x)
+int32_t ref45(int64_t x)
 {
   return x & 0xFFFFFFFF;
 }
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.c: 
-int64_t Fixed32To64(int32_t x)
+//int64_t Fixed32To64(int32_t x)
+int64_t ref46(int32_t x)
 {
   return (int64_t)x;
 }
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/video_output/msw/events.c: 
-bool isMouseEvent( int type, int constant_val1, int constant_val2)
+//bool isMouseEvent( int type, int constant_val1, int constant_val2)
+bool ref47( int type, int constant_val1, int constant_val2)
 {
     return type >= constant_val1 &&
            type <= constant_val2;
 }
 
+//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/demux/caf.c: 
+//bool AACCookieChkLen( int i_length, int i_size, int i_offset )
+bool ref48( int i_length, int i_size, int i_offset )
+{
+    return ( i_offset + i_length <= i_size );
+}
+
+//small function in /export/scratch/vaibhav/vlc-2.2.6/modules/gui/macosx/prefs.m: - 
+//bool isSubCategoryGeneral(int category, int c_val1, int c_val2, int c_val3, int c_val4, int c_val5, int c_val6, int c_val7, int c_val8, int c_val9) 
+bool ref49(int category, int c_val1, int c_val2, int c_val3, int c_val4, int c_val5, int c_val6, int c_val7, int c_val8, int c_val9) 
+{
+    if (category == c_val1 ||
+          category == c_val2 ||
+          category == c_val3 ||
+          category == c_val4 ||
+          category == c_val5 ||
+          category == c_val6 ||
+          category == c_val7 ||
+          category == c_val8 ||
+          category == c_val9) {
+        return true;
+    }
+    return false;
+}
