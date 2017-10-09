@@ -3,7 +3,7 @@
 #PBS -m abe 
 #PBS -M vaibhav@umn.edu 
 #PBS -o $HOME/fuzzball-synth/eg/arm/logs/report-metrics-output.log
-#PBS -o $HOME/fuzzball-synth/eg/arm/logs/report-metrics-error.log
+#PBS -e $HOME/fuzzball-synth/eg/arm/logs/report-metrics-error.log
 
 # cd $HOME/fuzzball-synth/eg/arm/msi-scripts/;
 # perl trim-log.pl 6-ty-4.log 2 16 /home/smccaman/vaibhav/clamp-allconsts-typeconv-smallret >& logs/trim-clamp-allconsts-typeconv-smallret.log
