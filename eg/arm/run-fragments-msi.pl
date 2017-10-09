@@ -6,7 +6,7 @@ die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buc
   unless @ARGV == 9;
 
 $|=1;
-
+my $end_time = time() + 14400;
 my $this_fragments_file = "this_fragments.lst";
 my $checkpoint_file = "checkpoint";
 
@@ -177,59 +177,64 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     my $timed_out = 0;
     my $pid = open(LOG, "-|", @cmd);
     eval{
-	local $SIG{ALRM} = 
-	    sub {
-		kill 9, -$pid; 
-		print STDOUT "TIME OUT!$/";
-		$timed_out = 1;
-		report_time_stats ();
-	};
-	alarm $num_secs_to_timeout;
-	while(<LOG>) {
-	    if($timed_out == 1) { 
-		# printf("timing out!!\n");
-		last;
-	    }
-	    if(/^elapsed time = (.*), last CE search time = (.*)$/) {
-		# printf("seen last CE\n");
-		$running_as = 1;
-		$last_ce_time = $2;
-		$total_ce_time += $2;
-		$total_time = $1;
-		$total_ce_steps++;
-		$total_ce_solver_time += $last_ce_solver_time;
-	    } elsif(/^elapsed time = (.*), last AS search time = (.*)$/) {
-		# printf("seen last AS\n");
-		$running_as = 0;
-		$last_as_time = $2;
-		$total_as_time += $2;
-		$total_time = $1;
-		$total_as_steps++;
-		$total_as_solver_time += $last_as_solver_time;
-	    } elsif(/.*total query time = (.*)$/) {
-		# printf("seen Query time\n");
-		if($running_as == 1) { 
-		    $last_as_solver_time = $1 + 0;
-		} else { 
-		    $last_ce_solver_time = $1 + 0;
-		}
-	    } elsif(/.*Final adaptor.*/) {
-		$result = 1;
-	    } elsif(/.*not equivalent.*/) {
-		$result = 2;
-	    } elsif(/.*Fatal error.*/) {
-		$result = 3;
-	    } elsif(/.*CounterExample search failed.*/) {
-		$result = 4;
-	    }
-	    print " $_";
-	}
-	close(LOG);
-	waitpid($pid, 0);
-	if($timed_out != 1) { report_time_stats (); }
+    	local $SIG{ALRM} = 
+    	    sub {
+    		kill 9, -$pid; 
+    		print STDOUT "TIME OUT!$/";
+    		$timed_out = 1;
+    		report_time_stats ();
+    	};
+    	alarm $num_secs_to_timeout;
+    	while(<LOG>) {
+    	    if($timed_out == 1) { 
+    		# printf("timing out!!\n");
+    		last;
+    	    }
+    	    if(/^elapsed time = (.*), last CE search time = (.*)$/) {
+    		# printf("seen last CE\n");
+    		$running_as = 1;
+    		$last_ce_time = $2;
+    		$total_ce_time += $2;
+    		$total_time = $1;
+    		$total_ce_steps++;
+    		$total_ce_solver_time += $last_ce_solver_time;
+    	    } elsif(/^elapsed time = (.*), last AS search time = (.*)$/) {
+    		# printf("seen last AS\n");
+    		$running_as = 0;
+    		$last_as_time = $2;
+    		$total_as_time += $2;
+    		$total_time = $1;
+    		$total_as_steps++;
+    		$total_as_solver_time += $last_as_solver_time;
+    	    } elsif(/.*total query time = (.*)$/) {
+    		# printf("seen Query time\n");
+    		if($running_as == 1) { 
+    		    $last_as_solver_time = $1 + 0;
+    		} else { 
+    		    $last_ce_solver_time = $1 + 0;
+    		}
+    	    } elsif(/.*Final adaptor.*/ && ($result == 0)) {
+    		$result = 1;
+    	    } elsif(/.*not equivalent.*/ && ($result == 0)) {
+    		$result = 2;
+    	    } elsif(/.*Fatal error.*/ && ($result == 0)) {
+    		$result = 3;
+    	    } elsif(/.*CounterExample search failed.*/ && ($result == 0)) {
+    		$result = 4;
+    	    }
+    	    print " $_";
+    	}
+    	close(LOG);
+    	waitpid($pid, 0);
+    	if($timed_out != 1) { report_time_stats (); }
     };
     open (FILE, ">> $checkpoint_file") || die "problem opening checkpoint file: $checkpoint_file\n";
     print FILE $i . "\n";
     close FILE;
+    my $diff = $end_time - time();
+    if($diff <= $num_secs_to_timeout) { 
+	print "exiting before timing out\n";
+	exit(0); 
+    }
     # exit(1);
 }
