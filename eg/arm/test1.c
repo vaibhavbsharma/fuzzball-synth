@@ -72,7 +72,7 @@ extern "C" int f1(int _x1, int _x2, int _x3, int _x4,
   // return x;
 }
 
-int clamp32(int x, int lo, int hi) {
+extern "C" int clamp32(int x, int lo, int hi) {
     return boost::algorithm::clamp(x, lo, hi);
 }
 

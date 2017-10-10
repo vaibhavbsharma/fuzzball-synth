@@ -240,6 +240,7 @@ my @verbose_args = ();
 if($verbose == 1) {
     @verbose_args = ("-trace-sym-addr-details",
 		     "-trace-sym-addrs",
+		     "-trace-insns",
 		     "-time-stats",
 		     "-trace-temps",
 		     "-trace-syscalls", 
@@ -675,8 +676,10 @@ while (!$done) {
     }
 
     ($success,$adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
-    print "Synthesized arg adaptor ".get_adaptor_str($adapt).
-	" and return adaptor ".get_adaptor_str($ret_adapt)."\n";
+    if($success) {
+	print "Synthesized arg adaptor ".get_adaptor_str($adapt).
+	    " and return adaptor ".get_adaptor_str($ret_adapt)."\n";
+    }
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last AS search time = $diff1\n";

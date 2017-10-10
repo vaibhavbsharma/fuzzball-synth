@@ -159,6 +159,7 @@ int32_t ref16(int32_t x, int32_t y)
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.c: 
 //int32_t fixdiv32(int32_t x, int32_t y)
+// problem with division
 int32_t ref17(int32_t x, int32_t y)
 {
     int64_t temp;
@@ -173,6 +174,7 @@ int32_t ref17(int32_t x, int32_t y)
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/wmafixed/wmafixed.c: 
 //int64_t fixdiv64(int64_t x, int64_t y)
+// problem with division
 int64_t ref18(int64_t x, int64_t y)
 {
     int64_t temp;
@@ -280,6 +282,7 @@ uint32_t ref24( int i_length )
 
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/qsv.c: 
 //mtime_t qsv_timestamp_to_mtime(int64_t mfx_ts)
+// problem with division
 mtime_t ref25(int64_t mfx_ts)
 {
 #  define INT64_C(c)	c ## L
@@ -289,6 +292,7 @@ mtime_t ref25(int64_t mfx_ts)
 //small function in /export/scratch/vaibhav/vlc-2.2.6/modules/codec/qsv.c: 
 typedef unsigned long int	uint64_t;
 //uint64_t qsv_mtime_to_timestamp(int64_t vlc_ts, int64_t c_val1, int64_t c_val2)
+// problem with division
 uint64_t ref26(int64_t vlc_ts, int64_t c_val1, int64_t c_val2)
 {
     return vlc_ts / c_val1 * c_val2;
