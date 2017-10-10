@@ -17,6 +17,8 @@ my $num_secs_to_timeout = 300;
 # if($adaptor_family == 1) { $num_secs_to_timeout = 60; }
 # else { $num_secs_to_timeout = 300; }# https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
 
+open(LOG, ">> logs/run-fragments-msi.log");
+
 my @identity_fragments = ();
 if($find_identity_frag != 1) {
     open(F, $fragments_dir . "/identity-fragments.lst") or die;
@@ -24,8 +26,12 @@ if($find_identity_frag != 1) {
 	my $line = $_;
 	push @identity_fragments, substr($line, 0, length($line)-1);
     }
+    printf(LOG "#identity-fragments = %d\n", scalar(@identity_fragments));
     printf("#identity-fragments = %d\n", scalar(@identity_fragments));
-} else { printf("finding identity fragments\n"); } 
+} else { 
+    printf(LOG "finding identity fragments\n"); 
+    printf("finding identity fragments\n"); 
+} 
 
 sub is_identity_fragment  {
     if($find_identity_frag == 1) { return 0; }
@@ -33,6 +39,7 @@ sub is_identity_fragment  {
     foreach my $file (@identity_fragments) {
 	# printf("identity-fragment-file = $file\n");
 	if(index($frag_file, $file) != -1) {
+	    printf(LOG "skipping $frag_file because $file is identity\n");
 	    printf("skipping $frag_file because $file is identity\n");
 	    return 1;
 	}
@@ -61,6 +68,7 @@ if($open_failed == 0) {
   	push @filtered_fragments, [$frag_file, $parts[2]];
       }
   }
+  printf(LOG "# of frags = %d\n", scalar(@filtered_fragments));
   printf("# of frags = %d\n", scalar(@filtered_fragments));
   
   my $bucket_size = scalar(@filtered_fragments)/$max_buckets;
@@ -89,10 +97,13 @@ while (<FILE>) {
   $last_index = $_ + 0;
   # print "last index = $last_index\n";
 }
+close FILE;
 
+print LOG "last index = $last_index\n";
 print "last index = $last_index\n";
 if ( $last_index+1 >= scalar(@this_bucket_fragments)) {
 	`touch done$bucket_num`;
+	close LOG;
 	exit(0);
 }
 my ($running_as) = (0,0);
@@ -129,6 +140,18 @@ sub report_time_stats {
     } elsif($result == 4) {
 	$stopping_str = "found ce failure\n";
     }
+    print LOG $stopping_str;
+    printf(LOG "time (ce-total,ce-last,as-total,as-last,ce-as-total) = (%d,%d,%d,%d,%d)\n",
+	   $total_ce_time,$last_ce_time,
+	   $total_as_time,$last_as_time,
+	   $total_as_time + $total_ce_time);
+    printf(LOG "total steps (ce,as,total) = ($total_ce_steps,$total_as_steps,%d)\n",
+	   $total_ce_steps + $total_as_steps);
+    printf(LOG "solver times (ce-total,ce-last,as-total,as-last) = (%f,%f,%f,%f)\n",
+	   $total_ce_solver_time,$last_ce_solver_time,
+	   $total_as_solver_time,$last_as_solver_time);
+    print LOG $extra_stopping_str;
+
     print $stopping_str;
     printf("time (ce-total,ce-last,as-total,as-last,ce-as-total) = (%d,%d,%d,%d,%d)\n",
 	   $total_ce_time,$last_ce_time,
@@ -161,6 +184,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     
     my @cmd = ("perl",$adaptor_driver,"1",$inner_func_num,$rand_seed, "1", $const_bounds_file,
 	       "1", "$frag_file", $is_return_enabled, "0");
+    printf(LOG "cmd = @cmd\n");
     printf("cmd = @cmd\n");
     # open(LOG, "-|", @cmd);
     # while(<LOG>) {
@@ -180,6 +204,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     	local $SIG{ALRM} = 
     	    sub {
     		kill 9, -$pid; 
+    		print LOG "TIME OUT!$/";
     		print STDOUT "TIME OUT!$/";
     		$timed_out = 1;
     		report_time_stats ();
@@ -233,7 +258,9 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     close FILE;
     my $diff = $end_time - time();
     if($diff <= $num_secs_to_timeout) { 
+	print LOG "exiting before timing out\n";
 	print "exiting before timing out\n";
+	close LOG;
 	exit(0); 
     }
     # exit(1);

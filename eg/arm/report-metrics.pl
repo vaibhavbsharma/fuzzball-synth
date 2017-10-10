@@ -140,9 +140,11 @@ sub report_metrics {
 	open(LOG,"<$dir_path/arm-$i/logs/$log_file_name");
 	my ($result,$count) = (-1,0);
 	my $saved_cmd = "";
-	my $line_num = 0;
+	my ($line_num) = (0);
+	my @saved_result_str = ();
 	while(<LOG>) {
 	    if(/.*cmd =.*/) {
+		@saved_result_str = ();
 		$total_cmds++; $saved_cmd = $_; chomp $saved_cmd;
 		if(scalar(@timeout_time)/5 != scalar(@timeout_solver)/5 ||
 		   scalar(@timeout_solver)/5 != scalar(@timeout_steps)/3 ||
@@ -167,61 +169,71 @@ sub report_metrics {
 		$count = 0;
 	    }
 	    if($result >= 0 && $result <= 4 && $count < 4) {
-		if(/^time \(ce-total,ce-last,as-total,as-last,ce-as-total\) = \((.*),(.*),(.*),(.*),(.*)\)$/ ) {
-		    my ($v1,$v2,$v3,$v4,$v5) = ($1,$2,$3,$4,$5);
-		    for($result) {
-			/0/ && do { push @timeout_time, ($v1,$v2,$v3,$v4,$v5); last; };
-			/1/ && do { push @adaptor_time, ($v1,$v2,$v3,$v4,$v5); last; };
-			/2/ && do { push @inequiv_time, ($v1,$v2,$v3,$v4,$v5); last; };
-			/3/ && do { push @fatal_time,   ($v1,$v2,$v3,$v4,$v5); last; };
-			/4/ && do { push @ce_fail_time, ($v1,$v2,$v3,$v4,$v5); last; };
-		    }
-		} elsif(/^total steps \(ce,as,total\) = \((.*),(.*),(.*)\)$/) {
-		    my ($v1,$v2,$v3) = ($1,$2,$3);
-		    for($result) {
-			/0/ && do { push @timeout_steps, ($v1,$v2,$v3); last; };
-			/1/ && do { push @adaptor_steps, ($v1,$v2,$v3); last; };
-			/2/ && do { push @inequiv_steps, ($v1,$v2,$v3); last; };
-			/3/ && do { push @fatal_steps,   ($v1,$v2,$v3); last; };
-			/4/ && do { push @ce_fail_steps, ($v1,$v2,$v3); last; };
-		    }
-		} elsif(/^solver times \(ce-total,ce-last,as-total,as-last\) = \((.*),(.*),(.*),(.*)\)$/) {
-		    my ($v1,$v2,$v3,$v4) = ($1,$2,$3,$4);
-		    for($result) {
-			/0/ && do { push @timeout_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
-			/1/ && do { push @adaptor_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
-			/2/ && do { push @inequiv_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
-			/3/ && do { push @fatal_solver,   ($v1,$v2,$v3,$v4,$v1+$v3); last; };
-			/4/ && do { push @ce_fail_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
-		    }
-		} elsif(/^stopped during (.*) with solver time = (.*)$/ && $result == 0) {
-		    if($1 =~ "Adaptor-Search") {
-			push @timeout_stopped_during, 1;
-			if($result == 0) {
-			    $timeout_steps[scalar(@timeout_steps)-2]++;
-			    $timeout_steps[scalar(@timeout_steps)-1]++;
-			    $timeout_solver[scalar(@timeout_solver)-3]+=$2;
-			    my $last_run_time = 
-				(300 - $timeout_time[scalar(@timeout_time)-1]); 
-			    $timeout_time[scalar(@timeout_time)-2]=
-				$last_run_time;
-			    $timeout_time[scalar(@timeout_time)-3]+=
-				$last_run_time;
-			    $timeout_time[scalar(@timeout_time)-1] = 300;
+		$count++;
+		chomp $_;
+		push @saved_result_str, $_;
+		if(/^#identity-fragments = .*$/) {
+		    @saved_result_str = ();
+		}
+	    } elsif($result >= 0 && $result <= 4 && $count == 4 && scalar(@saved_result_str) == 4) {
+		for(my $i = 0; $i < 4; $i++) {
+		    my $str = $saved_result_str[$i];
+		    if($str =~ /^time \(ce-total,ce-last,as-total,as-last,ce-as-total\) = \((.*),(.*),(.*),(.*),(.*)\)$/ ) {
+			my ($v1,$v2,$v3,$v4,$v5) = ($1,$2,$3,$4,$5);
+			for($result) {
+			    /0/ && do { push @timeout_time, ($v1,$v2,$v3,$v4,$v5); last; };
+			    /1/ && do { push @adaptor_time, ($v1,$v2,$v3,$v4,$v5); last; };
+			    /2/ && do { push @inequiv_time, ($v1,$v2,$v3,$v4,$v5); last; };
+			    /3/ && do { push @fatal_time,   ($v1,$v2,$v3,$v4,$v5); last; };
+			    /4/ && do { push @ce_fail_time, ($v1,$v2,$v3,$v4,$v5); last; };
 			}
-		    } elsif($1 =~ "CounterExample-Search") {
-			push @timeout_stopped_during, 2;
-			if($result == 0) {
-			    $timeout_steps[scalar(@timeout_steps)-3]++;
-			    $timeout_steps[scalar(@timeout_steps)-1]++;
-			    $timeout_solver[scalar(@timeout_solver)-5]+=$2; 
-			    my $last_run_time = 
-				(300 - $timeout_time[scalar(@timeout_time)-1]); 
-			    $timeout_time[scalar(@timeout_time)-4]=
-				$last_run_time;
-			    $timeout_time[scalar(@timeout_time)-5]+=
-				$last_run_time;
-			    $timeout_time[scalar(@timeout_time)-1] = 300;
+		    } elsif($str =~ /^total steps \(ce,as,total\) = \((.*),(.*),(.*)\)$/) {
+			my ($v1,$v2,$v3) = ($1,$2,$3);
+			for($result) {
+			    /0/ && do { push @timeout_steps, ($v1,$v2,$v3); last; };
+			    /1/ && do { push @adaptor_steps, ($v1,$v2,$v3); last; };
+			    /2/ && do { push @inequiv_steps, ($v1,$v2,$v3); last; };
+			    /3/ && do { push @fatal_steps,   ($v1,$v2,$v3); last; };
+			    /4/ && do { push @ce_fail_steps, ($v1,$v2,$v3); last; };
+			}
+		    } elsif($str =~ /^solver times \(ce-total,ce-last,as-total,as-last\) = \((.*),(.*),(.*),(.*)\)$/) {
+			my ($v1,$v2,$v3,$v4) = ($1,$2,$3,$4);
+			for($result) {
+			    /0/ && do { push @timeout_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
+			    /1/ && do { push @adaptor_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
+			    /2/ && do { push @inequiv_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
+			    /3/ && do { push @fatal_solver,   ($v1,$v2,$v3,$v4,$v1+$v3); last; };
+			    /4/ && do { push @ce_fail_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
+			}
+		    } elsif($str =~ /^stopped during (.*) with solver time = (.*)$/ && $result == 0) {
+			if($1 =~ "Adaptor-Search") {
+			    push @timeout_stopped_during, 1;
+			    if($result == 0) {
+				$timeout_steps[scalar(@timeout_steps)-2]++;
+				$timeout_steps[scalar(@timeout_steps)-1]++;
+				$timeout_solver[scalar(@timeout_solver)-3]+=$2;
+				my $last_run_time = 
+				    (300 - $timeout_time[scalar(@timeout_time)-1]); 
+				$timeout_time[scalar(@timeout_time)-2]=
+				    $last_run_time;
+				$timeout_time[scalar(@timeout_time)-3]+=
+				    $last_run_time;
+				$timeout_time[scalar(@timeout_time)-1] = 300;
+			    }
+			} elsif($1 =~ "CounterExample-Search") {
+			    push @timeout_stopped_during, 2;
+			    if($result == 0) {
+				$timeout_steps[scalar(@timeout_steps)-3]++;
+				$timeout_steps[scalar(@timeout_steps)-1]++;
+				$timeout_solver[scalar(@timeout_solver)-5]+=$2; 
+				my $last_run_time = 
+				    (300 - $timeout_time[scalar(@timeout_time)-1]); 
+				$timeout_time[scalar(@timeout_time)-4]=
+				    $last_run_time;
+				$timeout_time[scalar(@timeout_time)-5]+=
+				    $last_run_time;
+				$timeout_time[scalar(@timeout_time)-1] = 300;
+			    }
 			}
 		    }
 		}
