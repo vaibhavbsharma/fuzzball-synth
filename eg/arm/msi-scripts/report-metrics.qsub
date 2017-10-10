@@ -9,5 +9,5 @@
 # perl trim-log.pl 6-ty-4.log 2 16 /home/smccaman/vaibhav/clamp-allconsts-typeconv-smallret >& logs/trim-clamp-allconsts-typeconv-smallret.log
 
 cd $HOME/fuzzball-synth/eg/arm/;
-perl report-metrics.pl 9.log 16 base_dirs.lst
+perl report-metrics.pl 9.log 16 base-dirs.lst
 wait
