@@ -240,7 +240,6 @@ my @verbose_args = ();
 if($verbose == 1) {
     @verbose_args = ("-trace-sym-addr-details",
 		     "-trace-sym-addrs",
-		     "-trace-insns",
 		     "-time-stats",
 		     "-trace-temps",
 		     "-trace-syscalls", 
