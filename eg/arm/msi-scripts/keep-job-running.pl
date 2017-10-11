@@ -14,6 +14,8 @@ if( substr($job_name, length($job_name)-5) =~ ".qsub") {
 my $start_bucket=-1;
 if(substr($job_name,length($job_name)-1,1) eq "1") { $start_bucket = 1; }
 elsif(substr($job_name,length($job_name)-1,1) eq "2") { $start_bucket = 9; } 
+elsif(substr($job_name,length($job_name)-1,1) eq "3") { $start_bucket = 17; } 
+elsif(substr($job_name,length($job_name)-1,1) eq "4") { $start_bucket = 24; } 
 
 if($start_bucket == -1) {
     die "not sure which half we're running on";
