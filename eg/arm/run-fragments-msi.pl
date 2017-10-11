@@ -118,11 +118,17 @@ my ($total_as_solver_time,$last_as_solver_time) = (0.0,0.0);
 my ($total_ce_solver_time,$last_ce_solver_time) = (0.0,0.0);
 my $total_solver_time = 0.0;
 my ($result) = (0);
+my $timed_out = 0;
+my $start_query_time = 0;
 sub report_time_stats {
     my $stopping_step="";
     my $extra_stopping_str="";
     my $stopping_str = "";
     my $query_time=0;
+    if($timed_out == 1 && $start_query_time != 0) {
+	if($running_as == 1) { $last_as_solver_time += time() - $start_query_time; }
+	else { $last_ce_solver_time += time() - $start_query_time; }
+    }
     if($running_as == 1) { 
 	$stopping_step = "Adaptor-Search"; 
 	$query_time = $last_as_solver_time;
@@ -204,7 +210,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     $total_ce_solver_time = $last_ce_solver_time = 0.0;
     $total_solver_time = 0.0;
     $result = 0;
-    my $timed_out = 0;
+    $timed_out = 0;
     my $pid = open(CHILD, "-|", @cmd);
     eval{
     	local $SIG{ALRM} = 
@@ -230,6 +236,8 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     		$total_ce_steps++;
     		$total_ce_solver_time += $last_ce_solver_time;
 		$last_ce_solver_time = 0;
+		$last_as_solver_time = 0;
+		$start_query_time = 0;
     	    } elsif(/^elapsed time = (.*), last AS search time = (.*)$/) {
     		# printf("seen last AS\n");
     		$running_as = 0;
@@ -239,6 +247,8 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     		$total_as_steps++;
     		$total_as_solver_time += $last_as_solver_time;
 		$last_as_solver_time = 0;
+		$last_ce_solver_time = 0;
+		$start_query_time = 0;
     	    } elsif(/.*total query time = (.*)$/) {
     		# printf("seen Query time\n");
     		if($running_as == 1) { 
@@ -246,6 +256,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     		} else { 
     		    $last_ce_solver_time = $1 + 0;
     		}
+		$start_query_time = 0;
     	    } elsif(/.*Query time = (.*) sec$/) {
     		# printf("seen Query time\n");
     		if($running_as == 1) { 
@@ -253,7 +264,10 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     		} else { 
     		    $last_ce_solver_time += $1 + 0;
     		}
-    	    } elsif(/.*Final adaptor.*/ && ($result == 0)) {
+		$start_query_time = 0;
+    	    } elsif(/.*Starting new query.*$/) {
+		$start_query_time = time();
+	    } elsif(/.*Final adaptor.*/ && ($result == 0)) {
     		$result = 1;
     	    } elsif(/.*not equivalent.*/ && ($result == 0)) {
     		$result = 2;
@@ -262,7 +276,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     	    } elsif(/.*CounterExample search failed.*/ && ($result == 0)) {
     		$result = 4;
     	    }
-    	    print " $_" unless /.*Query time = .*/;
+    	    print " $_" unless (/.*Query time = .*/ || /.*Starting new query.*$/);
     	}
     	close(CHILD);
     	waitpid($pid, 0);
