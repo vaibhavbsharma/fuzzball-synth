@@ -55,6 +55,8 @@ for my $file (@file_path) {
 		   index($func_body_str, "[") != -1 ||
 		   index($func_body_str, "]") != -1 ||
 		   index($func_body_str, "print") != -1 ||
+		   index($func_body_str, "*") != -1 ||
+		   index($func_body_str, ".") != -1 ||
 		   index($file, "firmware/target/arm/archos") != -1 ||
 		   index($file, "firmware/target/arm/as3525") != -1 ||
 		   index($file, "firmware/target/arm/at91sam") != -1 ||

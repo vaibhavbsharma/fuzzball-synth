@@ -124,30 +124,6 @@ struct func_info funcs[] = {
   /* 25 */ {"ref23",        (func*)&ref23,    3, 0, 0},
   /* 26 */ {"ref24",        (func*)&ref24,    3, 0, 0},
   /* 27 */ {"ref25",        (func*)&ref25,    3, 0, 0},
-  /* 28 */ {"ref26",        (func*)&ref26,    3, 0, 0},
-  /* 29 */ {"ref27",        (func*)&ref27,    3, 0, 0},
-  /* 30 */ {"ref28",        (func*)&ref28,    3, 0, 0},
-  /* 31 */ {"ref29",        (func*)&ref29,    3, 0, 0},
-  /* 32 */ {"ref30",        (func*)&ref30,    3, 0, 0},
-  /* 33 */ {"ref31",        (func*)&ref31,    3, 0, 0},
-  /* 34 */ {"ref32",        (func*)&ref32,    3, 0, 0},
-  /* 35 */ {"ref33",        (func*)&ref33,    3, 0, 0},
-  /* 36 */ {"ref34",        (func*)&ref34,    3, 0, 0},
-  /* 37 */ {"ref35",        (func*)&ref35,    3, 0, 0},
-  /* 38 */ {"ref36",        (func*)&ref36,    3, 0, 0},
-  /* 39 */ {"ref37",        (func*)&ref37,    3, 0, 0},
-  /* 40 */ {"ref38",        (func*)&ref38,    3, 0, 0},
-  /* 41 */ {"ref39",        (func*)&ref39,    3, 0, 0},
-  /* 42 */ {"ref40",        (func*)&ref40,    3, 0, 0},
-  /* 43 */ {"ref41",        (func*)&ref41,    3, 0, 0},
-  /* 44 */ {"ref42",        (func*)&ref42,    3, 0, 0},
-  /* 45 */ {"ref43",        (func*)&ref43,    3, 0, 0},
-  /* 46 */ {"ref44",        (func*)&ref44,    3, 0, 0},
-  /* 47 */ {"ref45",        (func*)&ref45,    3, 0, 0},
-  /* 48 */ {"ref46",        (func*)&ref46,    3, 0, 0},
-  /* 49 */ {"ref47",        (func*)&ref47,    3, 0, 0},
-  /* 50 */ {"ref48",        (func*)&ref48,    3, 0, 0},
-  /* 51 */ {"ref49",        (func*)&ref49,    3, 0, 0},
 };
 int f2num; 
 
@@ -292,7 +268,7 @@ int main(int argc, char **argv) {
 	exit(1);
     }
     f2num = atoi(argv[2]);
-    if (f2num < 1 || f2num > 51) {
+    if (f2num < 1 || f2num > 27) {
 	fprintf(stderr, "Error: f2num %d out of range\n", f2num);
     }
     if (argv[3][0] == 'a') {

@@ -26,11 +26,11 @@ if($find_identity_frag != 1) {
 	push @identity_fragments, substr($line, 0, length($line)-1);
     }
     printf(LOG "#identity-fragments = %d\n", scalar(@identity_fragments));
-		select((select(LOG), $|=1)[0]);
+    select((select(LOG), $|=1)[0]);
     printf("#identity-fragments = %d\n", scalar(@identity_fragments));
 } else { 
     printf(LOG "finding identity fragments\n"); 
-		select((select(LOG), $|=1)[0]);
+    select((select(LOG), $|=1)[0]);
     printf("finding identity fragments\n"); 
 } 
 
@@ -41,7 +41,7 @@ sub is_identity_fragment  {
 	# printf("identity-fragment-file = $file\n");
 	if(index($frag_file, $file) != -1) {
 	    printf(LOG "skipping $frag_file because $file is identity\n");
-			select((select(LOG), $|=1)[0]);
+	    select((select(LOG), $|=1)[0]);
 	    printf("skipping $frag_file because $file is identity\n");
 	    return 1;
 	}
@@ -71,7 +71,7 @@ if($open_failed == 0) {
       }
   }
   printf(LOG "# of frags = %d\n", scalar(@filtered_fragments));
-	select((select(LOG), $|=1)[0]);
+  select((select(LOG), $|=1)[0]);
   printf("# of frags = %d\n", scalar(@filtered_fragments));
   
   my $bucket_size = scalar(@filtered_fragments)/$max_buckets;
@@ -116,6 +116,7 @@ my ($total_ce_time,$total_as_time,$total_time) = (0,0,0);
 my ($total_as_steps,$total_ce_steps,$total_steps) = (0,0,0);
 my ($total_as_solver_time,$last_as_solver_time) = (0.0,0.0);
 my ($total_ce_solver_time,$last_ce_solver_time) = (0.0,0.0);
+my ($saved_last_ce_solver_time,$saved_last_as_solver_time) = (0.0,0.0);
 my $total_solver_time = 0.0;
 my ($result) = (0);
 my $timed_out = 0;
@@ -166,6 +167,8 @@ sub report_time_stats {
     } elsif($result == 4) {
 	$stopping_str = "found ce failure\n";
     }
+    if($last_as_solver_time == 0) { $last_as_solver_time = $saved_last_as_solver_time; }
+    if($last_ce_solver_time == 0) { $last_ce_solver_time = $saved_last_ce_solver_time; }
     print LOG $stopping_str;
     printf(LOG "time (ce-total,ce-last,as-total,as-last,ce-as-total) = (%d,%d,%d,%d,%d)\n",
 	   $total_ce_time,$last_ce_time,
@@ -177,7 +180,7 @@ sub report_time_stats {
 	   $total_ce_solver_time,$last_ce_solver_time,
 	   $total_as_solver_time,$last_as_solver_time);
     print LOG $extra_stopping_str;
-		select((select(LOG), $|=1)[0]);
+    select((select(LOG), $|=1)[0]);
 
     print $stopping_str;
     printf("time (ce-total,ce-last,as-total,as-last,ce-as-total) = (%d,%d,%d,%d,%d)\n",
@@ -212,7 +215,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     my @cmd = ("perl",$adaptor_driver,"1",$inner_func_num,$rand_seed, "1", $const_bounds_file,
 	       "1", "$frag_file", $is_return_enabled, "0");
     printf(LOG "cmd = @cmd\n");
-		select((select(LOG), $|=1)[0]);
+    select((select(LOG), $|=1)[0]);
     printf("cmd = @cmd\n");
     # open(LOG, "-|", @cmd);
     # while(<LOG>) {
@@ -224,6 +227,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     $total_as_steps = $total_ce_steps = $total_steps = 0;
     $total_as_solver_time = $last_as_solver_time = 0.0;
     $total_ce_solver_time = $last_ce_solver_time = 0.0;
+    $saved_last_as_solver_time = $saved_last_ce_solver_time = 0.0;
     $total_solver_time = 0.0;
     $result = 0;
     $timed_out = 0;
@@ -251,6 +255,9 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     		$total_time = $1;
     		$total_ce_steps++;
     		$total_ce_solver_time += $last_ce_solver_time;
+		print LOG "last_as_solver_time = $last_as_solver_time\n";
+		select((select(LOG), $|=1)[0]);
+		$saved_last_as_solver_time = $last_as_solver_time;
 		$last_as_solver_time = 0; #since we're about to start a new A.S. step
 		$start_query_time = 0;
     	    } elsif(/^elapsed time = (.*), last AS search time = (.*)$/) {
@@ -261,6 +268,9 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     		$total_time = $1;
     		$total_as_steps++;
     		$total_as_solver_time += $last_as_solver_time;
+		print LOG "last_ce_solver_time = $last_ce_solver_time\n";
+		select((select(LOG), $|=1)[0]);
+		$saved_last_ce_solver_time = $last_ce_solver_time;
 		$last_ce_solver_time = 0; #since we're about to start a new C.E. step
 		$start_query_time = 0;
     	    } elsif(/.*total query time = (.*)$/) {
@@ -290,7 +300,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     	    } elsif(/.*CounterExample search failed.*/ && ($result == 0)) {
     		$result = 4;
     	    }
-    	    print " $_" unless (/.*Query time = .*/ || /.*Starting new query.*$/);
+    	    print " $_"; # unless (/.*Query time = .*/ || /.*Starting new query.*$/);
     	}
     	close(CHILD);
     	waitpid($pid, 0);
