@@ -133,6 +133,12 @@ sub report_metrics {
     my $total_cmds = 0;
     my @tmp_arr = split /\//, $dir_path;
     my $fn_name = $tmp_arr[$#tmp_arr];
+    my $total_runtime = 300;
+    if(index($dir_path, "2.5m") != -1) {
+	$total_runtime = 150;
+    } elsif(index($dir_path, "10m") != -1) {
+	$total_runtime = 600;
+    }
 
     print "Starting analysis for $fn_name\n";
 
@@ -218,12 +224,12 @@ sub report_metrics {
 				#$timeout_steps[scalar(@timeout_steps)-1]++;
 				#$timeout_solver[scalar(@timeout_solver)-3]+=$2;
 				my $last_run_time = 
-				    (300 - $timeout_time[scalar(@timeout_time)-1]); 
+				    ($total_runtime - $timeout_time[scalar(@timeout_time)-1]); 
 				$timeout_time[scalar(@timeout_time)-2]=
 				    $last_run_time;
 				$timeout_time[scalar(@timeout_time)-3]+=
 				    $last_run_time;
-				$timeout_time[scalar(@timeout_time)-1] = 300;
+				$timeout_time[scalar(@timeout_time)-1] = $total_runtime;
 			    }
 			} elsif($1 =~ "CounterExample-Search") {
 			    push @timeout_stopped_during, 2;
@@ -232,12 +238,12 @@ sub report_metrics {
 				#$timeout_steps[scalar(@timeout_steps)-1]++;
 				#$timeout_solver[scalar(@timeout_solver)-5]+=$2; 
 				my $last_run_time = 
-				    (300 - $timeout_time[scalar(@timeout_time)-1]); 
+				    ($total_runtime - $timeout_time[scalar(@timeout_time)-1]); 
 				$timeout_time[scalar(@timeout_time)-4]=
 				    $last_run_time;
 				$timeout_time[scalar(@timeout_time)-5]+=
 				    $last_run_time;
-				$timeout_time[scalar(@timeout_time)-1] = 300;
+				$timeout_time[scalar(@timeout_time)-1] = $total_runtime;
 			    }
 			}
 		    }
