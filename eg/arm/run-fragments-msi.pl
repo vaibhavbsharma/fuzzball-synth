@@ -125,6 +125,8 @@ sub report_time_stats {
     my $extra_stopping_str="";
     my $stopping_str = "";
     my $query_time=0;
+    #printf("timed_out = $timed_out, start_query_time = $start_query_time, diff = %d\n",
+    #time() - $start_query_time);
     if($timed_out == 1 && $start_query_time != 0) {
 	if($running_as == 1) { 
 	    $last_as_solver_time += time() - $start_query_time; 
@@ -135,12 +137,12 @@ sub report_time_stats {
     }
     if($timed_out == 1) {
 	if($running_as == 1) { 
-	    $total_ce_steps++;
-	    $total_ce_solver_time += $last_ce_solver_time;
-	}
-	else { 
 	    $total_as_steps++;
 	    $total_as_solver_time += $last_as_solver_time;
+	}
+	else { 
+	    $total_ce_steps++;
+	    $total_ce_solver_time += $last_ce_solver_time;
 	}
     }
     if($running_as == 1) { 
@@ -230,7 +232,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     	local $SIG{ALRM} = 
     	    sub {
     		kill 9, -$pid; 
-    		print CHILD "TIME OUT!$/";
+    		print LOG "TIME OUT!$/";
     		print STDOUT "TIME OUT!$/";
     		$timed_out = 1;
     		report_time_stats ();
@@ -249,8 +251,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     		$total_time = $1;
     		$total_ce_steps++;
     		$total_ce_solver_time += $last_ce_solver_time;
-		$last_ce_solver_time = 0;
-		$last_as_solver_time = 0;
+		$last_as_solver_time = 0; #since we're about to start a new A.S. step
 		$start_query_time = 0;
     	    } elsif(/^elapsed time = (.*), last AS search time = (.*)$/) {
     		# printf("seen last AS\n");
@@ -260,8 +261,7 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
     		$total_time = $1;
     		$total_as_steps++;
     		$total_as_solver_time += $last_as_solver_time;
-		$last_as_solver_time = 0;
-		$last_ce_solver_time = 0;
+		$last_ce_solver_time = 0; #since we're about to start a new C.E. step
 		$start_query_time = 0;
     	    } elsif(/.*total query time = (.*)$/) {
     		# printf("seen Query time\n");
