@@ -126,13 +126,27 @@ sub report_time_stats {
     my $stopping_str = "";
     my $query_time=0;
     if($timed_out == 1 && $start_query_time != 0) {
-	if($running_as == 1) { $last_as_solver_time += time() - $start_query_time; }
-	else { $last_ce_solver_time += time() - $start_query_time; }
+	if($running_as == 1) { 
+	    $last_as_solver_time += time() - $start_query_time; 
+	}
+	else { 
+	    $last_ce_solver_time += time() - $start_query_time; 
+	}
+    }
+    if($timed_out == 1) {
+	if($running_as == 1) { 
+	    $total_ce_steps++;
+	    $total_ce_solver_time += $last_ce_solver_time;
+	}
+	else { 
+	    $total_as_steps++;
+	    $total_as_solver_time += $last_as_solver_time;
+	}
     }
     if($running_as == 1) { 
 	$stopping_step = "Adaptor-Search"; 
 	$query_time = $last_as_solver_time;
-	$extra_stopping_str = "stopped during $stopping_step with solver time = $query_time\n"
+	$extra_stopping_str = "stopped during $stopping_step with solver time = $query_time\n";
     }
     else { 
 	$stopping_step = "CounterExample-Search"; 

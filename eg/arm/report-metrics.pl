@@ -209,9 +209,9 @@ sub report_metrics {
 			if($1 =~ "Adaptor-Search") {
 			    push @timeout_stopped_during, 1;
 			    if($result == 0) {
-				$timeout_steps[scalar(@timeout_steps)-2]++;
-				$timeout_steps[scalar(@timeout_steps)-1]++;
-				$timeout_solver[scalar(@timeout_solver)-3]+=$2;
+				#$timeout_steps[scalar(@timeout_steps)-2]++;
+				#$timeout_steps[scalar(@timeout_steps)-1]++;
+				#$timeout_solver[scalar(@timeout_solver)-3]+=$2;
 				my $last_run_time = 
 				    (300 - $timeout_time[scalar(@timeout_time)-1]); 
 				$timeout_time[scalar(@timeout_time)-2]=
@@ -223,9 +223,9 @@ sub report_metrics {
 			} elsif($1 =~ "CounterExample-Search") {
 			    push @timeout_stopped_during, 2;
 			    if($result == 0) {
-				$timeout_steps[scalar(@timeout_steps)-3]++;
-				$timeout_steps[scalar(@timeout_steps)-1]++;
-				$timeout_solver[scalar(@timeout_solver)-5]+=$2; 
+				#$timeout_steps[scalar(@timeout_steps)-3]++;
+				#$timeout_steps[scalar(@timeout_steps)-1]++;
+				#$timeout_solver[scalar(@timeout_solver)-5]+=$2; 
 				my $last_run_time = 
 				    (300 - $timeout_time[scalar(@timeout_time)-1]); 
 				$timeout_time[scalar(@timeout_time)-4]=
