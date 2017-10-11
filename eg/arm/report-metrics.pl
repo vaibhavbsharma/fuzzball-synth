@@ -144,7 +144,7 @@ sub report_metrics {
 	my @saved_result_str = ();
 	while(<LOG>) {
 	    if(/.*cmd =.*/) {
-		@saved_result_str = (); $count = 0;
+		@saved_result_str = (); $count = 0; $result = -1;
 		$total_cmds++; $saved_cmd = $_; chomp $saved_cmd;
 		if(scalar(@timeout_time)/5 != scalar(@timeout_solver)/5 ||
 		   scalar(@timeout_solver)/5 != scalar(@timeout_steps)/3 ||
@@ -180,7 +180,7 @@ sub report_metrics {
 		for(my $i = 0; $i < 4; $i++) {
 		    my $str = $saved_result_str[$i];
 		    if($str =~ /^time \(ce-total,ce-last,as-total,as-last,ce-as-total\) = \((.*),(.*),(.*),(.*),(.*)\)$/ ) {
-			print "time string: $str\n";
+			# print "time string: $str\n";
 			my ($v1,$v2,$v3,$v4,$v5) = ($1,$2,$3,$4,$5);
 			for($result) {
 			    /0/ && do { push @timeout_time, ($v1,$v2,$v3,$v4,$v5); last; };
@@ -190,7 +190,7 @@ sub report_metrics {
 			    /4/ && do { push @ce_fail_time, ($v1,$v2,$v3,$v4,$v5); last; };
 			}
 		    } elsif($str =~ /^total steps \(ce,as,total\) = \((.*),(.*),(.*)\)$/) {
-			print "steps string: $str\n";
+			# print "steps string: $str\n";
 			my ($v1,$v2,$v3) = ($1,$2,$3);
 			for($result) {
 			    /0/ && do { push @timeout_steps, ($v1,$v2,$v3); last; };
@@ -200,7 +200,7 @@ sub report_metrics {
 			    /4/ && do { push @ce_fail_steps, ($v1,$v2,$v3); last; };
 			}
 		    } elsif($str =~ /^solver times \(ce-total,ce-last,as-total,as-last\) = \((.*),(.*),(.*),(.*)\)$/) {
-			print "solver string: $str\n";
+			# print "solver string: $str\n";
 			my ($v1,$v2,$v3,$v4) = ($1,$2,$3,$4);
 			for($result) {
 			    /0/ && do { push @timeout_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
@@ -210,7 +210,7 @@ sub report_metrics {
 			    /4/ && do { push @ce_fail_solver, ($v1,$v2,$v3,$v4,$v1+$v3); last; };
 			}
 		    } elsif($str =~ /^stopped during (.*) with solver time = (.*)$/ && $result == 0) {
-			print "stopped-during string: $str\n";
+			# print "stopped-during string: $str\n";
 			if($1 =~ "Adaptor-Search") {
 			    push @timeout_stopped_during, 1;
 			    if($result == 0) {
@@ -242,6 +242,8 @@ sub report_metrics {
 			}
 		    }
 		}
+		$result = -1;
+		@saved_result_str = ();
 	    } # end if result >= 0 && <= 4
 	    $line_num++;
 	} # end while(<LOG>)
