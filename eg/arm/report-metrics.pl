@@ -133,6 +133,31 @@ sub report_metrics {
     my $total_cmds = 0;
     my @tmp_arr = split /\//, $dir_path;
     my $fn_name = $tmp_arr[$#tmp_arr];
+    if(index($fn_name, "ref1") != -1) { $fn_name = "prev_pow_2(#1)"; }
+    if(index($fn_name, "ref2") != -1) { $fn_name = "abs_diff(#2)"; }
+    if(index($fn_name, "ref3") != -1) { $fn_name = "bswap32(#1)"; }
+    if(index($fn_name, "ref4") != -1) { $fn_name = "integer_cmp(#2)"; }
+    if(index($fn_name, "ref5") != -1) { $fn_name = "even(#1)"; }
+    if(index($fn_name, "ref6") != -1) { $fn_name = "div255(#1)"; }
+    if(index($fn_name, "ref7") != -1) { $fn_name = "reverse_bits(#1)"; }
+    if(index($fn_name, "ref8") != -1) { $fn_name = "binary_log(#1)"; }
+    if(index($fn_name, "ref9") != -1) { $fn_name = "fixmul32(#2)"; }
+    if(index($fn_name, "ref10") != -1) { $fn_name = "median(#3)"; }
+    if(index($fn_name, "ref11") != -1) { $fn_name = "hex_value(#1)"; }
+    if(index($fn_name, "ref12") != -1) { $fn_name = "transform_from_basic_ops(#10)"; }
+    if(index($fn_name, "ref13") != -1) { $fn_name = "get_descriptor_length_24b(#1)"; }
+    if(index($fn_name, "ref14") != -1) { $fn_name = "tile_pos(#4)"; }
+    if(index($fn_name, "ref15") != -1) { $fn_name = "diract_picture_n_before_m(#2)"; }
+    if(index($fn_name, "ref16") != -1) { $fn_name = "ps_id_to_tk(#1)"; }
+    if(index($fn_name, "ref17") != -1) { $fn_name = "leading_zero_count(#1)"; }
+    if(index($fn_name, "ref18") != -1) { $fn_name = "trailing_zero_count(#1)"; }
+    if(index($fn_name, "ref19") != -1) { $fn_name = "popcnt_32(#1)"; }
+    if(index($fn_name, "ref20") != -1) { $fn_name = "parity(#1)"; }
+    if(index($fn_name, "ref21") != -1) { $fn_name = "dv_audio_12_to_16(#1)"; }
+    if(index($fn_name, "ref22") != -1) { $fn_name = "is_power_2(#1)"; }
+    if(index($fn_name, "ref23") != -1) { $fn_name = "RenderRGB(#3)"; }
+    if(index($fn_name, "ref24") != -1) { $fn_name = "decode_BCD(#1)"; }
+    if(index($fn_name, "ref25") != -1) { $fn_name = "mpga_get_frame_samples(#1)"; }
     my $total_runtime = 300;
     if(index($dir_path, "2.5m") != -1) {
 	$total_runtime = 150;
