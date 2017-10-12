@@ -140,7 +140,8 @@ sub report_metrics {
     if(index($fn_name, "ref7") != -1) { $fn_name = "reverse_bits(#1)"; }
     if(index($fn_name, "ref8") != -1) { $fn_name = "binary_log(#1)"; }
     if(index($fn_name, "ref9") != -1) { $fn_name = "fixmul32(#2)"; }
-    if(index($fn_name, "ref10") != -1) { $fn_name = "median(#3)"; }
+    if(index($fn_name, "ref10") != -1 &&
+       index($fn_name, "ref10-") == -1) { $fn_name = "median(#3)"; }
     if(index($fn_name, "ref11") != -1) { $fn_name = "hex_value(#1)"; }
     if(index($fn_name, "ref12") != -1) { $fn_name = "transform_from_basic_ops(#10)"; }
     if(index($fn_name, "ref13") != -1) { $fn_name = "get_descriptor_length_24b(#1)"; }
@@ -156,7 +157,8 @@ sub report_metrics {
     if(index($fn_name, "ref23") != -1) { $fn_name = "RenderRGB(#3)"; }
     if(index($fn_name, "ref24") != -1) { $fn_name = "decode_BCD(#1)"; }
     if(index($fn_name, "ref25") != -1) { $fn_name = "mpga_get_frame_samples(#1)"; }
-    if(index($fn_name, "ref1") != -1) { $fn_name = "prev_pow_2(#1)"; }
+    if(index($fn_name, "ref1") != -1
+       && index($fn_name, "ref10-") == -1) { $fn_name = "prev_pow_2(#1)"; }
     if(index($fn_name, "ref2") != -1) { $fn_name = "abs_diff(#2)"; }
     my $total_runtime = 300;
     if(index($dir_path, "2.5m") != -1) {
