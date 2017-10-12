@@ -2,7 +2,7 @@
 
 use strict;
 
-die "Usage: keep-job-running.pl <.qsub file name> <dir at itasca where .qsub file is located>"
+die "Usage: keep-job-running.pl <.qsub file name> <dir at mesabi where .qsub file is located>"
   unless @ARGV == 2;
 
 my ($job_name,$dir) = @ARGV;
@@ -26,7 +26,7 @@ sub keep_job_running {
     my $output;
     my $not_done = 0;
     for(my $i = $start_bucket; $i <= $start_bucket + 7; $i++) {
-	$output = `ssh itasca "file $dir/arm-$i/done$i"`;
+	$output = `ssh mesabi "file $dir/arm-$i/done$i"`;
 	if(index($output, "No such file") != -1) {
 	    $not_done++;
 	}
@@ -35,7 +35,7 @@ sub keep_job_running {
 	print "done running all buckets for $job_name\n";
 	return 1;
     }
-    $output = `ssh itasca "qstat -u vaibhav -f"`;
+    $output = `ssh mesabi "qstat -u vaibhav -f"`;
     if(index($output, "Connection closed") != -1) { printf("Connection closed!\n"); exit(1); }
     if(index($output, "Connection timed out") != -1) { printf("Connection closed!\n"); exit(1); }
     if(index($output, "Connection closed") != -1) { printf("Connection closed!\n"); exit(1); }
@@ -43,7 +43,7 @@ sub keep_job_running {
     if(index($output, $job_name) != -1) { $found = 1; }
 # printf("found = $found\n");
     if($found == 0) {
-	my $output= `ssh itasca "qsub $dir/$job_name.qsub"`;
+	my $output= `ssh mesabi "qsub $dir/$job_name.qsub"`;
 	my $now_string = localtime;
 	printf("new job queued: output = $output at time = %s\n", $now_string);
     }
