@@ -133,8 +133,6 @@ sub report_metrics {
     my $total_cmds = 0;
     my @tmp_arr = split /\//, $dir_path;
     my $fn_name = $tmp_arr[$#tmp_arr];
-    if(index($fn_name, "ref1") != -1) { $fn_name = "prev_pow_2(#1)"; }
-    if(index($fn_name, "ref2") != -1) { $fn_name = "abs_diff(#2)"; }
     if(index($fn_name, "ref3") != -1) { $fn_name = "bswap32(#1)"; }
     if(index($fn_name, "ref4") != -1) { $fn_name = "integer_cmp(#2)"; }
     if(index($fn_name, "ref5") != -1) { $fn_name = "even(#1)"; }
@@ -158,6 +156,8 @@ sub report_metrics {
     if(index($fn_name, "ref23") != -1) { $fn_name = "RenderRGB(#3)"; }
     if(index($fn_name, "ref24") != -1) { $fn_name = "decode_BCD(#1)"; }
     if(index($fn_name, "ref25") != -1) { $fn_name = "mpga_get_frame_samples(#1)"; }
+    if(index($fn_name, "ref1") != -1) { $fn_name = "prev_pow_2(#1)"; }
+    if(index($fn_name, "ref2") != -1) { $fn_name = "abs_diff(#2)"; }
     my $total_runtime = 300;
     if(index($dir_path, "2.5m") != -1) {
 	$total_runtime = 150;
