@@ -1,4 +1,4 @@
-number of clusters = 74
+number of clusters = 80
 Cluster 0 (9) : 
 Input vars: (0x1), (0x1), (0x0), and (0x0) 
 
@@ -503,7 +503,7 @@ Input vars: (0x3), const(0x0), const(0x3f), and (0x0)
 
 Input vars: (0x3), const(0x0), const(0x3f), and (0x0) 
 
-Cluster 6 (30) : 
+Cluster 6 (27) : 
 Input vars: (0x0), const(0x0), const(0xff), and (0x0) 
 
 Input vars: (0x4), const(0x0), const(0xff), and (0x0) 
@@ -515,8 +515,6 @@ Input vars: (0x4), const(0x0), const(0xff), and (0x0)
 Input vars: (0x4), const(0x0), const(0xff), and (0x0) 
 
 Input vars: (0xc), const(0x0), const(0x800000ff), and 8-to-32Z(0x0) 
-
-Input vars: (0xc), const(0x0), const(0xff), and (0x0) 
 
 Input vars: (0x3), const(0x0), const(0xff), and (0x0) 
 
@@ -550,8 +548,6 @@ Input vars: (0x4), const(0x0), const(0xff), and (0x0)
 
 Input vars: (0x3), const(0x0), const(0xff), and (0x0) 
 
-Input vars: (0xc), const(0x0), const(0xff), and (0x0) 
-
 Input vars: (0x4), const(0x0), const(0xff), and (0x0) 
 
 Input vars: (0x4), const(0x0), const(0xff), and (0x0) 
@@ -562,12 +558,10 @@ Input vars: (0x4), const(0x0), const(0xff), and (0x0)
 
 Input vars: 32-to-32C(0x3), const(0xffffffff), const(0x0), and 8-to-32Z(0x0) 
 
-Input vars: (0xc), const(0x0), const(0xff), and (0x0) 
-
 Cluster 7 (1) : 
 Input vars: (0xa), const(0x80000000), (0x2), and (0x0) 
 
-Cluster 8 (17) : 
+Cluster 8 (14) : 
 Input vars: const(0x1), (0x0), const(0x1), and (0x0) 
 
 Input vars: 32-to-32C(0x0), (0x0), const(0x0), and (0x0) 
@@ -584,17 +578,11 @@ Input vars: 32-to-32C(0x0), (0x0), const(0x0), and (0x0)
 
 Input vars: (0x0), 32-to-32C(0x0), (0x0), and (0x0) 
 
-Input vars: (0x0), 16-to-32S(0x8), (0x0), and (0x0) 
-
 Input vars: 32-to-32C(0x0), (0x0), 32-to-32C(0x0), and (0x0) 
 
 Input vars: 32-to-32C(0x0), (0x0), const(0x0), and (0x0) 
 
-Input vars: (0x0), 16-to-32S(0x8), (0x0), and (0x0) 
-
 Input vars: 32-to-32C(0x0), (0x0), 32-to-32C(0x0), and (0x0) 
-
-Input vars: (0x0), 16-to-32S(0x8), (0x0), and (0x0) 
 
 Input vars: (0x0), const(0x14), (0x0), and (0x0) 
 
@@ -683,7 +671,7 @@ Input vars: (0x2), const(0x0), const(0x40), and (0x0)
 
 Input vars: const(0x40), 32-to-1(0x5), (0x2), and 16-to-32Z(0x0) 
 
-Cluster 12 (33) : 
+Cluster 12 (30) : 
 Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
 
 Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
@@ -716,19 +704,9 @@ Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(
 
 Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
 
-Input vars: 32-to-32C(0x2), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
-
 Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
 
 Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
-
-Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
-
-Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
-
-Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
-
-Input vars: 32-to-32C(0x2), const(0x80010000), const(0x80000008), and 8-to-32S(0x0) 
 
 Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
 
@@ -740,7 +718,11 @@ Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(
 
 Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
 
-Input vars: 32-to-32C(0x2), const(0x80010000), const(0x80000008), and 8-to-32S(0x0) 
+Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
+
+Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
+
+Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
 
 Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
 
@@ -755,7 +737,7 @@ Input vars: 32-to-1(0x1), const(0x1), const(0xfffffffe), and (0x0)
 
 Input vars: 32-to-1(0x1), const(0x1), const(0xfffffffe), and (0x0) 
 
-Cluster 14 (38) : 
+Cluster 14 (37) : 
 Input vars: (0x0), const(0x0), 32-to-1(0x0), and (0x0) 
 
 Input vars: 32-to-32C(0x5), const(0x80000002), const(0x80000001), and 1-to-32Z(0x0) 
@@ -783,8 +765,6 @@ Input vars: (0x0), const(0x4), const(0x8001800b), and 1-to-32Z(0x0)
 Input vars: 1-to-32S(0x5), 32-to-1(0x5), const(0x80000014), and 8-to-32Z(0x0) 
 
 Input vars: const(0x0), 32-to-1(0x9), const(0x80000002), and 8-to-32S(0x0) 
-
-Input vars: 32-to-32C(0x2), const(0x80010000), const(0x80000001), and 1-to-32Z(0x0) 
 
 Input vars: 32-to-1(0x0), const(0x1), 32-to-1(0x9), and (0x0) 
 
@@ -832,10 +812,8 @@ Input vars: const(0x0), 32-to-1(0xc), const(0x800000ff), and 8-to-32Z(0x0)
 
 Input vars: 32-to-32C(0x4), const(0x80000002), const(0x80000001), and 1-to-32Z(0x0) 
 
-Cluster 15 (2) : 
+Cluster 15 (1) : 
 Input vars: const(0x0), (0x8), const(0x0), and (0x0) 
-
-Input vars: (0x8), 16-to-32S(0x3), (0x8), and (0x0) 
 
 Cluster 16 (4) : 
 Input vars: (0x1), (0x0), (0x1), and (0x0) 
@@ -1104,127 +1082,155 @@ Input vars: const(0x3), 32-to-1(0x2), (0x2), and (0x0)
 Input vars: 32-to-1(0x3), const(0x1), const(0x80000003), and 8-to-32Z(0x0) 
 
 Cluster 40 (1) : 
+Input vars: (0x8), 16-to-32S(0x3), (0x8), and (0x0) 
+
+Cluster 41 (1) : 
 Input vars: 8-to-32S(0x0), const(0x0), const(0x80000001), and 1-to-32Z(0x0) 
 
-Cluster 41 (2) : 
-Input vars: (0x0), const(0xa594), 16-to-32Z(0x0), and (0x0) 
+Cluster 42 (3) : 
+Input vars: (0xc), const(0x0), const(0xff), and (0x0) 
 
-Input vars: (0x0), const(0xa594), 16-to-32Z(0x0), and (0x0) 
+Input vars: (0xc), const(0x0), const(0xff), and (0x0) 
 
-Cluster 42 (1) : 
-Input vars: 32-to-32C(0x4), const(0x88000000), const(0x80000001), and 1-to-32Z(0x0) 
+Input vars: (0xc), const(0x0), const(0xff), and (0x0) 
 
 Cluster 43 (2) : 
+Input vars: (0x0), const(0xa594), 16-to-32Z(0x0), and (0x0) 
+
+Input vars: (0x0), const(0xa594), 16-to-32Z(0x0), and (0x0) 
+
+Cluster 44 (1) : 
+Input vars: 32-to-32C(0x4), const(0x88000000), const(0x80000001), and 1-to-32Z(0x0) 
+
+Cluster 45 (2) : 
 Input vars: (0x5), (0x5), const(0x4), and (0x0) 
 
 Input vars: const(0x4), const(0x0), (0x5), and (0x0) 
 
-Cluster 44 (2) : 
+Cluster 46 (2) : 
 Input vars: (0x3), (0x3), (0x1), and (0x0) 
 
 Input vars: (0x1), (0x1), (0x3), and (0x0) 
 
-Cluster 45 (2) : 
+Cluster 47 (2) : 
 Input vars: const(0x104), const(0x0), (0xb), and (0x0) 
 
 Input vars: 32-to-32C(0x2), 32-to-32C(0x2), const(0x80000104), and 16-to-32Z(0x0) 
 
-Cluster 46 (1) : 
+Cluster 48 (1) : 
 Input vars: (0x3), (0x3), (0x6), and (0x0) 
 
-Cluster 47 (1) : 
-Input vars: const(0x60), const(0x0), (0x2), and (0x0) 
-
-Cluster 48 (1) : 
-Input vars: const(0x8000000f), const(0x80000002), 32-to-32C(0x0), and 16-to-32Z(0x0) 
-
 Cluster 49 (1) : 
-Input vars: 8-to-32S(0x1), const(0x0), const(0x80000001), and 1-to-32Z(0x0) 
+Input vars: 32-to-32C(0x2), const(0x80010000), const(0x80000001), and 1-to-32Z(0x0) 
 
 Cluster 50 (1) : 
-Input vars: (0x6), const(0x80000000), (0x2), and (0x0) 
+Input vars: const(0x60), const(0x0), (0x2), and (0x0) 
 
 Cluster 51 (1) : 
+Input vars: const(0x8000000f), const(0x80000002), 32-to-32C(0x0), and 16-to-32Z(0x0) 
+
+Cluster 52 (3) : 
+Input vars: (0x0), 16-to-32S(0x8), (0x0), and (0x0) 
+
+Input vars: (0x0), 16-to-32S(0x8), (0x0), and (0x0) 
+
+Input vars: (0x0), 16-to-32S(0x8), (0x0), and (0x0) 
+
+Cluster 53 (3) : 
+Input vars: 32-to-32C(0x2), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
+
+Input vars: 32-to-32C(0x2), const(0x80010000), const(0x80000008), and 8-to-32S(0x0) 
+
+Input vars: 32-to-32C(0x2), const(0x80010000), const(0x80000008), and 8-to-32S(0x0) 
+
+Cluster 54 (1) : 
+Input vars: 8-to-32S(0x1), const(0x0), const(0x80000001), and 1-to-32Z(0x0) 
+
+Cluster 55 (1) : 
+Input vars: (0x6), const(0x80000000), (0x2), and (0x0) 
+
+Cluster 56 (1) : 
 Input vars: (0x0), 16-to-32S(0x8), 32-to-32C(0x0), and 16-to-32S(0x0) 
 
-Cluster 52 (5) : 
+Cluster 57 (4) : 
 Input vars: const(0x0), (0x7), const(0x0), and (0x0) 
 
 Input vars: const(0x0), (0x7), const(0x0), and (0x0) 
-
-Input vars: (0x7), 16-to-32S(0x1), (0x7), and (0x0) 
 
 Input vars: 32-to-32C(0x7), (0x7), const(0x0), and (0x0) 
 
 Input vars: const(0x0), (0x7), const(0x0), and (0x0) 
 
-Cluster 53 (1) : 
+Cluster 58 (1) : 
 Input vars: 32-to-32C(0x4), 32-to-32C(0x4), const(0x80000020), and 16-to-32Z(0x0) 
 
-Cluster 54 (2) : 
+Cluster 59 (2) : 
 Input vars: (0xc), (0x7), (0xc), and (0x0) 
 
 Input vars: (0x7), (0xc), (0x7), and (0x0) 
 
-Cluster 55 (1) : 
+Cluster 60 (1) : 
 Input vars: 16-to-32S(0x8), 16-to-32S(0x3), 32-to-32C(0x8), and 16-to-32Z(0x0) 
 
-Cluster 56 (1) : 
+Cluster 61 (1) : 
 Input vars: const(0x0), (0x4), const(0x11100000), and (0x0) 
 
-Cluster 57 (1) : 
+Cluster 62 (1) : 
 Input vars: 16-to-32S(0x8), 16-to-32S(0x3), 16-to-32S(0x8), and (0x0) 
 
-Cluster 58 (1) : 
+Cluster 63 (1) : 
 Input vars: const(0x384), const(0x0), (0x2), and (0x0) 
 
-Cluster 59 (1) : 
+Cluster 64 (1) : 
 Input vars: 32-to-32C(0x6), 32-to-32C(0x6), const(0x8000000a), and 16-to-32S(0x0) 
 
-Cluster 60 (1) : 
+Cluster 65 (1) : 
 Input vars: const(0x0), (0x5), const(0x0), and (0x0) 
 
-Cluster 61 (1) : 
+Cluster 66 (1) : 
 Input vars: (0x0), const(0x0), const(0xc0003ec1), and 16-to-32S(0x0) 
 
-Cluster 62 (1) : 
+Cluster 67 (1) : 
 Input vars: (0xc), (0x6), (0xc), and (0x0) 
 
-Cluster 63 (1) : 
-Input vars: (0x2), (0x2), (0x9), and (0x0) 
-
-Cluster 64 (1) : 
-Input vars: 8-to-32S(0x4), const(0x1a), const(0x1e), and 1-to-32S(0x0) 
-
-Cluster 65 (1) : 
-Input vars: 32-to-32C(0x5), 32-to-32C(0x5), const(0x80000006), and 16-to-32Z(0x0) 
-
-Cluster 66 (1) : 
-Input vars: const(0x0), (0x1), const(0x0), and (0x0) 
-
-Cluster 67 (1) : 
-Input vars: (0x0), const(0x14), const(0x83), and (0x0) 
-
 Cluster 68 (1) : 
-Input vars: (0xa), (0x0), (0xa), and (0x0) 
+Input vars: (0x7), 16-to-32S(0x1), (0x7), and (0x0) 
 
 Cluster 69 (1) : 
-Input vars: (0x1), (0x1), (0x2), and (0x0) 
+Input vars: (0x2), (0x2), (0x9), and (0x0) 
 
 Cluster 70 (1) : 
-Input vars: 1-to-32S(0x5), const(0x0), const(0x80000005), and 1-to-32Z(0x0) 
+Input vars: 8-to-32S(0x4), const(0x1a), const(0x1e), and 1-to-32S(0x0) 
 
-Cluster 71 (2) : 
-Input vars: (0x0), (0x0), 16-to-32S(0x3), and (0x0) 
-
-Input vars: (0x0), (0x0), 16-to-32S(0x3), and (0x0) 
+Cluster 71 (1) : 
+Input vars: 32-to-32C(0x5), 32-to-32C(0x5), const(0x80000006), and 16-to-32Z(0x0) 
 
 Cluster 72 (1) : 
-Input vars: const(0x7), const(0x0), (0x2), and (0x0) 
+Input vars: const(0x0), (0x1), const(0x0), and (0x0) 
 
 Cluster 73 (1) : 
-Input vars: const(0x80008000), const(0x80000000), 32-to-32C(0x1), and 16-to-32Z(0x0) 
+Input vars: (0x0), const(0x14), const(0x83), and (0x0) 
 
 Cluster 74 (1) : 
+Input vars: (0xa), (0x0), (0xa), and (0x0) 
+
+Cluster 75 (1) : 
+Input vars: (0x1), (0x1), (0x2), and (0x0) 
+
+Cluster 76 (1) : 
+Input vars: 1-to-32S(0x5), const(0x0), const(0x80000005), and 1-to-32Z(0x0) 
+
+Cluster 77 (2) : 
+Input vars: (0x0), (0x0), 16-to-32S(0x3), and (0x0) 
+
+Input vars: (0x0), (0x0), 16-to-32S(0x3), and (0x0) 
+
+Cluster 78 (1) : 
+Input vars: const(0x7), const(0x0), (0x2), and (0x0) 
+
+Cluster 79 (1) : 
+Input vars: const(0x80008000), const(0x80000000), 32-to-32C(0x1), and 16-to-32Z(0x0) 
+
+Cluster 80 (1) : 
 Input vars: 32-to-32C(0x2), const(0x80000000), const(0x80000010), and 8-to-32S(0x0) 
 
