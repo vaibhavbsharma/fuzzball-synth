@@ -52,10 +52,8 @@ void print_adapter(argret ad, int fnargs) {
   else printf("undefined adapter_family\n");
   for(i=0; i<fnargs; i++) {
     switch(ad.a_ad[i].var_is_const) {
-    case 1: sprintf(type_string, "const("); break;
-    case 0: 
-    case 11:
-    case 12: sprintf(type_string, "("); break;
+    case 1:  sprintf(type_string, "const("); break;
+    case 0:  sprintf(type_string, "("); break;
     case 13: sprintf(type_string, "32-to-32C("); break;
     case 21: sprintf(type_string, "16-to-32S("); break;
     case 22: sprintf(type_string, "16-to-32Z("); break;
@@ -272,7 +270,7 @@ int main(int argc, char **argv) {
       clusters[found_cluster_ind].push_back(i);
     }
   }
-  cout << "number of clusters = " << cluster_ind<<endl;
+  cout << "number of clusters = " << cluster_ind+1<<endl;
   for(int i=0; i <= cluster_ind; i++) {
     vector<int> v = clusters[i];
     cout << "Cluster "<< i << " ("<<v.size()<<") : " << endl;
