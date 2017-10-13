@@ -1,4 +1,6 @@
-#include "all_adapters.h"
+//#include "all_adapters_clamp.h"
+//#include "all_adapters_render.h"
+#include "all_adapters_absdiff.h"
 #include "test1.h"
 #include <stdio.h>
 #include <stdlib.h>

@@ -9,7 +9,7 @@
 using namespace std;
 
 #define MAX_ADAPTERS 1000000
-#define MAX_TESTS 1000
+#define MAX_TESTS 100000
 
 int fnum;
 
@@ -32,6 +32,13 @@ void populateAdapter() {
   //print_adapter(num_adapters);
   num_adapters++;
   assert(num_adapters <= MAX_ADAPTERS);
+}
+
+void print_test(int ind) {
+  printf("test(%d): (%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d)\n", ind,
+	 tests[ind].a, tests[ind].b, tests[ind].c, tests[ind].d,
+	 tests[ind].e, tests[ind].f, tests[ind].g, tests[ind].h,
+	 tests[ind].i, tests[ind].j, tests[ind].k, tests[ind].l, tests[ind].m);
 }
 
 void print_adapter(argret ad, int fnargs) {
@@ -180,20 +187,24 @@ bool compare(argret ad1, argret ad2) {
 
 void generate_tests() {
   srand(2);
+  long range = 2*(0xfffff)-1;
+  long bucket_size = range/MAX_TESTS;
   for(int i=0; i < MAX_TESTS; i++) {
-    tests[i].a = rand();
-    tests[i].b = rand();
-    tests[i].c = rand();
-    tests[i].d = rand();
-    tests[i].e = rand();
-    tests[i].f = rand();
-    tests[i].g = rand();
-    tests[i].h = rand();
-    tests[i].i = rand();
-    tests[i].j = rand();
-    tests[i].k = rand();
-    tests[i].l = rand();
-    tests[i].m = rand();
+    long bucket_start = i*bucket_size - 0xfffff;
+    tests[i].a = (rand()%bucket_size) + bucket_start;
+    tests[i].b = (rand()%bucket_size) + bucket_start;
+    tests[i].c = (rand()%bucket_size) + bucket_start;
+    tests[i].d = (rand()%bucket_size) + bucket_start;
+    tests[i].e = (rand()%bucket_size) + bucket_start;
+    tests[i].f = (rand()%bucket_size) + bucket_start;
+    tests[i].g = (rand()%bucket_size) + bucket_start;
+    tests[i].h = (rand()%bucket_size) + bucket_start;
+    tests[i].i = (rand()%bucket_size) + bucket_start;
+    tests[i].j = (rand()%bucket_size) + bucket_start;
+    tests[i].k = (rand()%bucket_size) + bucket_start;
+    tests[i].l = (rand()%bucket_size) + bucket_start;
+    tests[i].m = (rand()%bucket_size) + bucket_start;
+    //print_test(i);
   }
 }
 
@@ -202,7 +213,7 @@ int main(int argc, char **argv) {
   generate_tests();
   FILE *fh;
   if (argc < 3) {
-    fprintf(stderr, "Usage: two-funcs-conc <fnum>\n");
+    fprintf(stderr, "Usage: two-funcs-conc <fnum> <fnargs>\n");
     exit(1);
   }
   fnum = atoi(argv[1]);
