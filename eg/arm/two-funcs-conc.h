@@ -57,16 +57,6 @@ struct func_info funcs[] = {
 };
 
 
-int convert32to32s(int a) {
-  int a1=(int) a;
-  return (int) a1;
-}
-
-int convert32to32u(int a) {
-  unsigned int a1=(int) a;
-  return (unsigned int) a1;
-}
-
 int convert32to32(int a) {
   int a1=(int) a;
   a1 += 0x80000000;
