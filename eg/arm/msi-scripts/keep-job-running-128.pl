@@ -13,8 +13,8 @@ if( substr($job_name, length($job_name)-5) =~ ".qsub") {
 
 sub keep_job_running {
     my $job_name = shift(@_);
-	  my $job_num = shift(@_);
-		$job_name = $job_name . "-8" . $job_num;
+    my $job_num = shift(@_);
+    $job_name = $job_name . "-8" . $job_num;
     my $start_bucket=($job_num-1)*8+1;
     
     if($start_bucket < 1 || $start_bucket > 16*8+1) {
@@ -50,10 +50,10 @@ sub keep_job_running {
 
 my ($done) = (0);
 while(1) {
-		for(my $j = 1; $j <= 16; $j++) {
-	  my $ret = keep_job_running($job_name, $j);
-    $done = $done && $ret;
-		}
+    for(my $j = 1; $j <= 16; $j++) {
+	my $ret = keep_job_running($job_name, $j);
+	$done = $done && $ret;
+    }
     if($done == 1) { 
 	print "done running all buckets\n";
 	exit(0); 

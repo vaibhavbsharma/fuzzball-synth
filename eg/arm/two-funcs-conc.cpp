@@ -43,7 +43,7 @@ void print_test(int ind) {
 
 void print_adapter(argret ad, int fnargs) {
   char output[200];
-  printf("Input vars: ");
+  //printf("Input vars: ");
   int i;
   char type_varname[10];
   char type_string[100];
@@ -207,20 +207,31 @@ void generate_tests() {
 }
 
 int main(int argc, char **argv) { 
-  int numTests=0;
+  int numTests=0, adapter_ind = 0;
   generate_tests();
   FILE *fh;
-  if (argc < 3) {
-    fprintf(stderr, "Usage: two-funcs-conc <fnum> <fnargs>\n");
+  if (argc < 4) {
+    fprintf(stderr, "Usage: two-funcs-conc <c(luster) or s(ingle)> <fnum> <fnargs> <if s(ingle) then adapter num>\n");
     exit(1);
   }
-  fnum = atoi(argv[1]);
+  char mode = argv[1][0];
+  if(mode != 'c' && mode != 's') {
+    fprintf(stderr, "Error: unsupported mode, 1st argument needs to be c or s\n");
+  }
+  fnum = atoi(argv[2]);
   if (fnum < 0 || fnum >= sizeof(funcs)/sizeof(struct func_info)) {
     fprintf(stderr, "Error: fnum %d out of range\n", fnum);
   }
-  int fnargs = atoi(argv[2]);
+  int fnargs = atoi(argv[3]);
   if(fnargs < 1 || fnargs > 10) { 
     fprintf(stderr, "Error: fnargs %d is not valid (has to be between 1 and 10)\n", fnum);
+  }
+  if(mode == 's') {
+    if(argc != 5) fprintf(stderr, "Error: adapter index unspecified\n");
+    adapter_ind = atoi(argv[4]);
+    if(adapter_ind >= num_adapters) {
+      fprintf(stderr, "Error: invalid adapter index provided\n");
+    }
   }
   
   // argret all_ads[2] = { 
@@ -241,42 +252,53 @@ int main(int argc, char **argv) {
   // for(int i=0; i < num_adapters; i++) {
   //   print_adapter(all_ads[i], fnargs);
   // }
- 
-  map<int, vector<int> > clusters;
-  int cluster_ind=-1;
-  for(int i=0; i< num_adapters; i++) {
-    bool found_cluster = false;
-    int found_cluster_ind = -1;
-    for(int j=0; j<=cluster_ind; j++) {
-      vector<int> v = clusters[j];
-      found_cluster = true;
-      for(int k=0; k < v.size(); k++) {
-	if(!compare(all_ads[i], all_ads[v[k]])) {
-	  found_cluster=false;
+  if(mode == 'c') {
+    map<int, vector<int> > clusters;
+    int cluster_ind=-1;
+    for(int i=0; i< num_adapters; i++) {
+      bool found_cluster = false;
+      int found_cluster_ind = -1;
+      for(int j=0; j<=cluster_ind; j++) {
+	vector<int> v = clusters[j];
+	found_cluster = true;
+	for(int k=0; k < v.size(); k++) {
+	  if(!compare(all_ads[i], all_ads[v[k]])) {
+	    found_cluster=false;
+	    break;
+	  } 
+	}
+	if(found_cluster) {
+	  found_cluster_ind = j;
 	  break;
-	} 
+	}
       }
-      if(found_cluster) {
-	found_cluster_ind = j;
-	break;
+      if(!found_cluster) {
+	cluster_ind++;
+	vector<int> v;
+	clusters[cluster_ind] = v;
+	clusters[cluster_ind].push_back(i);
+      } else {
+	clusters[found_cluster_ind].push_back(i);
       }
     }
-    if(!found_cluster) {
-      cluster_ind++;
-      vector<int> v;
-      clusters[cluster_ind] = v;
-      clusters[cluster_ind].push_back(i);
-    } else {
-      clusters[found_cluster_ind].push_back(i);
+    cout << "number of clusters = " << cluster_ind+1<<endl;
+    for(int i=0; i <= cluster_ind; i++) {
+      vector<int> v = clusters[i];
+      cout << "Cluster "<< i << " ("<<v.size()<<") : " << endl;
+      for(int j=0; j < v.size(); j++) {
+	cout << v[j] <<": Input vars: ";
+	print_adapter(all_ads[v[j]], fnargs);
+	cout << endl;
+      }
     }
-  }
-  cout << "number of clusters = " << cluster_ind+1<<endl;
-  for(int i=0; i <= cluster_ind; i++) {
-    vector<int> v = clusters[i];
-    cout << "Cluster "<< i << " ("<<v.size()<<") : " << endl;
-    for(int j=0; j < v.size(); j++) {
-      print_adapter(all_ads[v[j]], fnargs);
-      cout << endl;
+  } else if (mode == 's') {
+    int a0, a1, a2, a3, a4, a5, a6;
+    while (fscanf(stdin, "%d %d %d %d %d %d %d", &a0, &a1, &a2, &a3, &a4, &a5, &a6) != EOF) {
+      printf("0x%x or %d\n", 
+	     wrap_f(all_ads[adapter_ind], a0, a1, a2,
+		    a3, a4, a5, a6, 0, 0, 0, 0, 0, 0),
+	     wrap_f(all_ads[adapter_ind], a0, a1, a2,
+		    a3, a4, a5, a6, 0, 0, 0, 0, 0, 0));
     }
   }
  
