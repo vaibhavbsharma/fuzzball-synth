@@ -1,5 +1,6 @@
 number of clusters = 110
 
+val == 1
 replace every non-1-value by 0:
 1: Input vars: 32-to-32C(0x5), 32-to-32C(0x5), const(0x80000002), and 1-to-32Z(0x0) 
 54: Input vars: 32-to-32C(0x5), const(0x80000000), const(0x80000002), and 1-to-32Z(0x0) 
@@ -14,6 +15,7 @@ replace every non-1-value by 0:
 338: Input vars: const(0x80000002), const(0x80000000), 32-to-32C(0x5), and 1-to-32Z(0x0) 
 381: Input vars: const(0x80000002), const(0x80000002), 32-to-32C(0x8), and 1-to-32Z(0x0) 
 
+val == 0
 replace zero by 1, all else by 0
 3: Input vars: 32-to-1(0x6), const(0x1), const(0x0), and (0x0) 
 7: Input vars: 32-to-1(0x6), const(0x1), const(0x0), and (0x0) 
@@ -57,44 +59,48 @@ replace zero by 1, all else by 0
 Input vars: 32-to-1(0x4), const(0x1), const(0x0), and (0x0) 
 Input vars: 32-to-1(0x4), const(0x1), const(0x0), and (0x0) 
 
-
+val == 3
 replace 3 by 1, all else by 0:
 64: Input vars: 32-to-32C(0x4), const(0x80000002), const(0x80000004), and 1-to-32Z(0x0) 
 99: Input vars: 32-to-32C(0x3), const(0x80000002), const(0x80000004), and 1-to-32Z(0x0) 
 382: Input vars: (0x3), const(0x2), const(0x4), and 1-to-32Z(0x0) 
 
-
+val == 5
 replace 5 by 1, all else by 0:
 154: Input vars: 32-to-32C(0x3), const(0x80000004), const(0x80000006), and 1-to-32Z(0x0) 
 261: Input vars: 32-to-32C(0x3), const(0x80000004), const(0x80000006), and 1-to-32Z(0x0) 
 
+val == 25
 replace 25 by 1, all else by 0:
 166: Input vars: 32-to-32C(0x3), const(0x80000024), const(0x80000026), and 1-to-32Z(0x0) 
 183: Input vars: 32-to-32C(0x3), const(0x80000024), const(0x80000026), and 1-to-32Z(0x0) 
+395: Input vars: 32-to-32C(0x3), const(0x80000024), const(0x80000026), and 1-to-32Z(0x0) 
 
+val == 11
 replace 11 by 1, all else by 0:
 248: Input vars: (0x0), const(0xa), const(0xc), and 1-to-32Z(0x0) 
 
+val == 29
 replace 29 by 1, all else by 0:
 253: Input vars: 32-to-32C(0x7), const(0x80000028), const(0x8000002a), and 1-to-32Z(0x0) 
 
+val != 1
 replace 1 by 0, all else by 1
 Input vars: 32-to-32C(0x4), const(0x80000002), const(0x80000001), and 1-to-32Z(0x0) 
 Input vars: 32-to-32C(0x4), const(0x80000002), const(0x80000001), and 1-to-32Z(0x0) 
 Input vars: 32-to-32C(0x4), const(0x80000002), const(0x80000001), and 1-to-32Z(0x0) 
 
+val >= 65536
 replace all values less than 65536 by 0, all else by 1
 Input vars: 32-to-32C(0x2), const(0x80010000), const(0x80000001), and 1-to-32Z(0x0) 
 
+val >= 0x08000000
 replace all values less than 0x08000000 by 0, all else by 1
 Input vars: 32-to-32C(0x4), const(0x88000000), const(0x80000001), and 1-to-32Z(0x0) 
 
-replace 25 by 1, all else by 0
-395: Input vars: 32-to-32C(0x3), const(0x80000024), const(0x80000026), and 1-to-32Z(0x0) 
-
-cmp 31
+val == 31
 411: Input vars: 32-to-32C(0x0), const(0x80000030), const(0x80000032), and 1-to-32Z(0x0)
-cmp 1
+val == 1
 452: Input vars: 32-to-32C(0x5), const(0x80000000), const(0x80000002), and 1-to-32Z(0x0) 
 
 val < 1 ? 1 : 2
@@ -103,8 +109,7 @@ Input vars: 32-to-1(0xb), const(0x1), const(0x80004002), and 8-to-32Z(0x0)
 Input vars: 32-to-1(0xb), const(0x1), const(0x80000002), and 8-to-32S(0x0) 
 Input vars: 32-to-1(0xb), const(0x1), const(0x80000002), and 8-to-32S(0x0) 
 
-
-cmp:
+val < N:
 483: Input vars: const(0x80000002), const(0x80000001), 32-to-32C(0x0), and 1-to-32Z(0x0) 
 512: Input vars: const(0x80000002), const(0x80000001), 32-to-32C(0x5), and 1-to-32Z(0x0) 
 520: Input vars: (0x3), const(0x2), const(0x4), and 1-to-32Z(0x0) 
@@ -143,6 +148,8 @@ val > 0
 459: Input vars: (0x0), const(0x0), 32-to-1(0x0), and (0x0) 
 562: Input vars: (0x0), const(0x0), 32-to-1(0x0), and (0x0) 
 79: Input vars: (0x3), const(0x0), const(0x2), and 32-to-1(0x0) 
+301: Input vars: const(0x0), (0x3), const(0x7ffffffd), and 32-to-1(0x0) 
+302: Input vars: (0x3), const(0x0), const(0x3), and 32-to-1(0x0) 
 
 val > 4
 202: Input vars: (0x0), const(0x4), const(0x8001800b), and 1-to-32Z(0x0) 
@@ -152,10 +159,6 @@ val > 8
 
 val > 6
 299: Input vars: (0x2), const(0x6), 32-to-1(0x2), and 1-to-32Z(0x0) 
-
-val > 0
-301: Input vars: const(0x0), (0x3), const(0x7ffffffd), and 32-to-1(0x0) 
-302: Input vars: (0x3), const(0x0), const(0x3), and 32-to-1(0x0) 
 
 val >= 0
 519: Input vars: const(0x0), (0x0), 32-to-32C(0x0), and 32-to-1(0x0) 
@@ -195,21 +198,18 @@ val1 || val2
 247: Input vars: 32-to-1(0x0), const(0x1), 32-to-1(0x9), and (0x0) 
 
 
-sign-bit(low-16-bits) == 0 ? 1 : low-16-bits sign-ext to 32 bits
+sign-bit(low-16-bits of val) == 0 ? 1 : low-16-bits sign-ext to 32 bits
 44: Input vars: 32-to-1(0x0), 16-to-32S(0x0), const(0x80000001), and 16-to-32S(0x0) 
 
-not sure:
+not sure val:
 375: Input vars: 32-to-1(0x3), 16-to-32S(0x0), const(0x80000001), and 16-to-32Z(0x0) 
-
-
-val < 0 ? 0 : (val > 0x8009 ? 1 : (low-bit of val))
-46: Input vars: 32-to-32C(0x8), const(0x0), const(0x80008009), and 1-to-32Z(0x0) 
 
 val < 0
 62: Input vars: (0x8), 32-to-1(0x8), const(0x80000000), and 1-to-32Z(0x0) 
 538: Input vars: (0x0), 32-to-1(0x0), const(0x0), and (0x0) 
 87: Input vars: (0x8), 32-to-1(0x8), const(0xc0000002), and 1-to-32Z(0x0) 
 102: Input vars: (0x8), 32-to-1(0x8), const(0xc8000000), and 1-to-32Z(0x0) 
+46: Input vars: 32-to-32C(0x8), const(0x0), const(0x80008009), and 1-to-32Z(0x0) 
 val < 0 ? -1 : 0
 35: Input vars: (0x4), 32-to-1(0x4), const(0x80000000), and 1-to-32S(0x0) 
 
@@ -225,11 +225,11 @@ if low-bit(val1) && non-zero(val2) ? 1 : 0
 Input vars: 1-to-32Z(0x0), 32-to-1(0x2), const(0xa0000000), and 1-to-32Z(0x0) 
 Input vars: 1-to-32Z(0x0), 32-to-1(0x2), const(0x90000000), and 16-to-32Z(0x0) 
 
-invert the low 1 bit
+invert the low 1 bit of val
 Input vars: 1-to-32Z(0x0), const(0x1), const(0x0), and (0x0) 
 Input vars: 1-to-32S(0x5), const(0x0), const(0x80000005), and 1-to-32Z(0x0) 
 
-return 0x64 or 0x80000000 for even numbers, 0 for odd numbers
+return 0x64 or 0x80000000 for even numbers, 0 for odd numbers for val
 Input vars: const(0xffffffff), 1-to-32S(0x7), const(0x80000000), and (0x0) 
 Input vars: const(0xffffffff), 1-to-32S(0x7), const(0x80000000), and (0x0) 
 Input vars: const(0xffffffff), 1-to-32S(0x7), const(0x80000000), and (0x0) 
@@ -243,10 +243,10 @@ Input vars: const(0xffffffff), 1-to-32S(0x8), const(0x80000000), and (0x0)
 val != 0 ? 3 : 1
 Input vars: 32-to-1(0x3), const(0x1), const(0x80000003), and 8-to-32Z(0x0) 
 
-cmp with 27 || 29
+val == 27 || val == 29
 Input vars: 8-to-32S(0x4), const(0x1a), const(0x1e), and 1-to-32S(0x0) 
 
-val < 0 ? 0 : 1
+extract sign bit of low byte of val
 Input vars: 8-to-32S(0x0), const(0x0), const(0x80000001), and 1-to-32Z(0x0) 
 Input vars: 8-to-32S(0x1), const(0x0), const(0x80000001), and 1-to-32Z(0x0) 
 
@@ -370,8 +370,13 @@ if val > 65535 ? 8 : 0
 558: Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
 559: Input vars: 32-to-32C(0x0), const(0x80010000), const(0x80000008), and 16-to-32Z(0x0) 
 
-
-odd nums become 0x80000000:
+val%2 == 1 ? N : 0
+(-1 < (-1 or 0)) ? (-1 or 0) : 0x80000000
+(-1 < -1) ? (-1 or 0) : 0x80000000
+(-1 <  0) ? 0 : 0x80000000
+low bit == 0 => 0
+low-bit == 1 => 0x80000000
+val == odd num ?  0x80000000 : val:
 31: Input vars: const(0xffffffff), 1-to-32S(0x2), const(0x80000000), and (0x0) 
 89: Input vars: const(0xffffffff), 1-to-32S(0x2), const(0x80000000), and (0x0) 
 207: Input vars: const(0xffffffff), 1-to-32S(0x2), const(0x80000000), and (0x0) 
@@ -387,7 +392,7 @@ odd nums become 0x80000000:
 
 
 
-
+val < 0 ? val + (1<<31) : val
 if 0x2 is negative, return 0x2 + (1<<31):
 Input vars: 32-to-32C(0x2), (0x2), 32-to-32C(0x2), and (0x0) 
 Input vars: 32-to-32C(0x2), (0x2), 32-to-32C(0x2), and (0x0) 
@@ -406,7 +411,7 @@ Input vars: 32-to-32C(0x2), (0x2), 32-to-32C(0x2), and (0x0)
 324: Input vars: 32-to-32C(0x2), (0x2), 32-to-32C(0x2), and (0x0) 
 355: Input vars: 32-to-32C(0x2), (0x2), 32-to-32C(0x2), and (0x0) 
 
-two-sided-clamping:
+two-sided-clamping with val
 8: Input vars: (0x0), const(0x0), const(0xff), and (0x0) 
 197: Input vars: (0x0), const(0x0), const(0xff), and (0x0) 
 303: Input vars: (0x0), const(0x0), const(0xff), and (0x0) 
@@ -588,7 +593,7 @@ Input vars: (0x4), const(0x0), const(0x1f), and (0x0)
 
 
 
-one-sided-clamping:
+one-sided-clamping with val:
 Input vars: const(0x80008000), const(0x80000000), 32-to-32C(0x1), and 16-to-32Z(0x0) 
 Input vars: (0x0), (0x0), 16-to-32S(0x3), and (0x0) 
 Input vars: (0x0), (0x0), 16-to-32S(0x3), and (0x0) 
@@ -757,5 +762,4 @@ Input vars: (0x0), 16-to-32S(0x8), 32-to-32C(0x0), and 16-to-32S(0x0)
 544: Input vars: const(0x40), 32-to-1(0x5), (0x2), and 16-to-32Z(0x0) 
 41: Input vars: (0x3), const(0x80000000), (0x0), and 16-to-32Z(0x0) 
 43: Input vars: (0x8), 16-to-32S(0x3), 16-to-32Z(0x8), and 16-to-32Z(0x0) 
-
 

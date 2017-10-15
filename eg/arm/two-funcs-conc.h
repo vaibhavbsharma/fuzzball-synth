@@ -1,8 +1,9 @@
-#include "all_adapters_clamp.h"
+//#include "all_adapters_clamp.h"
 //#include "all_adapters_render.h"
 //#include "all_adapters_absdiff.h"
 //#include "all_adapters_bswap32.h"
 //#include "all_adapters_tilepos.h"
+#include "all_adapters_ref25.h"
 #include "test1.h"
 #include <stdio.h>
 #include <stdlib.h>

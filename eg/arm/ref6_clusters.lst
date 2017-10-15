@@ -1,0 +1,11 @@
+number of clusters = 2
+Cluster 0 (3) : 
+0: Input vars: 8-to-32S(0x4), and 1-to-32Z(0x0) 
+
+1: Input vars: 8-to-32S(0x4), and 1-to-32Z(0x0) 
+
+3: Input vars: 8-to-32S(0x4), and 1-to-32Z(0x0) 
+
+Cluster 1 (1) : 
+2: Input vars: 8-to-32S(0x0), and 1-to-32Z(0x0) 
+

@@ -293,12 +293,12 @@ int main(int argc, char **argv) {
     }
   } else if (mode == 's') {
     int a0, a1, a2, a3, a4, a5, a6;
-    while (fscanf(stdin, "%d %d %d %d %d %d %d", &a0, &a1, &a2, &a3, &a4, &a5, &a6) != EOF) {
+    while (fscanf(stdin, "%d %d %d %d", &a0, &a1, &a2, &a3) != EOF) {
       printf("0x%x or %d\n", 
 	     wrap_f(all_ads[adapter_ind], a0, a1, a2,
-		    a3, a4, a5, a6, 0, 0, 0, 0, 0, 0),
+		    a3, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 	     wrap_f(all_ads[adapter_ind], a0, a1, a2,
-		    a3, a4, a5, a6, 0, 0, 0, 0, 0, 0));
+		    a3, 0, 0, 0, 0, 0, 0, 0, 0, 0));
     }
   }
  
