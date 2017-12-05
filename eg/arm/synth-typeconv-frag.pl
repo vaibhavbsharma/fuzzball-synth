@@ -252,6 +252,16 @@ if($verbose == 1) {
 		     "-trace-adaptor"); 
 }
 
+my @symbolic_args = ();
+open(F, "<$frag_file_name.args") or die;
+while (<F>) {
+    chomp $_;
+    my $arg = $_ + 0;
+    push @symbolic_args, "-symbolic-word";
+    push @symbolic_args, sprintf("%s=%s", $arg_addr[$arg], chr(97 + $arg));
+}
+close F;
+
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
@@ -277,6 +287,7 @@ sub check_adaptor {
 		"-load-base", "0x8000",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
+		# @symbolic_args,
 		"-symbolic-word", "$arg_addr[0]=a",
 		"-symbolic-word", "$arg_addr[1]=b",
 		"-symbolic-word", "$arg_addr[2]=c",

@@ -236,6 +236,15 @@ if($verbose == 1) {
 		     "-trace-decisions", 
 		     "-trace-adaptor"); 
 }
+my @symbolic_args = ();
+open(F, "<$frag_file_name.args") or die;
+while (<F>) {
+    chomp $_;
+    my $arg = $_ + 0;
+    push @symbolic_args, "-symbolic-word";
+    push @symbolic_args, sprintf("%s=%s", $arg_addr[$arg], chr(97 + $arg));
+}
+close F;
 
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
@@ -262,21 +271,22 @@ sub check_adaptor {
 		"-load-base", "0x8000",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
-		"-symbolic-word", "$arg_addr[0]=a",
-		"-symbolic-word", "$arg_addr[1]=b",
-		"-symbolic-word", "$arg_addr[2]=c",
-		"-symbolic-word", "$arg_addr[3]=d",
-		"-symbolic-word", "$arg_addr[4]=e",
-		"-symbolic-word", "$arg_addr[5]=f",
-		"-symbolic-word", "$arg_addr[6]=g",
-		"-symbolic-word", "$arg_addr[7]=h",
-		"-symbolic-word", "$arg_addr[8]=i",
-		"-symbolic-word", "$arg_addr[9]=j",
-		"-symbolic-word", "$arg_addr[10]=k",
-		"-symbolic-word", "$arg_addr[11]=l",
-		"-symbolic-word", "$arg_addr[12]=m",
+		@symbolic_args,
+		# "-symbolic-word", "$arg_addr[0]=a",
+		# "-symbolic-word", "$arg_addr[1]=b",
+		# "-symbolic-word", "$arg_addr[2]=c",
+		# "-symbolic-word", "$arg_addr[3]=d",
+		# "-symbolic-word", "$arg_addr[4]=e",
+		# "-symbolic-word", "$arg_addr[5]=f",
+		# "-symbolic-word", "$arg_addr[6]=g",
+		# "-symbolic-word", "$arg_addr[7]=h",
+		# "-symbolic-word", "$arg_addr[8]=i",
+		# "-symbolic-word", "$arg_addr[9]=j",
+		# "-symbolic-word", "$arg_addr[10]=k",
+		# "-symbolic-word", "$arg_addr[11]=l",
+		# "-symbolic-word", "$arg_addr[12]=m",
 		"-dont-compare-memory-sideeffects",
-    @verbose_args,
+		@verbose_args,
 		"-trace-regions",
 		"-omit-pf-af",
 		"-table-limit","12",
