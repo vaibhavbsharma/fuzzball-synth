@@ -57,7 +57,7 @@ if($open_failed == 0) {
   @this_bucket_fragments = <FH>;
   close FH;
 } else {
-  my @fragments = `ls $fragments_dir | grep -i .frag | sort `;
+  my @fragments = `ls $fragments_dir | grep -i .frag | grep -v args | sort `;
   my @filtered_fragments = ();
   for(my $i = 0; $i < scalar(@fragments); $i++) {
       my $frag_file = $fragments[$i];
