@@ -337,7 +337,7 @@ sub report_metrics {
     my ($as_count,$ce_count) = calc_count(\@timeout_stopped_during,1,2);
     # printf("Average# timeout stopped during = AS(%d), CE(%d)\n\n", $as_count,$ce_count);
     $timeout_table .= 
-	sprintf("$fn_name, %d, %.3f, %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), $as_count/$ce_count\n",
+	sprintf("$fn_name, %d, %.1f, %.1f (%.1f), %.1f (%.1f), %.1f (%.1f), %.1f (%.1f), %.1f (%.1f), $as_count/$ce_count\n",
 		scalar(@timeout_time)/5,
 		$t_st_t, $t_tm_t, $t_so_t, 
 		$t_tm_ce_t, $t_so_ce_t, 
@@ -346,7 +346,7 @@ sub report_metrics {
 		$t_tm_as_l ,$t_so_as_l);
 
     $inequiv_table .= 
-	sprintf("$fn_name, %d, %.3f, %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f)\n", 
+	sprintf("$fn_name, %d, %.1f, %.1f (%.1f), %.1f (%.1f), %.1f (%.1f), %.1f (%.1f), %.1f (%.1f)\n", 
 		scalar(@inequiv_time)/5,
 		$i_st_t, $i_tm_t, $i_so_t, 
 		$i_tm_ce_t, $i_so_ce_t, 
@@ -356,7 +356,7 @@ sub report_metrics {
 
 
     $adaptor_table .= 
-	sprintf("$fn_name, %d, %.3f, %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f), %.3f (%.3f)\n", 
+	sprintf("$fn_name, %d, %.1f, %.1f (%.1f), %.1f (%.1f), %.1f (%.1f), %.1f (%.1f), %.1f (%.1f)\n", 
 		scalar(@adaptor_time)/5,
 		$a_st_t, $a_tm_t, $a_so_t, 
 		$a_tm_ce_t, $a_so_ce_t, 
