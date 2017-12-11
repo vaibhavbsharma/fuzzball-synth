@@ -165,6 +165,10 @@ sub report_metrics {
 	$total_runtime = 150;
     } elsif(index($dir_path, "10m") != -1) {
 	$total_runtime = 600;
+    } elsif(index($dir_path, "20m") != -1) {
+	$total_runtime = 1200;
+    }elsif(index($dir_path, "40m") != -1) {
+	$total_runtime = 2400;
     }
 
     print "Starting analysis for $fn_name\n";

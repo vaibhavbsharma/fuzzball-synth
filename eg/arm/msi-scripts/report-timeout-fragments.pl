@@ -15,7 +15,7 @@ sub report_metrics {
     my @tmp_arr = split /\//, $dir_path;
     my $fn_name = $tmp_arr[$#tmp_arr];
     my $saved_frag;
-    print "Starting analysis for $fn_name\n";
+    # print "Starting analysis for $fn_name\n";
     for(my $i=1; $i <= $num_dirs; $i++) {
 	open(LOG,"<$dir_path/arm-$i/logs/$log_file_name");
 	my $saved_cmd = "";
