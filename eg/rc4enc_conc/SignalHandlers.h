@@ -55,6 +55,7 @@ END_LEGAL */
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <setjmp.h>
 
 #ifdef TARGET_IA32
 #define REG_IP REG_EIP

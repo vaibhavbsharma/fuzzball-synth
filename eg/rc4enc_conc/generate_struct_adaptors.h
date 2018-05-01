@@ -479,4 +479,4 @@ void generate_struct_adaptors_randomized(long start, int fieldnum) {
         generate_struct_adaptors_randomized(end+1, fieldnum+1);
     }
 }
-#endif _GENERATE_STRUCT_ADAPTORS_H
+#endif

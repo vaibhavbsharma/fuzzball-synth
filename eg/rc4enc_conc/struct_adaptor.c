@@ -10,6 +10,7 @@
 #include "functions.h"
 
 #include <openssl/rc4.h>
+#include <ctype.h>
 #include "mbedtls/config.h"
 #include "mbedtls/arc4.h"
 
@@ -54,16 +55,6 @@ void _f0(all_sizes_struct *s) {
   s->l=2;
   s->ll=3;
 }
-
-//Assuming this adaptor maps s1's fields to s2
-typedef struct _adaptor {
-  int field1;
-  int field2;
-  int field1_size;
-  int field2_size
-} adaptor_struct;
-//Global adaptor object for f1 <- f2
-adaptor_struct the_adaptor;
 
 /*
 typedef struct _s1 {

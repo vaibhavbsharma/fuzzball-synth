@@ -1,4 +1,4 @@
-#include "two-funcs-conc.h"
+//#include "two-funcs-conc.h"
 #include "generate_struct_adaptors.h"
 #include "generate_adaptors.h"
 #include "functions.h"
@@ -7,6 +7,9 @@
 #include "calc_num_adaptors.h"
 #include <assert.h>
 #include  <setjmp.h>
+#include <memory.h>
+#include <bits/errno.h>
+#include <errno.h>
 #include "constants.h"
 
 
