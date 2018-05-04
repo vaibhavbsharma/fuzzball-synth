@@ -22,9 +22,7 @@ extern unsigned long number_of_adaptors_tried;
 extern bool find_all_correct_adaptors;
 extern unsigned long number_of_correct_adaptors;
 extern char *get_struct_adaptor_string(char *str, fieldsub *m);
-extern fieldsub m[];
-extern int compare();
-extern void print_adaptor();
+extern int compare(fieldsub *m);
 
 bool generated_adaptors[6]={0,0,0,0,0,0};
 argsub ads[6][PER_ARG_LIM];
@@ -77,7 +75,7 @@ void shuffle_adaptors_retsub(retsub *ads, int num_adaptors) {
   }
 }
 
-char *get_adaptor_string(char *str, argret a) {
+char *get_adaptor_string(char *str, argret a, fieldsub *m) {
   char output[200];
   int len=0;
   int i;
@@ -96,7 +94,7 @@ char *get_return_adaptor_string(char *str, retsub r_ad) {
   return str;
 }
 
-void generate_ret_adaptors_randomized() {
+void generate_ret_adaptors_randomized(fieldsub *m) {
   int i,j;
   int f2arg_ret_type[8] = {11, 12, 21, 22, 31, 32, 41, 42};
   int retarg_ret_type[9] = {51, 52, 53, 61, 62, 71, 72, 81, 82};
@@ -136,12 +134,13 @@ void generate_ret_adaptors_randomized() {
     ad.r_ad.ret_type=ret_ads[i].ret_type;
     ad.r_ad.ret_val=ret_ads[i].ret_val;
     number_of_adaptors_tried++;
-    if(compare()) {
+	printf("Number of adaptors tried = %ld\n", number_of_adaptors_tried);
+    if(compare(m)) {
       if(!find_all_correct_adaptors) exit(0);
       else {
 	char str[ADAPTOR_STR_LEN];
 	printf("Number of adaptors tried = %ld\n", number_of_adaptors_tried);
-	printf("Correct adaptor %d = %s\n", number_of_correct_adaptors, get_adaptor_string(str, ad));
+	printf("Correct adaptor %d = %s\n", number_of_correct_adaptors, get_adaptor_string(str, ad, m));
 	fflush(stdout);
 	print_adaptor();
 	fflush(stdout);
@@ -151,8 +150,8 @@ void generate_ret_adaptors_randomized() {
   }
 }
 
-void generate_adaptors_randomized(int argnum) {
-  int i, j, k, m;
+void generate_adaptors_randomized(int argnum, fieldsub *m) {
+  int i, j, k;
   int ads_ind=0;
   assert(adaptor_family==1);
   if(!generated_adaptors[argnum]) {
@@ -197,7 +196,7 @@ void generate_adaptors_randomized(int argnum) {
 	}
 	if(j >= ads_ind) {
 	  char str[ADAPTOR_STR_LEN];
-	  printf("argnum=%d ran out of adaptors to try out, ad=%s\n", argnum, get_adaptor_string(str, ad));
+	  printf("argnum=%d ran out of adaptors to try out, ad=%s\n", argnum, get_adaptor_string(str, ad, m));
 	  return;
 	}
 	//Swap ads[argnum][j] with ads[argnum][i]
@@ -207,8 +206,8 @@ void generate_adaptors_randomized(int argnum) {
     ad.a_ad[argnum].var_is_const=ads[argnum][i].var_is_const;
     ad.a_ad[argnum].var_val=ads[argnum][i].var_val;
     if(argnum+1 < f2nargs) 
-      generate_adaptors_randomized(argnum+1);
-    else generate_ret_adaptors_randomized();
+      generate_adaptors_randomized(argnum+1, m);
+    else generate_ret_adaptors_randomized(m);
   }
 }
 #endif

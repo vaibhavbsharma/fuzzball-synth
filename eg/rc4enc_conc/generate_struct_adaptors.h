@@ -11,7 +11,6 @@ int f_ads_ind;
 
 extern unsigned long region_limit;
 extern unsigned int number_of_fields;
-extern fieldsub m[];
 
 extern int adaptor_family;
 extern bool calculating;
@@ -101,143 +100,19 @@ void populate2(int s1, int e1, int n1, int z1, int s2, int e2, int n2, int z2) {
     f_ads_ind++;
 }
 
-void generate_struct_adaptors_randomized_old(int fieldnum) {
-    int i, j, k;
-    unsigned int s1,s2,s3,s4,s5,s6;
-    unsigned int e1,e2,e3,e4,e5,e6;
-    unsigned int n1,n2,n3,n4,n5,n6;
-    unsigned int z1,z2,z3,z4,z5,z6;
-    unsigned int b1,b2,b3,b4,b5,b6;
-    assert(adaptor_family==4);
-    if(!generated_struct_adaptors) {
-        switch(number_of_fields) {
-            case 2:
-                s1=0;
-                for(e1=region_limit-2; e1 >= s1; e1--) {
-                    s2=e1+1;
-                    b1=e1-s1+1;
-                    z1=1;
-                    n1 = b1;
-                    if(!is_pow_2(n1)) continue;
-                    for(e2=region_limit-1; e2 >= s2; e2--) {
-                        b2 = e2 - s2 + 1;
-                        z2=1;
-                        n2 = b2;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=2;
-                        n2 = b2/2;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=4;
-                        n2 = b2/4;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=8;
-                        n2 = b2/8;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                    }
-                    z1=2;
-                    n1 = b1/2;
-                    if(!is_pow_2(n1)) continue;
-                    for(e2=region_limit-1; e2 >= s2; e2--) {
-                        b2 = e2 - s2 + 1;
-                        z2=1;
-                        n2 = b2;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=2;
-                        n2 = b2/2;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=4;
-                        n2 = b2/4;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=8;
-                        n2 = b2/8;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                    }
-
-                    z1=4;
-                    n1 = b1/4;
-                    if(!is_pow_2(n1)) continue;
-                    for(e2=region_limit-1; e2 >= s2; e2--) {
-                        b2 = e2 - s2 + 1;
-                        z2=1;
-                        n2 = b2;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=2;
-                        n2 = b2/2;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=4;
-                        n2 = b2/4;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=8;
-                        n2 = b2/8;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                    }
-
-                    z1=8;
-                    n1 = b1/8;
-                    if(!is_pow_2(n1)) continue;
-                    for(e2=region_limit-1; e2 >= s2; e2--) {
-                        b2 = e2 - s2 + 1;
-                        z2=1;
-                        n2 = b2;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=2;
-                        n2 = b2/2;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=4;
-                        n2 = b2/4;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                        z2=8;
-                        n2 = b2/8;
-                        if(!is_pow_2(n2)) continue;
-                        populate2(s1,e1,n1,z1, s2,e2,n2,z2);
-                    }
-
-                }
-                break;
-            case 3:
-                break;
-            case 4:
-                break;
-            case 5:
-                break;
-            case 6:
-                break;
-            default: printf("unsupported number of fields (%d)\n", number_of_fields);
-                assert(0);
-        }
-
-        generated_struct_adaptors=true;
-        //shuffle_adaptors_struct(ads[argnum], ads_ind);
-        if(calculating) {
-            num_adaptors_g *= f_ads_ind;
-            printf("memsub: f_ads_ind = %d\n", f_ads_ind);
-        }
-    }
-
-
-    for(i=0; i<f_ads_ind; i++) {
-        for(j=0; j<number_of_fields; j++) {
-            m[j].type=f_ads[j][i].type;
-            m[j].size=f_ads[j][i].size;
-            m[j].n=f_ads[j][i].n;
-        }
-        generate_ret_adaptors_randomized();
-    }
+bool fitsWithinLimit(fieldsub *arr, int region_limit, int number_of_fields) {
+	int i, sz, n;
+	int prev_end = 0;
+  for(i = 0; i < number_of_fields; i++) {
+	  sz = arr[i].size;
+    if((prev_end%sz) != 0) { 
+			prev_end = ((prev_end/sz)+1)*sz;
+		}
+		n = arr[i].n;
+    prev_end += (n * sz);
+	}
+	if (prev_end > region_limit) return false;
+	return true;
 }
 
 // http://forum.codecall.net/topic/64715-how-to-generate-all-permutations/
@@ -246,7 +121,8 @@ void permutation(fieldsub *arr, int curr, int size)
 {
     int i;
     if(curr == size-1) {
-        generate_ret_adaptors_randomized();
+        if (fitsWithinLimit(arr, region_limit, number_of_fields))
+						generate_ret_adaptors_randomized(arr);
     }
     else {
         for(i=curr; i<size; i++) {
@@ -258,7 +134,7 @@ void permutation(fieldsub *arr, int curr, int size)
 }
 
 
-void generate_struct_adaptors_randomized(long start, int fieldnum) {
+void generate_struct_adaptors_randomized(long start, const int fieldnum, fieldsub *m) {
 
     // m[0].type = 0x70001;
     // m[0].size = 4;
@@ -271,14 +147,24 @@ void generate_struct_adaptors_randomized(long start, int fieldnum) {
 
     fieldsub m_ads[PER_ARG_LIM];
     int m_ads_ind=0;
-    int i, j, k, end;
-    if(start >= region_limit && fieldnum < number_of_fields-1) return;
+    int i, end;
+    if(start >= region_limit && fieldnum < number_of_fields) return;
 
     int prev_end = 0;
     int prev_field_ind=0;
+		int sz, n;
     if(fieldnum > 0) {
-        for(prev_field_ind = 0; prev_field_ind < fieldnum; prev_field_ind++)
-            prev_end += m[prev_field_ind].n * m[prev_field_ind].size;
+			  //printf("starting new, fieldnum = %d\n", fieldnum);
+        for(prev_field_ind = 0; prev_field_ind < fieldnum; prev_field_ind++) {
+						sz = m[prev_field_ind].size;
+            if((prev_end%sz) != 0) { 
+							prev_end = ((prev_end/sz)+1)*sz;
+							//printf("setting prev_end = %d\n", prev_end);
+						}
+						n = m[prev_field_ind].n;
+            prev_end += (n * sz);
+						//printf("sz = %d, n = %d, prev_end = %d\n", sz, n, prev_end);
+				}
     }
     int bytes_remaining = (region_limit - prev_end - (number_of_fields-1-fieldnum));
 
@@ -291,7 +177,7 @@ void generate_struct_adaptors_randomized(long start, int fieldnum) {
     }
     for(end=start; end<=region_limit-(number_of_fields-1-fieldnum)-1; end++) {
         int n, sz;
-        long start1;
+        unsigned long start1;
 
         sz=1;
         n = end - start + 1;
@@ -476,7 +362,7 @@ void generate_struct_adaptors_randomized(long start, int fieldnum) {
         m[fieldnum].size= m_ads[i].size;
         m[fieldnum].n= m_ads[i].n;
         end = (m_ads[i].type>>16) & (0xffff);
-        generate_struct_adaptors_randomized(end+1, fieldnum+1);
+        generate_struct_adaptors_randomized(end+1, fieldnum+1, m);
     }
 }
 #endif

@@ -13,11 +13,8 @@ add_executable(rc4enc_conc
         generate_struct_adaptors.h
         PinMonitor.cpp
         PinMonitor.h
-        rc4_preload.c
-        rc4setup.c
         SignalHandlers.h
         struct_adaptor.c
         synth-conc-simple-struct.pl
         two-funcs-conc.c
-        constants.h
-        two-funcs-conc.h)
+        constants.h)

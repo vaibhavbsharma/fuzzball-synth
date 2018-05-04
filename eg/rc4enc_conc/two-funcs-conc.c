@@ -1,4 +1,3 @@
-//#include "two-funcs-conc.h"
 #include "generate_struct_adaptors.h"
 #include "generate_adaptors.h"
 #include "functions.h"
@@ -12,8 +11,6 @@
 #include <errno.h>
 #include "constants.h"
 
-
-fieldsub m[MAX_FIELDS];
 
 argret ad;
 int num_adaptors=0;
@@ -78,7 +75,7 @@ void addTest(long a, long b, long c, long d, long e, long f) {
 
 bool isSaneAddr(long a) { return a > 4096; }
 
-void print_adaptor() {
+void print_adaptor(fieldsub *m) {
     char output[200];
     printf("Input vars: ");
     int i;
@@ -142,7 +139,7 @@ long convert1to64u(long a) {
 
 long convert64to1(long a) { return (long) a != 0; }
 
-long wrap_f2(long a, long b, long c, long d, long e, long f) {
+long wrap_f2(long a, long b, long c, long d, long e, long f, fieldsub *m) {
     long f1args[6] = {a, b, c, d, e, f};
     long f2args[6] = {0, 0, 0, 0, 0, 0};
 
@@ -188,7 +185,7 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
             // Copy f1's structure in f1s to f2s using m[f]
             for(i=0; i<n; i++) {
                 int start_addr = start_b + i*f1_sz;
-                if(f2_offset%f2_sz != 0) f2_offset = ((f2_offset/f2_sz)+1)*f2_sz;
+                if((f2_offset%f2_sz) != 0) f2_offset = ((f2_offset/f2_sz)+1)*f2_sz;
                 if(w == -1) { // narrowing
                     switch(f2_sz) {
                         case 1:
@@ -331,7 +328,7 @@ long wrap_f2(long a, long b, long c, long d, long e, long f) {
     return ret_val;
 }
 
-int compare() {
+int compare(fieldsub *m) {
     int j, k;
     bool is_all_match;
     long a0, a1, a2, a3, a4, a5;
@@ -366,12 +363,12 @@ int compare() {
         // fflush(stdout);
         // printf("Starting f2\n");
         // fflush(stdout);
-        r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
+        r2 = wrap_f2(a0, a1, a2, a3, a4, a5, m);
         // printf("Completed f2\n");
         // fflush(stdout);
         //printf("r1 = 0x%lx, r2 = 0x%lx\n", r1, r2);
         if (r1==r2 && sideEffectsEqual) {
-            printf("Match\n");
+            printf("Match (%ld, %ld)\n", r1, r2);
             is_match[j]=true;
         } else break;
     }
@@ -380,7 +377,7 @@ int compare() {
     if(is_all_match == 1 && !find_all_correct_adaptors) {
         printf("Number of adaptors tried = %ld\n", number_of_adaptors_tried);
         printf("All tests succeeded!\n");
-        print_adaptor();
+        print_adaptor(m);
         fflush(stdout);
     }
     return is_all_match;
@@ -390,6 +387,7 @@ long global_arg0, global_arg1, global_arg2,
         global_arg3, global_arg4, global_arg5;
 
 int main(int argc, char **argv) {
+    fieldsub m[MAX_FIELDS];
     struct sigaction sSigaction;
     /* Register the signal hander using the siginfo interface*/
     sSigaction.sa_sigaction = div0_signal_handler;
@@ -472,10 +470,10 @@ int main(int argc, char **argv) {
             numTests++;
         }
         if(adaptor_family==1)
-            generate_adaptors_randomized(0);
+            generate_adaptors_randomized(0, m);
         else if(adaptor_family==4) {
             f2s = (unsigned long) malloc(region_limit);
-            generate_struct_adaptors_randomized(0, 0);
+            generate_struct_adaptors_randomized(0, 0, m);
             free((unsigned char *)f2s);
         } else {
             printf("unknown adaptor family\n");
