@@ -19,7 +19,7 @@ my $iteration_limit = 4000;
 
 my $adaptor_ivc = 1;
 
-my $n_fields = 2;
+my $n_fields = 4;
 my $arr_len = 0;
 my $starting_sane_addr = 0x42420000;
 
