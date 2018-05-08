@@ -426,7 +426,7 @@ void generate_struct_adaptors_randomized(long start, int fieldnum) {
 
     sz=8;
     start1=start;
-    if(start%8 != 0) start1 += (8 - (start%4));
+    if(start%8 != 0) start1 += (8 - (start%8));
     n = (end - start1 + 1)/8;
     if(is_pow_2(n) && (end-start1+1)%8 == 0) {
       if(n*sz <= bytes_remaining) {
