@@ -41,7 +41,7 @@ my $pwd = $ENV{PWD};
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./rc4setup";
+my $bin = "./ce-search-rc4enc";
 
 print "compiling binary: ";
 #my $unused = `gcc -static -g -o $bin $bin.c`;

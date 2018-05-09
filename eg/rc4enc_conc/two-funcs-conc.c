@@ -476,7 +476,7 @@ int main(int argc, char **argv) {
       generate_adaptors_randomized(0);
     else if(adaptor_family==4) {
       f2s = (unsigned long) malloc(region_limit);
-      generate_struct_adaptors_randomized(0, 0);
+      generate_struct_adaptors_randomized(0, 0, m);
       free((unsigned char *)f2s);
     } else if(adaptor_family==14) {
       f2s = (unsigned long) malloc(region_limit);
