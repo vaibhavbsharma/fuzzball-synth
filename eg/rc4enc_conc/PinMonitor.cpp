@@ -31,7 +31,13 @@ UINT8 f1_ret_val, f2_ret_val;
 map < int, bool> noopSyscalls;
 int savedSyscallNum=-1;
 unsigned long f1s_addr, f2s_addr;
-int region_limit=0;
+unsigned long f1s;
+unsigned long f1s_a;
+unsigned long f2s;
+fieldsub *m;
+int region_limit=0, number_of_fields=0;
+
+
 
 bool isGlobalAddr(long addr, long rsp) {
   //long int li = (long int) addr;
@@ -146,16 +152,185 @@ VOID Instruction(INS ins, void * v) {// Jitting time routine
   }
 }
 
+void cleanupAfterF2() {
+  fflush(trace);
+  f1_addrs.clear();
+  f2_addrs.clear();
+  f1_syscalls.clear();
+  f2_syscalls.clear();
+  f1_syscall_args.clear();
+  f2_syscall_args.clear();
+  RecordF2 = false;
+  RecordF1 = false;
+  f1_rsp=f2_rsp=0;
+}
+
 VOID RecordF1Begin(ADDRINT rsp_val) {
+  cleanupAfterF2();
   fprintf(trace, "f1 began, rsp_val = 0x%lx\n",rsp_val);
   RecordF1 = true;
   if(f1_rsp == 0) f1_rsp = (long ) rsp_val;
   segv=false;
 }
 
+void adaptF1Se() {
+  int i, f, f2_offset;
+
+  memcpy((void *)f1s, (void *)(*((unsigned long *) f1s_addr)), region_limit);
+  if(true) {
+    // char str[ADAPTOR_STR_LEN];
+    // char str1[ADAPTOR_STR_LEN];
+    // fprintf(trace, "trying adaptor: %s\n", get_struct_adaptor_string(str, m));
+    // fprintf(trace, " with ret adaptor: %s\n", get_return_adaptor_string(str1, ad.r_ad));
+    // fflush(stdout);
+    for(i=0; i<region_limit; i++) *((unsigned long *)(f1s_a + i))=(unsigned char)0;
+    f2_offset=0;
+    for(f=0; f<number_of_fields; f++) {
+      int start_b = (m[f].type>>32);
+      int end_b = 65535 & (m[f].type >> 16);
+      int total_b = end_b - start_b + 1;
+      int sign_ex = m[f].type & 1;
+      int n = m[f].n;
+      int f1_sz = total_b/n;
+      int f2_sz = m[f].size;
+      int w=0; // indicates widening(1) or narrowing(-1)
+      assert(total_b % n == 0);
+      assert(total_b % f1_sz == 0);
+      assert((total_b/n == 1) || (total_b/n)==2 || 
+	     (total_b/n == 4) || (total_b/n)==8);
+      if(f1_sz == f2_sz) {
+	memcpy((void *)(f1s_a + f2_offset), (void *)(f1s + start_b), n*f2_sz);
+	f2_offset += (n*f2_sz);
+	continue;
+      } else if(f1_sz > f2_sz) w=-1;
+      else w=1;
+      // Copy f1's structure in f1s to f1s_a using m[f]
+      for(i=0; i<n; i++) {
+	int start_addr = start_b + i*f1_sz;
+	if(f2_offset%f2_sz != 0) f2_offset = ((f2_offset/f2_sz)+1)*f2_sz;
+	if(w == -1) { // narrowing
+	  switch(f2_sz) {
+	  case 1: 
+	    *((unsigned long *)(f1s_a + f2_offset)) = 
+	      (unsigned char) *(unsigned long *)(f1s + start_addr);
+	    f2_offset+=1;
+	    break;
+	  case 2:
+	    *((unsigned long *)(f1s_a + f2_offset)) = 
+	      (unsigned short) *(unsigned long *)(f1s + start_addr);
+	    f2_offset+=2;
+	    break;
+	  case 4:
+	    *((unsigned long *)(f1s_a + f2_offset)) = 
+	      (unsigned int) *(unsigned long *)(f1s + start_addr);
+	    f2_offset+=4;
+	    break;
+	    //case 8:
+	    //*((unsigned long *)(f1s_a + f2_offset)) = 
+	    //  (unsigned long) *(unsigned long *)(f1s + start_addr);
+	    //f2_offset+=8;
+	    //break;
+	  default: fprintf(trace, "f2_sz = %d when narrowing, panic! ?!?!?!\n", f2_sz); assert(0);
+	  }
+	} else if(w == 1) { // widening
+	  switch(f2_sz) {
+	  case 1: fprintf(trace, "f2_sz = 1 for widening, panic! ?!?!?!\n"); assert(0);
+	  case 2: // only possible f1_sz is 1
+	    if(sign_ex) { 
+	      char c = *(unsigned long *)(f1s + start_addr);
+	      *((unsigned long *)(f1s_a + f2_offset)) = (short) c;
+	    } else {
+	      unsigned char c = *(unsigned long *)(f1s + start_addr);
+	      *((unsigned long *)(f1s_a + f2_offset)) = (unsigned short) c;
+	    }
+	    f2_offset+=2;
+	    break;
+	  case 4: 
+	    switch(f1_sz) {
+	    case 1:
+	      if(sign_ex) {
+		char c = *(unsigned long *)(f1s + start_addr);
+		*((unsigned long *)(f1s_a + f2_offset)) = (int) c;
+	      } else {
+		unsigned char c = *(unsigned long *)(f1s + start_addr);
+		*((unsigned long *)(f1s_a + f2_offset)) = (unsigned int) c;
+	      }
+	      break;
+	    case 2:
+	      if(sign_ex) {
+		short c = *(unsigned long *)(f1s + start_addr);
+		*((unsigned long *)(f1s_a + f2_offset)) = (int) c;
+	      } else {
+		unsigned short c = *(unsigned long *)(f1s + start_addr);
+		*((unsigned long *)(f1s_a + f2_offset)) = (unsigned int) c;
+	      }
+	      break;
+	    default: 
+	      fprintf(trace, "f1_sz = %d when f2_sz = 4 with widening, panic! ?!?!\n", f1_sz); 
+	      assert(0);
+	    }
+	    f2_offset+=4;
+	    break;
+	  case 8:
+	    switch(f1_sz) {
+	    case 1:
+	      if(sign_ex) {
+		char c = *(unsigned long *)(f1s + start_addr);
+		*((unsigned long *)(f1s_a + f2_offset)) = (long) c;
+	      } else {
+		unsigned char c = *(unsigned long *)(f1s + start_addr);
+		*((unsigned long *)(f1s_a + f2_offset)) = (unsigned long) c;
+	      }
+	      break;
+	    case 2:
+	      if(sign_ex) {
+		short c = *(unsigned long *)(f1s + start_addr);
+		*((unsigned long *)(f1s_a + f2_offset)) = (long) c;
+	      } else {
+		unsigned short c = *(unsigned long *)(f1s + start_addr);
+		*((unsigned long *)(f1s_a + f2_offset)) = (unsigned long) c;
+	      }
+	      break;
+	    case 4:
+	      if(sign_ex) {
+		int c = *(unsigned long *)(f1s + start_addr);
+		*((unsigned long *)(f1s_a + f2_offset)) = (long) c;
+	      } else {
+		unsigned int c = *(unsigned long *)(f1s + start_addr);
+		*((unsigned long *)(f1s_a + f2_offset)) = (unsigned long) c;
+	      }
+	      break;
+	    default: 
+	      fprintf(trace, "f1_sz = %d when f2_sz = 8 with widening, panic! ?!?!\n", f1_sz); 
+	      assert(0);
+	    }
+	    f2_offset+=8;
+	    break;
+	  default: fprintf(trace, "f2_sz = %d when widening, panic!\n", f2_sz); assert(0);
+	  }
+	} // end narrowing/widening
+	assert(f2_offset <= region_limit);
+      } // end for i = 0 to n (number of entries in this field)
+      assert(f2_offset <= region_limit);
+    }// end for f = 0 to number_of_fields
+  }// end if isSaneAddr(a)
+
+  // fprintf(trace, "f1s->x = %d f1s->y = %d\n", *(unsigned int *)f1s, ((unsigned int *)f1s)[1]); 
+  // fprintf(trace, "f1s->m[0] = %d f1s->m[1] = %d\n", 
+  // 	  ((unsigned char *)(f1s+8))[0],  
+  // 	  ((unsigned char *)(f1s+8))[1]); 
+  // fprintf(trace, "f1s_a->x = %d f1s_a->y = %d\n", *(unsigned int *)f1s_a, ((unsigned int *)f1s_a)[1]);
+  // fprintf(trace, "f1s_a->m[0] = %d f1s_a->m[1] = %d\n", 
+  // 	  ((unsigned int *)(f1s_a+8))[0],  
+  // 	  ((unsigned int *)(f1s_a+8))[1]); 
+  // fprintf(trace, "ending adaptF1Se, f2_offset = %d\n", f2_offset);
+
+}
+
 VOID RecordF1End(CONTEXT *ctx) {
   f1_ret_val = PIN_GetContextReg(ctx, REG_RAX);
   fprintf(trace, "f1 ended with retval = %d\n",f1_ret_val);
+  adaptF1Se();
   RecordF1 = false;
   map<long *, int> :: iterator it = f1_addrs.begin();
   while(it!=f1_addrs.end()) {
@@ -172,10 +347,13 @@ VOID RecordF1End(CONTEXT *ctx) {
   fflush(trace);
 }
 
+
 VOID RecordF2Begin(ADDRINT rsp_val) {
   fprintf(trace, "f2 began, rsp_val = 0x%lx\n",rsp_val);
   RecordF2 = true;
   if(f2_rsp ==0 ) f2_rsp = (long ) rsp_val;
+  char str[400];
+  fprintf(trace, "trying adaptor: %s\n", get_struct_adaptor_string(str, m));
   fflush(trace);
 }
 
@@ -199,17 +377,37 @@ void replaceRetVal(CONTEXT *ctx) {
   //PIN_ExecuteAt(ctx);
 }
 
-void cleanupAfterF2() {
-  fflush(trace);
-  f1_addrs.clear();
-  f2_addrs.clear();
-  f1_syscalls.clear();
-  f2_syscalls.clear();
-  f1_syscall_args.clear();
-  f2_syscall_args.clear();
-  RecordF2 = false;
-  RecordF1 = false;
-  f1_rsp=f2_rsp=0;
+bool adaptF1SeToF2() {
+  memcpy((void *)f2s, (void *)(*((unsigned long *) f2s_addr)), region_limit);
+
+  fprintf(trace, "f1s->x = %d f1s->y = %d\n", *(unsigned int *)f1s, ((unsigned int *)f1s)[1]); 
+  fprintf(trace, "f1s->m[0] = %d f1s->m[1] = %d\n", 
+	  ((unsigned char *)(f1s+8))[0],  
+	  ((unsigned char *)(f1s+8))[1]); 
+  fprintf(trace, "f1s_a->x = %d f1s_a->y = %d\n", *(unsigned int *)f1s_a, ((unsigned int *)f1s_a)[1]);
+  fprintf(trace, "f1s_a->m[0] = %d f1s_a->m[1] = %d\n", 
+	  ((unsigned int *)(f1s_a+8))[0],  
+	  ((unsigned int *)(f1s_a+8))[1]); 
+  fprintf(trace, "f2s->x = %d f2s->y = %d\n", *(unsigned int *)f2s, ((unsigned int *)f2s)[1]);
+  fprintf(trace, "f2s->m[0] = %d f2s->m[1] = %d\n", 
+	  ((unsigned int *)(f2s+8))[0],  
+	  ((unsigned int *)(f2s+8))[1]); 
+ 
+  int total_size=0;
+  for(int i=0; i<number_of_fields; i++) 
+    total_size += m[i].n * m[i].size;
+
+  fprintf(trace, "total_size = %d\n", total_size);
+  for(int i=0; i<region_limit; i++) {
+    if( ((unsigned char) ((unsigned char *)f1s_a)[i]) ==
+	((unsigned char) ((unsigned char *)f2s)[i]) )
+      continue;
+    fprintf(trace, "f1s_a[%d] = %d, f2s[%d] = %d\n", 
+	    i, ((unsigned char) ((unsigned char *)f1s_a)[i]),
+	    i, ((unsigned char) ((unsigned char *)f2s)[i]));
+    return false;
+  }
+  return true;
 }
 
 VOID RecordF2End(CONTEXT *ctx) {
@@ -220,6 +418,13 @@ VOID RecordF2End(CONTEXT *ctx) {
   fprintf(trace, "f2 ended with retval = %d\n",f2_ret_val);
   fflush(trace);
   if(f1_ret_val != f2_ret_val) {
+    cleanupAfterF2();
+    return;
+  }
+  if(!adaptF1SeToF2()) {
+    fprintf(trace, "f1's s.e. could not be adapted to f2's s.e.\n");
+    replaceRetVal(ctx); 
+    mismatch=true;
     cleanupAfterF2();
     return;
   }
@@ -320,7 +525,7 @@ VOID RecordF2End(CONTEXT *ctx) {
       }
     }
   }
-  if(!mismatch) //fprintf(trace, "f1 <- f2\n");
+  //if(!mismatch) fprintf(trace, "f1 <- f2\n");
   fflush(trace);
   cleanupAfterF2();
 }
@@ -389,9 +594,16 @@ void setupFAddrs() {
     return;
   }
   string line;
+  unsigned long tmp_addr;
   getline(fin, line);
-  sscanf(line.c_str(),"%lx %lx ", &f1s_addr, &f2s_addr);
-  fprintf(trace, "f1s_addr = 0x%lx f2s_addr = 0x%lx, region_limit = %d\n", f1s_addr, f2s_addr, region_limit);
+  sscanf(line.c_str(),"%lx %lx %lx", &f1s_addr, &f2s_addr, &tmp_addr);
+  m = (fieldsub *) tmp_addr;
+  fprintf(trace, 
+	  "f1s_addr = 0x%lx f2s_addr = 0x%lx, addr(m) = %p, region_limit = %d\n", 
+	  f1s_addr, f2s_addr, m, region_limit);
+  f1s = (unsigned long) malloc(region_limit);
+  f1s_a = (unsigned long) malloc(region_limit);
+  f2s = (unsigned long) malloc(region_limit);
 }
 
 static BOOL SigFunc(THREADID tid, INT32 sig, CONTEXT *ctxt, BOOL hasHandler,
@@ -433,6 +645,7 @@ int main(int argc, char * argv[]) {
   ProgramImage = argv[6];
   sscanf(argv[13], "0x%p", &sideEffectsEqualAddr);
   sscanf(argv[15], "%d", &region_limit);
+  sscanf(argv[16], "%d", &number_of_fields);
   //f1Name = argv[13];
   //f2Name = argv[14];
   ////fprintf(trace, "f1Name = %s f2Name = %s\n", f1Name.c_str(), f2Name.c_str());

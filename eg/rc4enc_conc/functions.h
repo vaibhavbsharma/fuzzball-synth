@@ -60,29 +60,29 @@ typedef struct _s2 {
   int d;
 } struct2;
 
-int f1(struct1 *s) {
+int f1_simple_function(struct1 *s) {
   if(s) {
     // s->a = 1;
-    //return s->a; // - s->b;
+    return s->a; // - s->b;
 //    return 3*(s->a) + 5*(s->b);
     //return s->a - s->b - s->c;
     //return s->a - s->b + s->c - s->d;
-    //return 3*(s->a) + 5*(s->b) + 7*(s->c);
-    return 3*(s->a) + 5*(s->b) + 7*(s->c) + 11*(s->d);
+//    return 3*(s->a) + 5*(s->b) + 7*(s->c);
+    //return 3*(s->a) + 5*(s->b) + 7*(s->c) + 11*(s->d);
     //return s->b;
   }
   return 0;
 }
 
-int f2(struct2 *s) {
+int f2_simple_function(struct2 *s) {
   if(s) {
     // s->b = 1;
-    //return s->b; // - s->a;
+    return s->b; // - s->a;
 //    return 3*(s->b) + 5*(s->a);
-    //return 3*(s->c) + 5*(s->b) + 7*(s->a);
+//    return 3*(s->c) + 5*(s->b) + 7*(s->a);
     //return s->c - s->b - s->a;
     //return s->d - s->c + s->b - s->a;
-    return 3*(s->d) + 5*(s->c) + 7*(s->b) + 11*(s->a);
+    //return 3*(s->d) + 5*(s->c) + 7*(s->b) + 11*(s->a);
 //    return s->b;
   }
   return 0;
@@ -93,7 +93,7 @@ int f2(struct2 *s) {
 unsigned char g_input[CRYPT_LEN]="1";
 // int f1( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
 //                 unsigned char *output )
-long f2_enc(mbedtls_arc4_context *ctx)
+long f2(mbedtls_arc4_context *ctx)
 {
   size_t length=CRYPT_LEN;
   unsigned char *input=g_input;
@@ -152,7 +152,7 @@ long f2_enc(mbedtls_arc4_context *ctx)
 
 // int f2(RC4_KEY *key, size_t len, const unsigned char *indata,
 //          unsigned char *outdata)
-long f1_enc(RC4_KEY *key)
+long f1(RC4_KEY *key)
 {
   size_t len = CRYPT_LEN;
   unsigned char *indata = g_input;

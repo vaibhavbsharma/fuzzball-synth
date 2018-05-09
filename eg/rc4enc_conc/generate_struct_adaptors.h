@@ -42,7 +42,7 @@ char *get_struct_adaptor_string(char *str, fieldsub *m) {
     int len=0;
     int i;
     char type_varname[10];
-    char my_str[ADAPTOR_STR_LEN/2];
+    char my_str[ADAPTOR_STR_LEN] = '\0';
     str[0]='\0';
     for(i=0; i<number_of_fields; i++) {
         sprintf(my_str, "f%c_type=0x%lx f%c_size=0x%x f%c_n=0x%x ", '1'+i,

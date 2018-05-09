@@ -2,17 +2,27 @@
 #define _GENERATED_ADAPTORS_H
 
 #include "adaptor_types.h"
+#include "generate_struct_adaptors.h"
 #include <assert.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <time.h>
+#include <stdio.h>
+
 
 extern int adaptor_family;
 extern int f1nargs, f2nargs;
 extern argret ad;
-extern const_lb, const_ub;
+extern const_lb;
+extern const_ub;
 extern unsigned long num_adaptors_g;
 extern bool calculating;
 extern unsigned long number_of_adaptors_tried;
 extern bool find_all_correct_adaptors;
 extern unsigned long number_of_correct_adaptors;
+extern char *get_struct_adaptor_string(char *str, fieldsub *m);
+extern int compare(fieldsub *m);
 
 bool generated_adaptors[6]={0,0,0,0,0,0};
 argsub ads[6][PER_ARG_LIM];
@@ -65,31 +75,15 @@ void shuffle_adaptors_retsub(retsub *ads, int num_adaptors) {
   }
 }
 
-char *get_argsub_adaptor_string(char *str, argret a) {
-  char output[200];
-  int len=0;
-  int i;
-  char my_str[ADAPTOR_STR_LEN]={'\0'};
-  for(i=0; i<f2nargs; i++) {
-    sprintf(my_str, "%c_is_const=0x%x %c_val=0x%lx ", 'a'+i,  
-	   a.a_ad[i].var_is_const, 'a'+i, a.a_ad[i].var_val); 
-    len = sprintf(str, "%s%s", str, my_str);
-  }
-  //assert(len<= ADAPTOR_STR_LEN);
-  return str;
-}
-
 char *get_adaptor_string(char *str, argret a, fieldsub *m) {
   char output[200];
   int len=0;
   int i;
   char type_varname[10];
-  char my_str[ADAPTOR_STR_LEN]={'\0'};
-  char my_argsub_str[ADAPTOR_STR_LEN]={'\0'};
-  if(adaptor_family==14) 
-    len = sprintf(str, "Input vars: %s%sret_type=0x%x ret_val=0x%lx",
-		  get_argsub_adaptor_string(my_argsub_str, ad),
-		  get_struct_adaptor_string(my_str, m), 
+  char my_str[ADAPTOR_STR_LEN/2]={'\0'};
+  if(adaptor_family==4) 
+    len = sprintf(str, "Input vars: %sret_type=0x%x ret_val=0x%lx", 
+		  get_struct_adaptor_string(my_str, m),
 		  a.r_ad.ret_type, a.r_ad.ret_val);
   assert(len<= ADAPTOR_STR_LEN);
   return str;
@@ -100,34 +94,34 @@ char *get_return_adaptor_string(char *str, retsub r_ad) {
   return str;
 }
 
-void generate_ret_adaptors_randomized() {
+void generate_ret_adaptors_randomized(fieldsub *m) {
   int i,j;
   int f2arg_ret_type[8] = {11, 12, 21, 22, 31, 32, 41, 42};
   int retarg_ret_type[9] = {51, 52, 53, 61, 62, 71, 72, 81, 82};
   int ads_ind=0;
   if(!generated_ret_adaptors) {
     ret_ads[ads_ind++].ret_type=0; 
-    // //populateAdaptor();
-    // for(i=const_lb; i<= const_ub; i++) {
-    //   ret_ads[ads_ind].ret_type=1;
-    //   ret_ads[ads_ind++].ret_val=i;
-    //   assert(ads_ind <= PER_ARG_LIM);
-    // //populateAdaptor(); 
-    // }
-    // for(i=0; i<8; i++) {
-    //   for(j=0; j < f2nargs; j++) {
-    // 	ret_ads[ads_ind].ret_type = f2arg_ret_type[i];
-    // 	ret_ads[ads_ind++].ret_val = j;
-    // 	assert(ads_ind <= PER_ARG_LIM);
-    // 	//populateAdaptor();
-    //   }
-    // }
-    // for(i=0; i<9; i++) {
-    //   ret_ads[ads_ind++].ret_type = retarg_ret_type[i];
-    //   assert(ads_ind <= PER_ARG_LIM);
-    //   //populateAdaptor();
-    // }
-    // shuffle_adaptors_retsub(ret_ads, ads_ind);
+    //populateAdaptor();
+    for(i=const_lb; i<= const_ub; i++) {
+      ret_ads[ads_ind].ret_type=1;
+      ret_ads[ads_ind++].ret_val=i;
+      assert(ads_ind <= PER_ARG_LIM);
+    //populateAdaptor(); 
+    }
+    for(i=0; i<8; i++) {
+      for(j=0; j < f2nargs; j++) {
+	ret_ads[ads_ind].ret_type = f2arg_ret_type[i];
+	ret_ads[ads_ind++].ret_val = j;
+	assert(ads_ind <= PER_ARG_LIM);
+	//populateAdaptor();
+      }
+    }
+    for(i=0; i<9; i++) {
+      ret_ads[ads_ind++].ret_type = retarg_ret_type[i];
+      assert(ads_ind <= PER_ARG_LIM);
+      //populateAdaptor();
+    }
+    shuffle_adaptors_retsub(ret_ads, ads_ind);
     if(calculating) {
       num_adaptors_g *= ads_ind;
       printf("ret: ads_ind = %d\n", ads_ind);
@@ -140,7 +134,8 @@ void generate_ret_adaptors_randomized() {
     ad.r_ad.ret_type=ret_ads[i].ret_type;
     ad.r_ad.ret_val=ret_ads[i].ret_val;
     number_of_adaptors_tried++;
-    if(compare()) {
+	printf("Number of adaptors tried = %ld\n", number_of_adaptors_tried);
+    if(compare(m)) {
       if(!find_all_correct_adaptors) exit(0);
       else {
 	char str[ADAPTOR_STR_LEN];
@@ -155,49 +150,10 @@ void generate_ret_adaptors_randomized() {
   }
 }
 
-void generate_adaptors_randomized(int argnum) {
-  
-  // M <- O
-  // ad.a_ad[0].var_is_const = 0;
-  // ad.a_ad[0].var_val = 0;
-  // ad.a_ad[1].var_is_const=1;
-  // ad.a_ad[1].var_val = 1;
-  // ad.a_ad[2].var_is_const=0;
-  // ad.a_ad[2].var_val = 1;
-
-  // m[0].type = 0x0;
-  // m[0].size = 8;
-  // m[0].n = 1;
-  // m[1].type = 0x8000b0000;
-  // m[1].size = 4;
-  // m[1].n = 4;
-  // ad.r_ad.ret_type=0;
-  // compare();
-
-  // ad.a_ad[0].var_is_const = 0;
-  // ad.a_ad[0].var_val = 0;
-  // ad.a_ad[1].var_is_const=0;
-  // ad.a_ad[1].var_val = 2;
-  // ad.a_ad[2].var_is_const=0;
-  // ad.a_ad[2].var_val = 1;
-  // generate_struct_adaptors_randomized(0, 0);
-
-  // m[0].type = 0x30000;
-  // m[0].size = 4;
-  // m[0].n = 2;
-  // m[1].type = 0x800170001;
-  // m[1].size = 1;
-  // m[1].n = 4;
-  // ad.r_ad.ret_type=0;
-  // compare();
-
-
- 
-
-
-  int i, j, k, m;
+void generate_adaptors_randomized(int argnum, fieldsub *m) {
+  int i, j, k;
   int ads_ind=0;
-  assert(adaptor_family==1 || adaptor_family==14);
+  assert(adaptor_family==1);
   if(!generated_adaptors[argnum]) {
     //each inner arg can be a constant
     for(i=const_lb; i<=const_ub; i++) {
@@ -239,8 +195,8 @@ void generate_adaptors_randomized(int argnum) {
 	  if(!found1) break;
 	}
 	if(j >= ads_ind) {
-	  char str[ADAPTOR_STR_LEN*6]={'\0'};
-	  printf("argnum=%d ran out of adaptors to try out, ad=%s\n", argnum, get_argsub_adaptor_string(str, ad));
+	  char str[ADAPTOR_STR_LEN];
+	  printf("argnum=%d ran out of adaptors to try out, ad=%s\n", argnum, get_adaptor_string(str, ad, m));
 	  return;
 	}
 	//Swap ads[argnum][j] with ads[argnum][i]
@@ -250,11 +206,8 @@ void generate_adaptors_randomized(int argnum) {
     ad.a_ad[argnum].var_is_const=ads[argnum][i].var_is_const;
     ad.a_ad[argnum].var_val=ads[argnum][i].var_val;
     if(argnum+1 < f2nargs) 
-      generate_adaptors_randomized(argnum+1);
-    else {
-      //generate_ret_adaptors_randomized();
-      generate_struct_adaptors_randomized(0, 0);
-    }
+      generate_adaptors_randomized(argnum+1, m);
+    else generate_ret_adaptors_randomized(m);
   }
 }
 #endif

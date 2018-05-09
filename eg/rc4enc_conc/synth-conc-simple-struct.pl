@@ -19,8 +19,8 @@ my $iteration_limit = 4000;
 
 my $adaptor_ivc = 1;
 
-my $n_fields = 4;
-my $arr_len = 0;
+my $n_fields = 2;
+my $arr_len = 4;
 my $starting_sane_addr = 0x42420000;
 
 # End configurables
@@ -556,9 +556,9 @@ for(my $i=0; $i< $n_fields; $i++) {
 # $struct_adapt->[0]=0x8000b0000;
 # $struct_adapt->[2]=0x400070000;
 # $struct_adapt->[4]=0x000030000;
-# 
+#
 # correct adaptor is:
-#  arg=,, ret=72,, 
+#  arg=,, ret=72,,
 #  struct=f1_type=0x70000, f1_size=0x1, f1_n=0x8, f2_type=0x801070000, f2_size=0x4, f2_n=0x100
 #$struct_adapt = [0x70000, 0x1, 0x8, 0x801070000, 0x4, 0x100];
 
