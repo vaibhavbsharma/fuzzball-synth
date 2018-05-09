@@ -15,6 +15,6 @@ add_executable(rc4enc_conc
         PinMonitor.h
         SignalHandlers.h
         struct_adaptor.c
-        synth-conc-simple-struct.pl
+        synth-conc-rc4-enc.pl
         two-funcs-conc.c
         constants.h)

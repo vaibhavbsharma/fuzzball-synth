@@ -88,16 +88,16 @@ int f2_simple_function(struct2 *s) {
   return 0;
 }
 
-#define ARR_LEN 256
+#define ARR_LEN 2
 #define CRYPT_LEN 1
 unsigned char g_input[CRYPT_LEN]="1";
 int f2( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
                  unsigned char *output )
 //long f2(mbedtls_arc4_context *ctx)
 {
-  size_t length=CRYPT_LEN;
-  unsigned char *input=g_input;
-  unsigned char output[CRYPT_LEN];
+//  size_t length=CRYPT_LEN;
+//  unsigned char *input=g_input;
+//  unsigned char output[CRYPT_LEN];
   long ret=0;
   int x, y, a, b;
   size_t i;
@@ -154,10 +154,10 @@ int f1(RC4_KEY *key, size_t len, const unsigned char *indata,
           unsigned char *outdata)
 //long f1(RC4_KEY *key)
 {
-  size_t len = CRYPT_LEN;
-  unsigned char *indata = g_input;
-  unsigned char outdata_buf[CRYPT_LEN];
-  unsigned char *outdata=outdata_buf;
+//  size_t len = CRYPT_LEN;
+//  unsigned char *indata = g_input;
+//  unsigned char outdata_buf[CRYPT_LEN];
+//  unsigned char *outdata=outdata_buf;
   long ret=0;
   //register RC4_INT *d;
   //register RC4_INT x, y, tx, ty;

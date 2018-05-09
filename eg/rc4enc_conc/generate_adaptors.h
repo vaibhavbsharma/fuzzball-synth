@@ -2,7 +2,14 @@
 #define _GENERATED_ADAPTORS_H
 
 #include "adaptor_types.h"
+#include "generate_struct_adaptors.h"
 #include <assert.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <time.h>
+#include <stdio.h>
+#include "adaptor_utils.h"
 
 extern int adaptor_family;
 extern int f1nargs, f2nargs;
@@ -100,7 +107,7 @@ char *get_return_adaptor_string(char *str, retsub r_ad) {
   return str;
 }
 
-void generate_ret_adaptors_randomized() {
+void generate_ret_adaptors_randomized(fieldsub *m) {
   int i,j;
   int f2arg_ret_type[8] = {11, 12, 21, 22, 31, 32, 41, 42};
   int retarg_ret_type[9] = {51, 52, 53, 61, 62, 71, 72, 81, 82};
@@ -155,7 +162,7 @@ void generate_ret_adaptors_randomized() {
   }
 }
 
-void generate_adaptors_randomized(int argnum) {
+void generate_adaptors_randomized(int argnum, fieldsub *m) {
   
   // M <- O
   // ad.a_ad[0].var_is_const = 0;
@@ -195,7 +202,7 @@ void generate_adaptors_randomized(int argnum) {
  
 
 
-  int i, j, k, m;
+  int i, j, k;
   int ads_ind=0;
   assert(adaptor_family==1 || adaptor_family==14);
   if(!generated_adaptors[argnum]) {
@@ -250,10 +257,10 @@ void generate_adaptors_randomized(int argnum) {
     ad.a_ad[argnum].var_is_const=ads[argnum][i].var_is_const;
     ad.a_ad[argnum].var_val=ads[argnum][i].var_val;
     if(argnum+1 < f2nargs) 
-      generate_adaptors_randomized(argnum+1);
+      generate_adaptors_randomized(argnum+1, m);
     else {
       //generate_ret_adaptors_randomized();
-      generate_struct_adaptors_randomized(0, 0);
+      generate_struct_adaptors_randomized(0, 0, m);
     }
   }
 }
