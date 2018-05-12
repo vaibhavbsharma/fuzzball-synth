@@ -248,6 +248,10 @@ void generate_adaptors_randomized(int argnum, fieldsub *m) {
 	if(j >= ads_ind) {
 	  char str[ADAPTOR_STR_LEN*6]={'\0'};
 	  printf("argnum=%d ran out of adaptors to try out, ad=%s\n", argnum, get_argsub_adaptor_string(str, ad));
+      if(find_all_correct_adaptors) {
+        printf("\n\nNumber of adaptors tried = %ld\n", number_of_adaptors_tried);
+        printf("Number of correct adaptors = %ld\n", number_of_correct_adaptors);
+      }
 	  return;
 	}
 	//Swap ads[argnum][j] with ads[argnum][i]
