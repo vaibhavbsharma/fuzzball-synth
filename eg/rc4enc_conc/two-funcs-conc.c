@@ -13,6 +13,7 @@
 
 #define SANE_ADDR 0x42420000
 #define MAX_ADAPTORS 1000000
+#define INPUT_STRING_ADDR 0x42000000
 #define MAX_TESTS 100
 
 fieldsub m[MAX_FIELDS];
@@ -51,7 +52,7 @@ void sanitize(long a, long *aS, char *fname, int numTest) {
     char *p;
     char newfname[100];
     sprintf(newfname, "%s_%d", fname, numTest);
-    if((a&SANE_ADDR) == SANE_ADDR) {
+    if(((a&SANE_ADDR) == SANE_ADDR) || (a == INPUT_STRING_ADDR)) {
         FILE *f = fopen(newfname, "r");
         if(f) {
             p = (unsigned long) malloc(region_limit);
@@ -366,7 +367,7 @@ int compare() {
         fflush(stdout);
         f1s = a0;
         assert(a1 == 1);
-        a2 = str;
+//        a2 = str;
         a3 = output_str;
         r1 = f1(a0, a1, a2, a3); //, a3, a4, a5);
         // printf("Completed f1\n");

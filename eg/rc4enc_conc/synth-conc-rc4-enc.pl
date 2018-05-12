@@ -23,15 +23,16 @@ my $adaptor_ivc = 1;
 my $n_fields = 2;
 my $arr_len = 2;
 my $starting_sane_addr = 0x42420000;
+my $input_string_length = 1;
 
 my $max_steps = 1000;
-my $key_const_val = 97;
+#my $key_const_val = 97;
 # End configurables
 
 my $max_struct_size=2*4 + $arr_len*4;
 my $sane_addr = $starting_sane_addr;
-my $string_addr = $starting_sane_addr + $max_struct_size*$max_steps;
-my $output_string_addr = $string_addr + 16;
+my $input_string_addr = 0x42000000;
+my $output_string_addr = $input_string_addr + 16;
 my $max_conc_region_size = $max_struct_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
@@ -240,7 +241,7 @@ sub check_adaptor {
 	my($adapt,$ret_adapt, $struct_adapt) = (@_);
 
 	open(TESTS, ">ceinputs");
-	my @vals = ($sane_addr, 1, $string_addr, $output_string_addr, 0, 0); #for both mo and om
+	my @vals = ($sane_addr, 1, $input_string_addr, $output_string_addr, 0, 0); #for both mo and om
 	splice(@vals, 6);
 	my $test_str = join(" ", map(sprintf("0x%x", $_), @vals));
 	print TESTS $test_str, "\n";
@@ -269,7 +270,7 @@ sub check_adaptor {
 		push @conc_struct_adapt, ("-extra-condition", $s);
 	}
 	reinitialize_synth_struct_opt(1);
-	my $tmp_str = sprintf("0x%x=0x%x", $string_addr, $key_const_val);
+#	my $tmp_str = sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
 	my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -301,7 +302,7 @@ sub check_adaptor {
 		"-trace-conditions",
 		"-trace-decisions",
 		#"-trace-solver",
-		"-store-byte", $tmp_str,
+#		"-store-byte", $tmp_str,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
@@ -350,6 +351,9 @@ sub check_adaptor {
 			for my $i (1 .. ($f1nargs+1)) { push @region_contents, [@tmp_reg_arr]; }
 			$iteration_count++;
 			for (my $i=$sane_addr; $i<$sane_addr+$max_conc_region_size; $i++) {
+				$ce_mem_bytes{$i}=0;
+			}
+			for (my $i=$input_string_addr; $i<$input_string_addr+$input_string_length; $i++) {
 				$ce_mem_bytes{$i}=0;
 			}
 		} elsif ($_ eq "Completed f1\n") {
@@ -423,20 +427,30 @@ sub check_adaptor {
 	}
 	close LOG;
 
-	my $ce_arg_contents="";
+	my $ce_arg0_contents="";
+	my $ce_arg2_contents="";
 	for my $addr (sort (keys %ce_mem_bytes)) {
+		if (($addr >= $sane_addr) && ($addr <= $sane_addr + $max_conc_region_size)) {
+			$ce_arg0_contents .= sprintf("%02x", $ce_mem_bytes{$addr});
+		}
+		if ($addr >= $input_string_addr && $addr < $input_string_addr + $input_string_length) {
+			$ce_arg2_contents .= sprintf("%02x", $ce_mem_bytes{$addr});
+		}
 		push @fuzzball_extra_args, "-store-byte";
 		push @fuzzball_extra_args,
 			sprintf("0x%x=0x%x", $addr, $ce_mem_bytes{$addr});
-		$ce_arg_contents .= sprintf("%02x", $ce_mem_bytes{$addr});
 		#printf("found memory assignment in CE search: $addr = $ce_mem_bytes{$addr}\n");
 	}
-	printf("ce_arg_contents = $ce_arg_contents\n");;
-	my @data_ary = split //, $ce_arg_contents;
-	generate_new_file("ce_arg0_$numTests", \@data_ary);
+	printf("ce_arg0_contents = $ce_arg0_contents\n");
+	my @data0_ary = split //, $ce_arg0_contents;
+	generate_new_file("ce_arg0_$numTests", \@data0_ary);
+
+	printf("ce_arg1_contents = $ce_arg2_contents\n");
+	my @data2_ary = split //, $ce_arg2_contents;
+	generate_new_file("ce_arg2_$numTests", \@data2_ary);
 
 	push @fuzzball_extra_args, "-store-byte";
-	push @fuzzball_extra_args,sprintf("0x%x=0x%x", $string_addr, $key_const_val);
+	push @fuzzball_extra_args,sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
 
 
 	# $ce[0]=$sane_addr; #for om
@@ -445,7 +459,7 @@ sub check_adaptor {
 
 	$ce[0]=$sane_addr; #for mo
 	$ce[1] = 1;
-	$ce[2]=$string_addr;
+	$ce[2]=$input_string_addr;
 	$ce[3]=$output_string_addr;
 
 	$sane_addr = $sane_addr + $max_conc_region_size;
