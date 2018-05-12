@@ -445,12 +445,12 @@ sub check_adaptor {
 	my @data0_ary = split //, $ce_arg0_contents;
 	generate_new_file("ce_arg0_$numTests", \@data0_ary);
 
-	printf("ce_arg1_contents = $ce_arg2_contents\n");
+	printf("ce_arg2_contents = $ce_arg2_contents\n");
 	my @data2_ary = split //, $ce_arg2_contents;
 	generate_new_file("ce_arg2_$numTests", \@data2_ary);
 
-	push @fuzzball_extra_args, "-store-byte";
-	push @fuzzball_extra_args,sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
+	#push @fuzzball_extra_args, "-store-byte";
+	#push @fuzzball_extra_args,sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
 
 
 	# $ce[0]=$sane_addr; #for om

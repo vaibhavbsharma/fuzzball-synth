@@ -66,7 +66,8 @@ void sanitize(long a, long *aS, char *fname, int numTest) {
             // }
             *aS = (long) p;
             fclose(f);
-            add_sane_struct_addr(p);
+	    if (a != INPUT_STRING_ADDR) 
+	      add_sane_struct_addr(p);
         } else { *aS = a; printf("failed to open %s\n", newfname); }
     } else { printf("%lx need not be sanitized\n", a); *aS = a; }
     fflush(stdout);
