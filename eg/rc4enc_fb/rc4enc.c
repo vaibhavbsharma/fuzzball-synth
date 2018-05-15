@@ -9,6 +9,7 @@
 
 
 #include <openssl/rc4.h>
+#include <ctype.h>
 #include "mbedtls/config.h"
 #include "mbedtls/arc4.h"
 #include "functions.h"

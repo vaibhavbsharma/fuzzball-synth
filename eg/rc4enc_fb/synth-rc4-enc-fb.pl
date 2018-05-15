@@ -4,7 +4,7 @@ use strict;
 
 $| = 1;
 
-die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
+die "Usage: synth-rc4-enc-fb.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
   unless @ARGV == 6;
 my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
@@ -28,65 +28,25 @@ my $key_const_val = 97;
 
 my $max_struct_size=2*4 + $arr_len*4;
 my $sane_addr = $starting_sane_addr;
-my $string_addr = $starting_sane_addr + $max_struct_size*$max_steps;
-my $output_string_addr = $string_addr + 16;
+my $input_string_addr = 0x42000000;
+my $output_string_addr = $input_string_addr + 16;
 my $max_conc_region_size = $max_struct_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 
-# Paths to binaries: these probably differ on your system. You can add
-# your locations to the list, or set the environment variable.
-my $smcc_umn = "/home/fac05/mccamant/bitblaze/fuzzball/trunk-gh";
-my $smcc_home = "/home/smcc/bitblaze/fuzzball/trunk-gh";
-my $git_fuzzball = "../../../../tools/fuzzball";
-my $fuzzball;
-if (exists $ENV{FUZZBALL_LOC}) {
-    $fuzzball = $ENV{FUZZBALL_LOC};
-} elsif (-x "$git_fuzzball/exec_utils/fuzzball") {
-    $fuzzball = "$git_fuzzball/exec_utils/fuzzball";
-} elsif (-x "$smcc_umn/exec_utils/fuzzball") {
-    $fuzzball = "$smcc_umn/exec_utils/fuzzball";
-} elsif (-x "$smcc_home/exec_utils/fuzzball") {
-    $fuzzball = "$smcc_home/exec_utils/fuzzball";
-} else {
-    $fuzzball = "fuzzball";
-}
-
-my $stp; #="./stp-wrapper";
-if (exists $ENV{STP_LOC}) {
-    $stp = $ENV{STP_LOC};
-} elsif (-x "$git_fuzzball/stp/stp") {
-    $stp = "$git_fuzzball/stp/stp";
-} elsif (-x "$smcc_umn/stp/stp") {
-    $stp = "$smcc_umn/stp/stp";
-} elsif (-x "$smcc_home/stp/stp") {
-    $stp = "$smcc_home/stp/stp";
-} else {
-    $stp = "stp";
-}
+my $fuzzball="./fuzzball";
+my $stp="./stp-2.1.2"; #="./stp-wrapper";
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./rc4setup";
+my $bin = "./rc4enc";
 
 print "compiling binary: ";
-#my $unused = `gcc -static -g -o $bin $bin.c`;
-my $unused = `gcc -static rc4setup.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o rc4setup -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+my $unused = `gcc -static rc4enc.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o rc4enc -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
-
-my @func_info;
-open(F, "<types-no-float-1204.lst") or die;
-while (<F>) {
-    my($num, $nargs, $name, $type) = split(" ", $_, 4);
-    if ($nargs =~ /\+/) {
-	$nargs = substr($nargs,0,1);
-    }
-    push @func_info, [$num, $nargs, $name, $type];
-}
-close F;
 
 # Try to figure out the code and data addresses we need based on
 # matching the output of "nm" and "objdump". Not the most robust
@@ -119,8 +79,6 @@ print "f1:   $f1_addr @ $f1_call_addr\n";
 print "f2:   $f2_addr\n";
 print "wrap_f2: $wrap_f2_addr @ $f2_call_addr\n";
 print "branch: $match_jne_addr\n";
-printf "%d = %s(%d)\n", $f1num, $func_info[$f1num][2], $func_info[$f1num][1];
-printf "%d = %s(%d)\n", $f2num, $func_info[$f2num][2], $func_info[$f2num][1];
 
 my($fields_addr);
 
@@ -159,13 +117,11 @@ for (my $i =1; $i <= $n_fields; $i++) {
     push @struct_fields, [$field_n_str, "reg16_t", "%01x"];
 }
 
-my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
-#$f1nargs=6;
-#$f2nargs=6;
+my($f1nargs, $f2nargs) = (4,4);
 splice(@fields, 2 * $f2nargs);
 
 my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp, "-smtlib-solver-type","stp"
-		   # ,"-save-solver-files"
+		    #,"-save-solver-files"
 );
 
 my @synth_opt = ("-synthesize-adaptor",
@@ -237,7 +193,7 @@ sub check_adaptor {
 
     open(TESTS, ">ceinputs");
     # my @vals = ($sane_addr, 1, $string_addr, 0, 0, 0); # for om
-    my @vals = ($sane_addr, 1, $string_addr, $output_string_addr, 0, 0); #for mo
+    my @vals = ($sane_addr, 1, $input_string_addr, $output_string_addr, 0, 0); #for mo
     splice(@vals, 6);
     my $test_str = join(" ", map(sprintf("0x%x", $_), @vals));
     print TESTS $test_str, "\n";
@@ -266,7 +222,7 @@ sub check_adaptor {
 	push @conc_struct_adapt, ("-extra-condition", $s);
     }
     reinitialize_synth_struct_opt(1);
-    my $tmp_str = sprintf("0x%x=0x%x", $string_addr, $key_const_val);
+    my $tmp_str = sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -426,7 +382,7 @@ sub check_adaptor {
     }
     
     push @fuzzball_extra_args, "-store-byte";
-    push @fuzzball_extra_args,sprintf("0x%x=0x%x", $string_addr, $key_const_val);
+    push @fuzzball_extra_args,sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
     
 
     # $ce[0]=$sane_addr; #for om
@@ -435,7 +391,7 @@ sub check_adaptor {
 
     $ce[0]=$sane_addr; #for mo
     $ce[1]=1;
-    $ce[2]=$string_addr;
+    $ce[2]=$input_string_addr;
     $ce[3]=$output_string_addr;
     $sane_addr = $sane_addr + $max_conc_region_size;
 
