@@ -4,9 +4,9 @@ use strict;
 
 $| = 1;
 
-die "Usage: synth-rc4-enc-fb.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
-  unless @ARGV == 6;
-my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
+die "Usage: synth-rc4-enc-fb.pl <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
+  unless @ARGV == 4;
+my($rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
 srand($rand_seed);
 my $unused_1=`ulimit -s unlimited`;
@@ -15,27 +15,28 @@ die "failed to set ulimit" unless $unused_1== 0;
 my $split_target_formulas=1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
+my $iteration_f2_limit = 2;
 
-my $adaptor_ivc = 1;
+my $adaptor_ivc = 0;
 
 my $n_fields = 2;
 my $arr_len = 2;
 my $starting_sane_addr = 0x42420000;
 
 my $max_steps = 1000;
-my $key_const_val = 97;
+my $key_const_val = 1;
 # End configurables
 
 my $max_struct_size=2*4 + $arr_len*4;
 my $sane_addr = $starting_sane_addr;
-my $input_string_addr = 0x42000000;
-my $output_string_addr = $input_string_addr + 16;
 my $max_conc_region_size = $max_struct_size;
+my $input_string_addr = 0x42000000;
+my $output_string_addr = $input_string_addr + 2*$max_conc_region_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 
 my $fuzzball="./fuzzball";
-my $stp="./stp-2.1.2"; #="./stp-wrapper";
+my $stp="./stp";#"./stp-2.1.2"; #="./stp-wrapper";
 
 my $f1_completed_count = 0;
 my $iteration_count = 0;
@@ -186,6 +187,20 @@ if($const_lb != $const_ub) {
 
 #print "const_bounds_ec = @const_bounds_ec\n";
 
+sub get_store_bytes {
+    my ($string_addr,$size) = (@_);
+    my @ret = ();
+    for (my $i = 0; $i < $size; $i++) {
+	push @ret, "-store-byte";
+	push @ret, sprintf("0x%x=0x0", ($string_addr + $i));
+    }
+    return @ret;
+}
+my @output_string_store_bytes = get_store_bytes ($output_string_addr, $max_conc_region_size);
+my @input_string_store_bytes = get_store_bytes ($input_string_addr, $max_conc_region_size);
+my $tmp_str = sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
+$input_string_store_bytes[1] = $tmp_str;
+
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
@@ -222,7 +237,6 @@ sub check_adaptor {
 	push @conc_struct_adapt, ("-extra-condition", $s);
     }
     reinitialize_synth_struct_opt(1);
-    my $tmp_str = sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -236,7 +250,7 @@ sub check_adaptor {
 		"-time-stats",
 		"-trace-memory-snapshots",
 		"-trace-tables",
-		"-table-limit","12",
+		# "-table-limit","12",
 		#"-save-decision-tree-interval", 1,
 		#"-trace-decision-tree",
 		"-trace-binary-paths-bracketed",
@@ -251,8 +265,7 @@ sub check_adaptor {
 		#"-trace-stores",
 		"-trace-conditions",
 		"-trace-decisions",
-		#"-trace-solver",
-		"-store-byte", $tmp_str,
+		"-trace-solver",
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
@@ -260,14 +273,15 @@ sub check_adaptor {
 		@synth_struct_opt,@conc_struct_adapt,
 		"-disable-ce-cache",
 		"-return-zero-missing-x64-syscalls",
-		"-path-depth-limit", $path_depth_limit,
+		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		"-region-limit", $region_limit,
 		"-branch-preference", "$match_jne_addr:0",
+		@output_string_store_bytes, @input_string_store_bytes,
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
-		"--", $bin, $f1num, $f2num, "g", "ceinputs");
+		"--", $bin, 0, 0, "g", "ceinputs");
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
@@ -374,7 +388,7 @@ sub check_adaptor {
     }
     close LOG;
 
-    for my $addr (keys %ce_mem_bytes) {
+    for my $addr (sort (keys %ce_mem_bytes)) {
 	push @fuzzball_extra_args, "-store-byte";
 	push @fuzzball_extra_args,
 	sprintf("0x%x=0x%x", $addr, $ce_mem_bytes{$addr});
@@ -423,20 +437,51 @@ sub try_synth {
     }
     close TESTS;
     reinitialize_synth_struct_opt(0);
+
+    # my $adapt = [0, 0, 1, 1, 0, 2, 0, 3]; 
+    # my $ret_adapt = [0, 0];
+    # my $struct_adapt = [0x70001, 0x4, 0x2, 0x8000f0001, 0x4, 0x2];
+    # my @conc_adapt = ();
+    # for my $i (0 .. $#$adapt) {
+    # 	my($name, $ty, $fmt) = @{$fields[$i]};
+    # 	my $val = $adapt->[$i];
+    # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    # 	push @conc_adapt, ("-extra-condition", $s);
+    # }
+    # my @conc_ret_adapt = ();
+    # for my $i (0 .. $#$ret_adapt) {
+    # 	my($name, $ty, $fmt) = @{$ret_fields[$i]};
+    # 	my $val = $ret_adapt->[$i];
+    # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    # 	push @conc_ret_adapt, ("-extra-condition", $s);
+    # }
+    # my @conc_struct_adapt = ();
+    # for my $i (0 .. $#$struct_adapt) {
+    # 	my($name, $ty, $fmt) = @{$struct_fields[$i]};
+    # 	my $val = $struct_adapt->[$i];
+    # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    # 	push @conc_struct_adapt, ("-extra-condition", $s);
+    # }
+
+
+    
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, 
 		"-fuzz-start-addr", $fuzz_start_addr,
-		# "-trace-temps",
+		"-trace-temps",
 		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 		#counter example search mode otherwise
 		"-adaptor-search-mode",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
-		"-table-limit","12",
+		# "-table-limit","12",
 		"-return-zero-missing-x64-syscalls",
 		#"-disable-ce-cache",
 		@synth_opt, @const_bounds_ec,
 		@synth_ret_opt,
 		@synth_struct_opt,
+		# @synth_opt, @conc_adapt, @const_bounds_ec,
+		# @synth_ret_opt, @conc_ret_adapt,
+		# @synth_struct_opt,@conc_struct_adapt,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:1",
@@ -463,12 +508,14 @@ sub try_synth {
 		#"-trace-loads",
 		#"-trace-stores",
 		#"-trace-solver",
-		"-zero-memory",
-		"-path-depth-limit", $path_depth_limit,
+		#"-zero-memory",
+		#"-path-depth-limit", $path_depth_limit,
+		"-iteration-f2-limit", $iteration_f2_limit,
+		@output_string_store_bytes, @input_string_store_bytes,
 		@fuzzball_extra_args,
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
-		"--", $bin, $f1num, $f2num, "f", "tests");
+		"--", $bin, 0, 0, "f", "tests");
     #print "@args\n";
     my @printable;
     for my $a (@args) {
@@ -553,9 +600,6 @@ if ($default_adaptor_pref == 1) {
     }
 }
 
-#$adapt = [0, 0, 1, 1, 0, 1]; 
-#$ret_adapt = [51, 0];
-#$struct_adapt = [0x30001, 0x4, 0x2, 0x8000b0001, 0x4, 0x4];
 
 # If outer function takes no arguments, then the inner function can only use constants
 if ($f1nargs==0) {
@@ -567,6 +611,9 @@ if ($f1nargs==0) {
     }
 }
 
+# my $adapt = [0, 0, 1, 1, 0, 2, 0, 3]; 
+# my $ret_adapt = [0, 0];
+# my $struct_adapt = [0x30001, 0x4, 0x1, 0x400070001, 0x4, 0x1];
 sub get_struct_adapt_str () {
     my $tmp_str="";
     for(my $i=0; $i<=$#struct_fields; $i++) {

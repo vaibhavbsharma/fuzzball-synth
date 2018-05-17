@@ -16,36 +16,74 @@ typedef struct _s2 {
   int d;
 } struct2;
 
-int f1_sf(struct1 *s) {
-  if(s) {
+//f1(c = 1, input[0] = 1) = 0
+//f2(c = 0, input[0] = 0) =
+// arg adapter is (0,1) (0,1) (0,0) (0,3)
+
+#define ARR_LEN 2
+int f1_sf(struct1 *s, int len, unsigned char *input, unsigned char *output) {
     // s->a = 1;
     //return s->a; // - s->b;
-    return 3*(s->a) + 5*(s->b);
+    //return 3*(s->a) + 5*(s->b);
     //return s->a - s->b - s->c;
     //return s->a - s->b + s->c - s->d;
     //return 3*(s->a) + 5*(s->b) + 7*(s->c);
     //return 3*(s->a) + 5*(s->b) + 7*(s->c) + 11*(s->d);
     //return s->b;
-  }
-  return 0;
+    int i = 0;
+    int x, y, a, b;
+    unsigned int *m = &(s->c);
+    for (i = 0; i < len; i++) {
+      x = ( x + 1 ) & (ARR_LEN - 1);
+      a = s->a;
+      y = ( y + a ) & (ARR_LEN - 1);
+      b = s->b;
+      s->a = (unsigned char) b;
+      s->b = (unsigned char) a;
+      
+      // output[i] = (unsigned char)
+      //  ( input[i] ^ m[ ( a + b ) & (ARR_LEN - 1) ] );
+      // output[i] = input[i] + 3*(s->a) + 5*(s->b) + 7*(s->c) + 11*(s->d);
+      output[i] = input[i] ^ (s->c);
+    }
+    s->a=a;
+    s->b=b;
+    return 0;
+    //return output[0];
 }
 
-int f2_sf(struct2 *s) {
-  if(s) {
-    // s->b = 1;
-    //return s->b; // - s->a;
-    return 3*(s->b) + 5*(s->a);
-    //return 3*(s->c) + 5*(s->b) + 7*(s->a);
-    //return s->c - s->b - s->a;
-    //return s->d - s->c + s->b - s->a;
-    //return 3*(s->d) + 5*(s->c) + 7*(s->b) + 11*(s->a);
-    //return s->a;
-  }
-  return 0;
+int f2_sf(struct2 *s, int len, unsigned char *input, unsigned char *output) {
+    // s->a = 1;
+    //return s->a; // - s->b;
+    //return 3*(s->a) + 5*(s->b);
+    //return s->a - s->b - s->c;
+    //return s->a - s->b + s->c - s->d;
+    //return 3*(s->a) + 5*(s->b) + 7*(s->c);
+    //return 3*(s->a) + 5*(s->b) + 7*(s->c) + 11*(s->d);
+    //return s->b;
+    int i = 0;
+    int x, y, a, b;
+    unsigned int *m = &(s->c);
+    for (i = 0; i < len; i++) {
+      x = ( x + 1 ) & (ARR_LEN - 1);
+      a = s->a;
+      y = ( y + a ) & (ARR_LEN - 1);
+      b = s->b;
+      s->a = (unsigned char) b;
+      s->b = (unsigned char) a;
+      
+      // output[i] = (unsigned char)
+      //  ( input[i] ^ m[ ( a + b ) & (ARR_LEN - 1) ] );
+      // output[i] = input[i] + 3*(s->a) + 5*(s->b) + 7*(s->c) + 11*(s->d);
+      output[i] = input[i] ^ (s->c);
+    }
+    s->a=a;
+    s->b=b;
+    return 0;
+    //return output[0];
 }
 
 //int f1( mbedtls_arc4_context *ctx, const unsigned char *key, unsigned int keylen)
-#define ARR_LEN 2
 #define CRYPT_LEN 1
 unsigned char g_input[CRYPT_LEN]="12345678";
 long f1( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
@@ -76,8 +114,8 @@ long f1( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
 	( input[i] ^ m[ ( a + b ) & (ARR_LEN - 1) ] );
     }
   
-  ctx->x = x;
-  ctx->y = y;
+  //ctx->x = x;
+  //ctx->y = y;
   
   return( 0 );
   //ret+=output[0];
@@ -107,8 +145,68 @@ long f1( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
   //return ret;
 }
 
+long f2( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
+                unsigned char *output )
+//long f1(mbedtls_arc4_context *ctx)
+{
+  //size_t length=CRYPT_LEN;
+  //unsigned char *input=g_input;
+  //unsigned char output[CRYPT_LEN];
+  long ret=0;
+  int x, y, a, b;
+  size_t i;
+  unsigned char *m;
+  
+  x = ctx->x;
+  y = ctx->y;
+  m = ctx->m;
+  
+  for( i = 0; i < length; i++ )
+    {
+      x = ( x + 1 ) & (ARR_LEN - 1); a = m[x];
+      y = ( y + a ) & (ARR_LEN - 1); b = m[y];
+      
+      m[x] = (unsigned char) b;
+      m[y] = (unsigned char) a;
+      
+      output[i] = (unsigned char)
+	( input[i] ^ m[ ( a + b ) & (ARR_LEN - 1) ] );
+    }
+  
+  //ctx->x = x;
+  //ctx->y = y;
+  
+  return( 0 );
+  //ret+=output[0];
+  // ret=ret<<8;
+
+  // ret+=output[1];
+  // ret=ret<<8;
+
+  // ret+=output[2];
+  // ret=ret<<8;
+
+  // ret+=output[3];
+  // ret=ret<<8;
+
+  // ret+=output[4];
+  // ret=ret<<8;
+
+  // ret+=output[5];
+  // ret=ret<<8;
+
+  // ret+=output[6];
+  // ret=ret<<8;
+
+  // ret+=output[7];
+  // ret=ret<<8;
+
+  //return ret;
+}
+
+
 //int f2(RC4_KEY *key, int len, const unsigned char *data)
-long f2(RC4_KEY *key, size_t len, const unsigned char *indata,
+long f2_O(RC4_KEY *key, size_t len, const unsigned char *indata,
          unsigned char *outdata)
 //long f2(RC4_KEY *key)
 {
