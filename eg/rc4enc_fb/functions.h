@@ -114,8 +114,8 @@ long f1( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
 	( input[i] ^ m[ ( a + b ) & (ARR_LEN - 1) ] );
     }
   
-  //ctx->x = x;
-  //ctx->y = y;
+  ctx->x = x;
+  ctx->y = y;
   
   return( 0 );
   //ret+=output[0];
@@ -145,7 +145,7 @@ long f1( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
   //return ret;
 }
 
-long f2( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
+long f1_copy( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
                 unsigned char *output )
 //long f1(mbedtls_arc4_context *ctx)
 {
@@ -173,8 +173,8 @@ long f2( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
 	( input[i] ^ m[ ( a + b ) & (ARR_LEN - 1) ] );
     }
   
-  //ctx->x = x;
-  //ctx->y = y;
+  ctx->x = x;
+  ctx->y = y;
   
   return( 0 );
   //ret+=output[0];
@@ -206,7 +206,7 @@ long f2( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
 
 
 //int f2(RC4_KEY *key, int len, const unsigned char *data)
-long f2_O(RC4_KEY *key, size_t len, const unsigned char *indata,
+long f2(RC4_KEY *key, size_t len, const unsigned char *indata,
          unsigned char *outdata)
 //long f2(RC4_KEY *key)
 {

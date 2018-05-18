@@ -15,7 +15,7 @@ die "failed to set ulimit" unless $unused_1== 0;
 my $split_target_formulas=1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
-my $iteration_f2_limit = 2;
+my $iteration_f2_limit = 1;
 
 my $adaptor_ivc = 0;
 
@@ -24,14 +24,15 @@ my $arr_len = 2;
 my $starting_sane_addr = 0x42420000;
 
 my $max_steps = 1000;
-my $key_const_val = 1;
+#my $key_const_val = 1;
 # End configurables
 
 my $max_struct_size=2*4 + $arr_len*4;
 my $sane_addr = $starting_sane_addr;
 my $max_conc_region_size = $max_struct_size;
-my $input_string_addr = 0x42000000;
-my $output_string_addr = $input_string_addr + 2*$max_conc_region_size;
+my $output_string_addr = 0x42000000;
+my $input_string_length = 1;
+my $input_string_addr = $output_string_addr + 2*$max_conc_region_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 
@@ -197,18 +198,18 @@ sub get_store_bytes {
     return @ret;
 }
 my @output_string_store_bytes = get_store_bytes ($output_string_addr, $max_conc_region_size);
-my @input_string_store_bytes = get_store_bytes ($input_string_addr, $max_conc_region_size);
-my $tmp_str = sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
-$input_string_store_bytes[1] = $tmp_str;
 
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
     my($adapt,$ret_adapt, $struct_adapt) = (@_);
 
+    my @input_string_store_bytes = get_store_bytes ($input_string_addr, $max_conc_region_size);
+    # this makes the first byte of the input string be symbolic instead of being zero-initialized
+    splice(@input_string_store_bytes, 0, 2*$input_string_length);
+    
     open(TESTS, ">ceinputs");
-    # my @vals = ($sane_addr, 1, $string_addr, 0, 0, 0); # for om
-    my @vals = ($sane_addr, 1, $input_string_addr, $output_string_addr, 0, 0); #for mo
+    my @vals = ($sane_addr, 1, $input_string_addr, $output_string_addr, 0, 0); #the interface is the same in both m <- o and o <- m directions for RC4 encryption 
     splice(@vals, 6);
     my $test_str = join(" ", map(sprintf("0x%x", $_), @vals));
     print TESTS $test_str, "\n";
@@ -317,6 +318,9 @@ sub check_adaptor {
 	    for (my $i=$sane_addr; $i<$sane_addr+$max_conc_region_size; $i++) {
 		$ce_mem_bytes{$i}=0;
 	    }
+	    for (my $i=$input_string_addr; $i<$input_string_addr+$input_string_length; $i++) {
+		$ce_mem_bytes{$i}=0;
+	    }
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
 	    $f1_completed_count++;
@@ -394,16 +398,14 @@ sub check_adaptor {
 	sprintf("0x%x=0x%x", $addr, $ce_mem_bytes{$addr});
 	#printf("found memory assignment in CE search: $addr = $ce_mem_bytes{$addr}\n");
     }
+    push @fuzzball_extra_args, @input_string_store_bytes;
     
-    push @fuzzball_extra_args, "-store-byte";
-    push @fuzzball_extra_args,sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
-    
+    #push @fuzzball_extra_args, "-store-byte";
+    #push @fuzzball_extra_args,sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
 
-    # $ce[0]=$sane_addr; #for om
-    # $ce[1]=1;
-    # $ce[2]=$string_addr;
-
-    $ce[0]=$sane_addr; #for mo
+    $input_string_addr += 2*$max_conc_region_size;
+	
+    $ce[0]=$sane_addr;
     $ce[1]=1;
     $ce[2]=$input_string_addr;
     $ce[3]=$output_string_addr;
@@ -462,8 +464,6 @@ sub try_synth {
     # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
     # 	push @conc_struct_adapt, ("-extra-condition", $s);
     # }
-
-
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, 
@@ -508,10 +508,10 @@ sub try_synth {
 		#"-trace-loads",
 		#"-trace-stores",
 		#"-trace-solver",
-		#"-zero-memory",
+		#"-zero-memory", #dont use zero memory because adapter bytes are symbolic inputs, input and output string bytes are zero-initialized separately except for the first $input_string_length bytes at $input_string_addr
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-f2-limit", $iteration_f2_limit,
-		@output_string_store_bytes, @input_string_store_bytes,
+		@output_string_store_bytes,
 		@fuzzball_extra_args,
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
