@@ -15,6 +15,7 @@ die "failed to set ulimit" unless $unused_1== 0;
 my $split_target_formulas=1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
+my $mo_adapter = 0;
 # the f2 iteration limit needs to be 2 for the O <- M case because mbedtls's 
 # RC4 encryption function has a loop which requires two instructions to be
 # executed twice to check the loop termination condition at the end of every
@@ -22,13 +23,16 @@ my $iteration_limit = 4000;
 # the f2 iteration limit needs to be 1 for the M <- O case because OpenSSL's
 # RC4 encyption function does not have such a loop but instead it has repeated
 # code that checks the termination condition if the length is less than 8
-my $iteration_f2_limit = 2; # if reference is mbedTLS
-# my $iteration_f2_limit = 1; # if reference is OpenSSL
+my $iteration_f2_limit;
+if ($mo_adapter == 0) { $iteration_f2_limit = 2; }
+elsif($mo_adapter == 1) { $iteration_f2_limit = 1; }
+
+my $table_treatment = 1;
 
 my $adaptor_ivc = 0;
 
 my $n_fields = 2;
-my $arr_len = 4;
+my $arr_len = 2;
 my $starting_sane_addr = 0x42420000;
 
 my $max_steps = 1000;
@@ -53,7 +57,10 @@ my $iteration_count = 0;
 my $bin = "./rc4enc";
 
 print "compiling binary: ";
-my $unused = `gcc -static rc4enc.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o rc4enc -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+my $gcc_var;
+if ($mo_adapter == 1) { $gcc_var = "MO_ADAPTER=1"; }
+elsif ($mo_adapter == 0) { $gcc_var = "OM_ADAPTER=1"; }
+my $unused = `gcc -D$gcc_var -static $bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o $bin -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
@@ -207,6 +214,13 @@ sub get_store_bytes {
 }
 my @output_string_store_bytes = get_store_bytes ($output_string_addr, $max_conc_region_size);
 
+my @table_opts = ();
+if ($table_treatment == 1) {
+    push @table_opts, "-table-limit";
+    push @table_opts, "12";
+    push @table_opts, "-trace-tables";
+}
+
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
@@ -258,8 +272,7 @@ sub check_adaptor {
 		# "-trace-struct-adaptor",
 		"-time-stats",
 		"-trace-memory-snapshots",
-		#"-trace-tables",
-		# "-table-limit","12",
+		@table_opts,
 		#"-save-decision-tree-interval", 1,
 		#"-trace-decision-tree",
 		#"-trace-binary-paths-bracketed",
@@ -450,7 +463,7 @@ sub try_synth {
 
     # my $adapt = [0, 0, 1, 1, 0, 2, 0, 3]; 
     # my $ret_adapt = [0, 0];
-    # my $struct_adapt = [0x70001, 0x4, 0x2, 0x8000b0001, 0x4, 0x4];
+    # my $struct_adapt = [0x70001, 0x4, 0x2, 0x800090001, 0x4, 0x2]; #(type, size, n)
     # my @conc_adapt = ();
     # for my $i (0 .. $#$adapt) {
     # 	my($name, $ty, $fmt) = @{$fields[$i]};
@@ -481,7 +494,7 @@ sub try_synth {
 		#counter example search mode otherwise
 		"-adaptor-search-mode",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
-		# "-table-limit","12",
+		@table_opts,
 		"-return-zero-missing-x64-syscalls",
 		#"-disable-ce-cache",
 		@synth_opt, @const_bounds_ec,
@@ -504,17 +517,16 @@ sub try_synth {
 		"-trace-regions",
 		#"-trace-binary-paths-bracketed",
 		"-trace-memory-snapshots",
-		#"-trace-sym-addr-details",
+		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
-		#"-trace-tables",
-		#"-trace-offset-limit",
+		"-trace-offset-limit",
 		"-trace-basic",
 		#"-trace-eip",
 		#"-trace-registers",
 		#"-trace-stmts",
 		#"-trace-insns",
-		#"-trace-loads",
-		#"-trace-stores",
+		"-trace-loads",
+		"-trace-stores",
 		#"-trace-solver",
 		#"-zero-memory", #dont use zero memory because adapter bytes are symbolic inputs, input and output string bytes are zero-initialized separately except for the first $input_string_length bytes at $input_string_addr
 		#"-path-depth-limit", $path_depth_limit,

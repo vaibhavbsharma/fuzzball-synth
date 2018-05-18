@@ -83,16 +83,15 @@ int f2_sf(struct2 *s, int len, unsigned char *input, unsigned char *output) {
     //return output[0];
 }
 
-//int f1( mbedtls_arc4_context *ctx, const unsigned char *key, unsigned int keylen)
-#define CRYPT_LEN 1
-unsigned char g_input[CRYPT_LEN]="12345678";
-long f1( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
+#ifdef MO_ADAPTER
+long f1
+#endif
+#ifdef OM_ADAPTER
+long f2
+#endif
+( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
                 unsigned char *output )
-//long f1(mbedtls_arc4_context *ctx)
 {
-  //size_t length=CRYPT_LEN;
-  //unsigned char *input=g_input;
-  //unsigned char output[CRYPT_LEN];
   long ret=0;
   int x, y, a, b;
   size_t i;
@@ -145,78 +144,16 @@ long f1( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
   //return ret;
 }
 
-long f1_copy( mbedtls_arc4_context *ctx, size_t length, const unsigned char *input,
-                unsigned char *output )
-//long f1(mbedtls_arc4_context *ctx)
-{
-  //size_t length=CRYPT_LEN;
-  //unsigned char *input=g_input;
-  //unsigned char output[CRYPT_LEN];
-  long ret=0;
-  int x, y, a, b;
-  size_t i;
-  unsigned char *m;
-  
-  x = ctx->x;
-  y = ctx->y;
-  m = ctx->m;
-  
-  for( i = 0; i < length; i++ )
-    {
-      x = ( x + 1 ) & (ARR_LEN - 1); a = m[x];
-      y = ( y + a ) & (ARR_LEN - 1); b = m[y];
-      
-      m[x] = (unsigned char) b;
-      m[y] = (unsigned char) a;
-      
-      output[i] = (unsigned char)
-	( input[i] ^ m[ ( a + b ) & (ARR_LEN - 1) ] );
-    }
-  
-  ctx->x = x;
-  ctx->y = y;
-  
-  return( 0 );
-  //ret+=output[0];
-  // ret=ret<<8;
-
-  // ret+=output[1];
-  // ret=ret<<8;
-
-  // ret+=output[2];
-  // ret=ret<<8;
-
-  // ret+=output[3];
-  // ret=ret<<8;
-
-  // ret+=output[4];
-  // ret=ret<<8;
-
-  // ret+=output[5];
-  // ret=ret<<8;
-
-  // ret+=output[6];
-  // ret=ret<<8;
-
-  // ret+=output[7];
-  // ret=ret<<8;
-
-  //return ret;
-}
-
-
-//int f2(RC4_KEY *key, int len, const unsigned char *data)
-long f2(RC4_KEY *key, size_t len, const unsigned char *indata,
+#ifdef MO_ADAPTER
+long f2
+#endif
+#ifdef OM_ADAPTER
+long f1
+#endif
+(RC4_KEY *key, size_t len, const unsigned char *indata,
          unsigned char *outdata)
-//long f2(RC4_KEY *key)
 {
-  //size_t len = CRYPT_LEN;
-  //unsigned char *indata = g_input;
-  //unsigned char outdata_buf[CRYPT_LEN];
-  //unsigned char *outdata=outdata_buf;
   long ret=0;
-  //register RC4_INT *d;
-  //register RC4_INT x, y, tx, ty;
   RC4_INT *d;
   RC4_INT x, y, tx, ty;
   size_t i;
