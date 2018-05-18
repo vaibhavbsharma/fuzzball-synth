@@ -15,12 +15,20 @@ die "failed to set ulimit" unless $unused_1== 0;
 my $split_target_formulas=1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
-my $iteration_f2_limit = 1;
+# the f2 iteration limit needs to be 2 for the O <- M case because mbedtls's 
+# RC4 encryption function has a loop which requires two instructions to be
+# executed twice to check the loop termination condition at the end of every
+# loop iteration
+# the f2 iteration limit needs to be 1 for the M <- O case because OpenSSL's
+# RC4 encyption function does not have such a loop but instead it has repeated
+# code that checks the termination condition if the length is less than 8
+my $iteration_f2_limit = 2; # if reference is mbedTLS
+# my $iteration_f2_limit = 1; # if reference is OpenSSL
 
 my $adaptor_ivc = 0;
 
 my $n_fields = 2;
-my $arr_len = 2;
+my $arr_len = 4;
 my $starting_sane_addr = 0x42420000;
 
 my $max_steps = 1000;
@@ -442,7 +450,7 @@ sub try_synth {
 
     # my $adapt = [0, 0, 1, 1, 0, 2, 0, 3]; 
     # my $ret_adapt = [0, 0];
-    # my $struct_adapt = [0x70001, 0x4, 0x2, 0x8000f0001, 0x4, 0x2];
+    # my $struct_adapt = [0x70001, 0x4, 0x2, 0x8000b0001, 0x4, 0x4];
     # my @conc_adapt = ();
     # for my $i (0 .. $#$adapt) {
     # 	my($name, $ty, $fmt) = @{$fields[$i]};
