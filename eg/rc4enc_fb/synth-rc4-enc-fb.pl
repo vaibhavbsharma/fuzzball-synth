@@ -15,7 +15,7 @@ die "failed to set ulimit" unless $unused_1== 0;
 my $split_target_formulas=1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
-my $mo_adapter = 0;
+my $mo_adapter = 1;
 # the f2 iteration limit needs to be 2 for the O <- M case because mbedtls's 
 # RC4 encryption function has a loop which requires two instructions to be
 # executed twice to check the loop termination condition at the end of every
@@ -32,7 +32,7 @@ my $table_treatment = 1;
 my $adaptor_ivc = 0;
 
 my $n_fields = 2;
-my $arr_len = 2;
+my $arr_len = 4;
 my $starting_sane_addr = 0x42420000;
 
 my $max_steps = 1000;
@@ -60,7 +60,7 @@ print "compiling binary: ";
 my $gcc_var;
 if ($mo_adapter == 1) { $gcc_var = "MO_ADAPTER=1"; }
 elsif ($mo_adapter == 0) { $gcc_var = "OM_ADAPTER=1"; }
-my $unused = `gcc -D$gcc_var -static $bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o $bin -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+my $unused = `gcc -D$gcc_var -DARR_LEN=$arr_len -static $bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o $bin -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
@@ -218,7 +218,7 @@ my @table_opts = ();
 if ($table_treatment == 1) {
     push @table_opts, "-table-limit";
     push @table_opts, "12";
-    push @table_opts, "-trace-tables";
+    #push @table_opts, "-trace-tables";
 }
 
 # Given the specification of an adaptor, execute it with symbolic
@@ -268,7 +268,7 @@ sub check_adaptor {
 		#"-trace-syscalls",
 		"-omit-pf-af",
 		#"-trace-temps",
-		"-trace-regions",
+		#"-trace-regions",
 		# "-trace-struct-adaptor",
 		"-time-stats",
 		"-trace-memory-snapshots",
@@ -278,7 +278,7 @@ sub check_adaptor {
 		#"-trace-binary-paths-bracketed",
                 #"-narrow-bitwidth-cutoff","1",
 		#"-trace-offset-limit",
-		"-trace-basic",
+		#"-trace-basic",
 		#"-trace-eip",
 		#"-trace-registers",
 		#"-trace-stmts",
@@ -300,7 +300,8 @@ sub check_adaptor {
 		"-region-limit", $region_limit,
 		"-branch-preference", "$match_jne_addr:0",
 		@output_string_store_bytes, @input_string_store_bytes,
-		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
+		"-trace-iterations", #"-trace-assigns", 
+		"-solve-final-pc", "-trace-assigns-final-pc",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, 0, 0, "g", "ceinputs");
@@ -493,7 +494,8 @@ sub try_synth {
 		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 		#counter example search mode otherwise
 		"-adaptor-search-mode",
-		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
+		"-trace-iterations", #"-trace-assigns", 
+		"-solve-final-pc", "-trace-assigns-final-pc",
 		@table_opts,
 		"-return-zero-missing-x64-syscalls",
 		#"-disable-ce-cache",
@@ -514,13 +516,13 @@ sub try_synth {
 		#"-save-decision-tree-interval","1",
 		"-trace-decisions",
 		"-trace-stopping",
-		"-trace-regions",
+		#"-trace-regions",
 		#"-trace-binary-paths-bracketed",
 		"-trace-memory-snapshots",
-		"-trace-sym-addr-details",
+		#"-trace-sym-addr-details",
 		"-trace-sym-addrs",
-		"-trace-offset-limit",
-		"-trace-basic",
+		#"-trace-offset-limit",
+		#"-trace-basic",
 		#"-trace-eip",
 		#"-trace-registers",
 		#"-trace-stmts",
