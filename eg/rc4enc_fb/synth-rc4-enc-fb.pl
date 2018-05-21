@@ -525,8 +525,8 @@ sub try_synth {
 		#"-trace-registers",
 		#"-trace-stmts",
 		#"-trace-insns",
-		"-trace-loads",
-		"-trace-stores",
+		#"-trace-loads",
+		#"-trace-stores",
 		#"-trace-solver",
 		#"-zero-memory", #dont use zero memory because adapter bytes are symbolic inputs, input and output string bytes are zero-initialized separately except for the first $input_string_length bytes at $input_string_addr
 		#"-path-depth-limit", $path_depth_limit,
