@@ -20,7 +20,6 @@ typedef struct _s2 {
 //f2(c = 0, input[0] = 0) =
 // arg adapter is (0,1) (0,1) (0,0) (0,3)
 
-//#define ARR_LEN 2
 int f1_sf(struct1 *s, int len, unsigned char *input, unsigned char *output) {
     // s->a = 1;
     //return s->a; // - s->b;

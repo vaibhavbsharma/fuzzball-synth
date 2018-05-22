@@ -425,13 +425,13 @@ sub check_adaptor {
     #push @fuzzball_extra_args, "-store-byte";
     #push @fuzzball_extra_args,sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
 
-    $input_string_addr += 2*$max_conc_region_size;
 	
     $ce[0]=$sane_addr;
     $ce[1]=1;
     $ce[2]=$input_string_addr;
     $ce[3]=$output_string_addr;
     $sane_addr = $sane_addr + $max_conc_region_size;
+    $input_string_addr += 2*$max_conc_region_size;
 
     if ($matches == 0 and $fails == 0) {
 	die "Missing results from check run";
