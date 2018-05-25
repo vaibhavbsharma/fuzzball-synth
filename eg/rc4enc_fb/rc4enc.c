@@ -34,9 +34,16 @@ typedef struct
 
 */
 
+#ifdef RC4ENC
 long wrap_f2(long a0, long a1, long a2, long a3) {
   return f2(a0, a1, a2, a3);
 }
+#endif
+#ifdef RC4SETUP
+long wrap_f2(long a0, long a1, long a2) {
+  return f2(a0, a1, a2);
+}
+#endif
 
 int compare(long *r1p, long *r2p,
 	    long a0, long a1, long a2, long a3, long a4, long a5) {
@@ -45,15 +52,24 @@ int compare(long *r1p, long *r2p,
   printf("Starting f1\n");  
   fflush(stdout);
 
+  #ifdef RC4ENC
   long r1 = f1(a0, a1, a2, a3);
-  
+  #endif
+  #ifdef RC4SETUP
+  long r1 = f1(a0, a1, a2);
+  #endif
   printf("Completed f1\n");
   fflush(stdout);
   
   printf("Starting adapted_f1\n");
   fflush(stdout);
   
-  long r2 = wrap_f2(a0, a1, a2, a3); 
+  #ifdef RC4ENC
+  long r2 = wrap_f2(a0, a1, a2, a3);
+  #endif
+  #ifdef RC4SETUP
+  long r2 = wrap_f2(a0, a1, a2);
+  #endif
   
   printf("Completed adapted_f1\n");
   fflush(stdout);
@@ -74,6 +90,8 @@ void fuzz_start() {}
 
 int main(int argc, char **argv) { 
   FILE *fh;
+  printf("ARR_Len = %d\n", ARR_LEN);
+  fflush(stdout);
   if (argc == 5 && argv[3][0]=='f') {
     fh = fopen(argv[4], "r");
   }

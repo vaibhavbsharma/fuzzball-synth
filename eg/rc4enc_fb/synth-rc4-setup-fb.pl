@@ -9,7 +9,6 @@ die "Usage: synth-rc4-enc-fb.pl <seed> <default adaptor(0=zero,1=identity) [<low
 my($rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
 srand($rand_seed);
-print "start time = " . localtime();
 my $unused_1=`ulimit -s unlimited`;
 die "failed to set ulimit" unless $unused_1== 0;
 # Configurables
@@ -25,16 +24,16 @@ my $trace_verbose = 0;
 # the f2 iteration limit needs to be 1 for the M <- O case because OpenSSL's
 # RC4 encyption function does not have such a loop but instead it has repeated
 # code that checks the termination condition if the length is less than 8
-my $iteration_f2_limit;
-if ($mo_adapter == 0) { $iteration_f2_limit = 2; }
-elsif($mo_adapter == 1) { $iteration_f2_limit = 1; }
+my $arr_len = 4;
+my $iteration_f2_limit=$arr_len+1;
+#if ($mo_adapter == 0) { $iteration_f2_limit = 2; }
+#elsif($mo_adapter == 1) { $iteration_f2_limit = 1; }
 
 my $table_treatment = 1;
 
-my $adaptor_ivc = 0;
+my $adaptor_ivc = 1;
 
 my $n_fields = 2;
-my $arr_len = 4;
 my $starting_sane_addr = 0x42420000;
 
 my $max_steps = 1000;
@@ -62,7 +61,7 @@ print "compiling binary: ";
 my $gcc_var;
 if ($mo_adapter == 1) { $gcc_var = "MO_ADAPTER=1"; }
 elsif ($mo_adapter == 0) { $gcc_var = "OM_ADAPTER=1"; }
-my $unused = `gcc -DRC4ENC=1 -D$gcc_var -DARR_LEN=$arr_len -static $bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o $bin -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+my $unused = `gcc -DRC4SETUP=1 -D$gcc_var -DARR_LEN=$arr_len -static $bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o $bin -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
@@ -136,7 +135,7 @@ for (my $i =1; $i <= $n_fields; $i++) {
     push @struct_fields, [$field_n_str, "reg16_t", "%01x"];
 }
 
-my($f1nargs, $f2nargs) = (4,4);
+my($f1nargs, $f2nargs) = (3,3);
 splice(@fields, 2 * $f2nargs);
 
 my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp, "-smtlib-solver-type","stp"
@@ -214,15 +213,14 @@ sub get_store_bytes {
     }
     return @ret;
 }
-my @output_string_store_bytes = get_store_bytes ($output_string_addr, $max_conc_region_size);
 
 my @table_opts = ();
 if ($table_treatment == 1) {
     push @table_opts, "-table-limit";
     push @table_opts, "12";
-    if ($trace_verbose == 1) { push @table_opts, "-trace-tables"; }
+    push @table_opts, "-trace-tables";
     push @table_opts, "-max-table-store-num";
-    push @table_opts, "100000000";
+    push @table_opts, "10000000";
     #push @table_opts, "-no-table-store";
 }
 
@@ -260,7 +258,13 @@ sub check_adaptor {
     splice(@input_string_store_bytes, 0, 2*$input_string_length);
     
     open(TESTS, ">ceinputs");
-    my @vals = ($sane_addr, 1, $input_string_addr, $output_string_addr, 0, 0); #the interface is the same in both m <- o and o <- m directions for RC4 encryption 
+    my @vals = ();
+    if ($mo_adapter == 1) {
+	@vals = ($sane_addr, $input_string_addr, 1, 0, 0, 0);
+    } 
+    if ($mo_adapter == 0) {
+	@vals = ($sane_addr, 1, $input_string_addr, 0, 0, 0);
+    } 
     splice(@vals, 6);
     my $test_str = join(" ", map(sprintf("0x%x", $_), @vals));
     print TESTS $test_str, "\n";
@@ -288,7 +292,7 @@ sub check_adaptor {
 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
 	push @conc_struct_adapt, ("-extra-condition", $s);
     }
-    reinitialize_synth_struct_opt(1); 
+    reinitialize_synth_struct_opt(1);
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -296,27 +300,28 @@ sub check_adaptor {
 		"-time-stats",
 		"-trace-memory-snapshots",
 		@table_opts,
-		@trace_verbose_opts, 
+		@trace_verbose_opts,
 		#"-save-decision-tree-interval", 1,
 		#"-trace-decision-tree",
                 #"-narrow-bitwidth-cutoff","1",
-		#"-trace-eip",
 		"-trace-conditions",
 		"-trace-decisions",
+		"-trace-solver",
+		"-implied-value-conc",
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
 		@synth_ret_opt, @conc_ret_adapt,
 		@synth_struct_opt,@conc_struct_adapt,
-		"-disable-ce-cache",
+		#"-disable-ce-cache",
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		"-region-limit", $region_limit,
 		"-branch-preference", "$match_jne_addr:0",
-		@output_string_store_bytes, @input_string_store_bytes,
-		"-trace-iterations", 
-		"-solve-final-pc", "-trace-assigns-final-pc",
+		@input_string_store_bytes,
+		"-trace-iterations", "-trace-assigns", 
+		"-solve-final-pc", #"-trace-assigns-final-pc",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
 		"--", $bin, 0, 0, "g", "ceinputs");
@@ -439,12 +444,16 @@ sub check_adaptor {
     
     #push @fuzzball_extra_args, "-store-byte";
     #push @fuzzball_extra_args,sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
-
 	
     $ce[0]=$sane_addr;
-    $ce[1]=1;
-    $ce[2]=$input_string_addr;
-    $ce[3]=$output_string_addr;
+    if ($mo_adapter == 1) { 
+	$ce[1]=$input_string_addr;
+	$ce[2]=1;
+    } 
+    if ($mo_adapter == 0) {
+	$ce[2]=$input_string_addr;
+	$ce[1]=1;
+    }
     $sane_addr = $sane_addr + $max_conc_region_size;
     $input_string_addr += 2*$max_conc_region_size;
 
@@ -477,30 +486,31 @@ sub try_synth {
     close TESTS;
     reinitialize_synth_struct_opt(0);
 
-    # my $adapt = [0, 0, 1, 1, 0, 2, 0, 3]; 
-    # my $ret_adapt = [0, 0];
-    # my $struct_adapt = [0x70001, 0x4, 0x2, 0x800090001, 0x4, 0x2]; #(type, size, n)
-    # my @conc_adapt = ();
-    # for my $i (0 .. $#$adapt) {
-    # 	my($name, $ty, $fmt) = @{$fields[$i]};
-    # 	my $val = $adapt->[$i];
-    # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
-    # 	push @conc_adapt, ("-extra-condition", $s);
-    # }
-    # my @conc_ret_adapt = ();
-    # for my $i (0 .. $#$ret_adapt) {
-    # 	my($name, $ty, $fmt) = @{$ret_fields[$i]};
-    # 	my $val = $ret_adapt->[$i];
-    # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
-    # 	push @conc_ret_adapt, ("-extra-condition", $s);
-    # }
-    # my @conc_struct_adapt = ();
-    # for my $i (0 .. $#$struct_adapt) {
-    # 	my($name, $ty, $fmt) = @{$struct_fields[$i]};
-    # 	my $val = $struct_adapt->[$i];
-    # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
-    # 	push @conc_struct_adapt, ("-extra-condition", $s);
-    # }
+    #     my $adapt = [0, 0, 0, 2, 0, 1]; 
+    #     my $ret_adapt = [0, 0];
+    #     #my $struct_adapt = [0x70001, 0x4, 0x2, 0x8000f0001, 0x1, 0x2]; #(type, size, n) for om
+    #     my $struct_adapt = [0x70001, 0x4, 0x2, 0x8000b0001, 0x4, 0x4]; #(type, size, n) for mo
+    #     my @conc_adapt = ();
+    #     for my $i (0 .. $#$adapt) {
+    #     	my($name, $ty, $fmt) = @{$fields[$i]};
+    #     	my $val = $adapt->[$i];
+    #     	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    #     	push @conc_adapt, ("-extra-condition", $s);
+    #     }
+    #     my @conc_ret_adapt = ();
+    #     for my $i (0 .. $#$ret_adapt) {
+    #     	my($name, $ty, $fmt) = @{$ret_fields[$i]};
+    #     	my $val = $ret_adapt->[$i];
+    #     	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    #     	push @conc_ret_adapt, ("-extra-condition", $s);
+    #     }
+    #     my @conc_struct_adapt = ();
+    #     for my $i (0 .. $#$struct_adapt) {
+    #     	my($name, $ty, $fmt) = @{$struct_fields[$i]};
+    #     	my $val = $struct_adapt->[$i];
+    #     	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    #     	push @conc_struct_adapt, ("-extra-condition", $s);
+    #     }
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, 
@@ -511,15 +521,16 @@ sub try_synth {
 		"-trace-iterations", 
 		"-solve-final-pc", "-trace-assigns-final-pc",
 		@table_opts,
+		@trace_verbose_opts,
 		"-return-zero-missing-x64-syscalls",
 		#"-disable-ce-cache",
 		@synth_opt, @const_bounds_ec,
 		@synth_ret_opt,
 		@synth_struct_opt,
-		# the next 3 lines go along with the concrete adapter setup above
-		# @synth_opt, @conc_adapt, @const_bounds_ec,
-		# @synth_ret_opt, @conc_ret_adapt,
-		# @synth_struct_opt,@conc_struct_adapt,
+		# these next 3 lines go along with the concrete adapter setup above
+		#     @synth_opt, @conc_adapt, @const_bounds_ec,
+		#     @synth_ret_opt, @conc_ret_adapt,
+		#     @synth_struct_opt,@conc_struct_adapt,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:1",
@@ -530,11 +541,9 @@ sub try_synth {
 		"-trace-decisions",
 		"-trace-stopping",
 		"-trace-memory-snapshots",
-		@trace_verbose_opts,
 		#"-zero-memory", #dont use zero memory because adapter bytes are symbolic inputs, input and output string bytes are zero-initialized separately except for the first $input_string_length bytes at $input_string_addr
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-f2-limit", $iteration_f2_limit,
-		@output_string_store_bytes,
 		@fuzzball_extra_args,
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
@@ -573,7 +582,6 @@ sub try_synth {
     close LOG;
     if (!$success) {
 	print "Synthesis failure: seems the functions are not equivalent.\n";
-	print "end time = " . localtime();
 	exit 2;
     }
     my @afields;
@@ -635,9 +643,13 @@ if ($f1nargs==0) {
     }
 }
 
-# my $adapt = [0, 0, 1, 1, 0, 2, 0, 3]; 
+# my $adapt = [0, 0, 0, 2, 0, 1]; 
 # my $ret_adapt = [0, 0];
-# my $struct_adapt = [0x30001, 0x4, 0x1, 0x400070001, 0x4, 0x1];
+# my $struct_adapt = [0x70001, 0x4, 0x2, 0x800170001, 0x1, 0x4]; #(type, size, n) for om
+# my $adapt = [0, 0, 0, 2, 0, 1]; 
+# my $ret_adapt = [0, 0];
+# #my $struct_adapt = [0x70001, 0x4, 0x2, 0x800170001, 0x1, 0x4]; #(type, size, n) for om
+# my $struct_adapt = [0x70001, 0x4, 0x2, 0x8000b0001, 0x4, 0x4]; #(type, size, n) for mo
 sub get_struct_adapt_str () {
     my $tmp_str="";
     for(my $i=0; $i<=$#struct_fields; $i++) {
@@ -680,7 +692,6 @@ while (!$done) {
 	    "struct=%s with $f1_completed_count,$iteration_count,$verified\n", 
 	    get_struct_adapt_str();
 	$done = 1;
-	print "end time = " . localtime();
 	last;
     } else {
 	push @fuzzball_extra_args_arr, @{ $_fuzzball_extra_args };
