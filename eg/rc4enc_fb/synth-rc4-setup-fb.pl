@@ -15,7 +15,7 @@ die "failed to set ulimit" unless $unused_1== 0;
 my $split_target_formulas=1;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
-my $mo_adapter = 0;
+my $mo_adapter = 1;
 my $trace_verbose = 0;
 # the f2 iteration limit needs to be 2 for the O <- M case because mbedtls's 
 # RC4 encryption function has a loop which requires two instructions to be
@@ -307,7 +307,6 @@ sub check_adaptor {
 		"-trace-conditions",
 		"-trace-decisions",
 		"-trace-solver",
-		"-implied-value-conc",
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
