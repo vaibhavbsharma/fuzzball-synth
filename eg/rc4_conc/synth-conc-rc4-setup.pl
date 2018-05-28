@@ -37,8 +37,8 @@ my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 my $numTests=0;
 
-my $fuzzball="fuzzball";
-my $stp="stp"; #="./stp-wrapper";
+my $fuzzball="./fuzzball";
+my $stp="./stp"; #="./stp-wrapper";
 my $pwd = $ENV{PWD};
 my $f1_completed_count = 0;
 my $iteration_count = 0;
