@@ -38,7 +38,7 @@ unsigned int number_of_fields=0;
 
 
 unsigned long f1s, f2s;
-char str[2] = {97, 0};
+//char input_str[2] = {97, 0};
 char output_str[16] = {'\0'};
 
 typedef struct { long a,b,c,d,e,f} test;
@@ -310,7 +310,12 @@ long wrap_f2(long a, long b, long c, long d, long e, long f_arg) {
     long ret_val=0;
     if(f2args[0] != f2s) sideEffectsEqual=0;
     else
+#ifdef RC4ENC
         ret_val = f2(f2args[0], f2args[1], f2args[2], f2args[3]);
+#endif
+#ifdef RC4SETUP
+        ret_val = f2(f2args[0], f2args[1], f2args[2]);
+#endif
     long final_ret_val;
     switch(ad.r_ad.ret_type) {
         case 0: final_ret_val = convert32to64u(ret_val); break;
@@ -367,10 +372,21 @@ int compare() {
         } // else printf("setjmp setup\n");
         fflush(stdout);
         f1s = a0;
+#ifdef RC4ENC
         assert(a1 == 1);
-//        a2 = str;
+        //a2 = input_str; //use this only if using a concrete byte as input in the input string
         a3 = output_str;
-        r1 = f1(a0, a1, a2, a3); //, a3, a4, a5);
+        r1 = f1(a0, a1, a2, a3);
+#endif
+#ifdef RC4SETUP
+#ifdef MO_ADAPTER
+	assert(a2 == 1);
+#endif
+#ifdef OM_ADAPTER
+	assert (a1 == 1);
+#endif
+        r1 = f1(a0, a1, a2);
+#endif
         // printf("Completed f1\n");
         // fflush(stdout);
         // printf("Starting f2\n");
@@ -447,8 +463,14 @@ int main(int argc, char **argv) {
         fprintf(stderr, "    or two-funcs <f1num> <f2num> f <fname or -> <lower bound> <upper bound> \n<sideEffectsEqual's address> <memsub=4> <region-limit> <number-of-fields> <1=find one correct adaptor, 0=find all correct adaptors>");
         exit(1);
     }
+    #ifdef RC4SETUP
+    f1nargs = 3;
+    f2nargs = 3;
+    #endif
+    #ifdef RC4ENC
     f1nargs = 4;
     f2nargs = 4;
+    #endif
     int i;
     if (argv[3][0] == 'f') {
         long a, b, c, d, e, f;

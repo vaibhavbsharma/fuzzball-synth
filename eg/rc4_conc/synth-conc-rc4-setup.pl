@@ -1,19 +1,19 @@
 #!/usr/bin/perl
 
 use strict;
+use warnings;
 
 $| = 1;
 
-die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
-	unless @ARGV == 6;
-my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
+die "Usage: synth-one.pl <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
+	unless @ARGV == 4;
+my($rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
 srand($rand_seed);
-my $unused_1=`ulimit -s unlimited`;
-die "failed to set ulimit" unless $unused_1== 0;
 # Configurables
+my $mo_adapter = 0;
 my $split_target_formulas=1;
-my $adaptor_family = 4;
+my $adaptor_family = 14;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 
@@ -22,43 +22,50 @@ my $adaptor_ivc = 1;
 my $n_fields = 2;
 my $arr_len = 4;
 my $starting_sane_addr = 0x42420000;
+my $input_string_length = 1;
+my $input_string_addr = 0x42000000;
 
+my $max_steps = 1000;
+#my $key_const_val = 97;
 # End configurables
 
-my $max_struct_size=$n_fields*4 + $arr_len*4;
+my $max_struct_size=2*4 + $arr_len*4;
 my $sane_addr = $starting_sane_addr;
+my $output_string_addr = $input_string_addr + 16;
 my $max_conc_region_size = $max_struct_size;
 my $region_limit = $max_conc_region_size;
 my @fuzzball_extra_args_arr;
 my $numTests=0;
 
-my $fuzzball="fuzzball"; #"../../bin/fuzzball";
-my $stp="stp"; #"../../bin/stp-old-dynamic";
+my $fuzzball="fuzzball";
+my $stp="stp"; #="./stp-wrapper";
 my $pwd = $ENV{PWD};
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./struct_adaptor";
+my $bin = "./ce-search-rc4enc";
 
 print "compiling binary: ";
-#my $unused = `gcc -static -g -o $bin $bin.c`;
-my $unused = `gcc -static $bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o $bin -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+my $adapter_direction;
+if ($mo_adapter == 1) { $adapter_direction = "MO_ADAPTER=1"; }
+elsif ($mo_adapter == 0) { $adapter_direction = "OM_ADAPTER=1"; }
+my $unused = `gcc -static -DARR_LEN=$arr_len -DRC4SETUP=1 -D$adapter_direction ce-search-rc4enc.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o ce-search-rc4enc -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
 
 my $conc_adaptor_bin = "$pwd/two-funcs-conc";
 print "compiling concrete adaptor search binary: ";
-my $unused = `gcc -static $conc_adaptor_bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib  -g -o $conc_adaptor_bin -lpthread -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
-my $gcc_ec = $?;
-die "failed to compile $conc_adaptor_bin" unless $gcc_ec == 0;
-print "gcc_ec = $gcc_ec\n";
+my $unused_1 = `gcc -static -DARR_LEN=$arr_len -DRC4SETUP=1 -D$adapter_direction $conc_adaptor_bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib  -g -o $conc_adaptor_bin -lpthread -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+my $gcc_ec_1 = $?;
+die "failed to compile $conc_adaptor_bin" unless $gcc_ec_1 == 0;
+print "gcc_ec_1 = $gcc_ec_1\n";
 
 print "compiling PinMonitor: ";
-my $unused = `make`;
-my $gcc_ec = $?;
-die "failed to compile PinMonitor" unless $gcc_ec == 0;
-print "gcc_ec = $gcc_ec\n";
+my $unused_2 = `make`;
+my $gcc_ec_2 = $?;
+die "failed to compile PinMonitor" unless $gcc_ec_2 == 0;
+print "gcc_ec_2 = $gcc_ec_2\n";
 
 # Try to figure out the code and data addresses we need based on
 # matching the output of "nm" and "objdump". Not the most robust
@@ -69,9 +76,11 @@ my $side_effects_equal_addr = "0x" . substr(`nm $conc_adaptor_bin | fgrep " B si
 open(ADDRS_FILE, ">f_addrs");
 my $f1s_addr = substr(`nm $conc_adaptor_bin | fgrep " B f1s"`, 8, 8);
 my $f2s_addr = substr(`nm $conc_adaptor_bin | fgrep " B f2s"`, 8, 8);
-printf("f1s_addr = $f1s_addr f2s_addr = $f2s_addr\n");
+my $m_addr   = substr(`nm $conc_adaptor_bin | egrep -e " B m\$"`, 8, 8);
+printf("f1s_addr = $f1s_addr f2s_addr = $f2s_addr m_addr = $m_addr\n");
 print ADDRS_FILE $f1s_addr, " ";
-print ADDRS_FILE $f2s_addr;
+print ADDRS_FILE $f2s_addr, " ";
+print ADDRS_FILE $m_addr;
 close ADDRS_FILE;
 
 my $fuzz_start_addr = "0x" . substr(`nm $bin | fgrep " T fuzz_start"`, 0, 16);
@@ -91,12 +100,6 @@ my $f2_call_addr =
 my $post_f1_call = sprintf("0x%x",hex($f1_call_addr)+0x5);
 my $post_f2_call = sprintf("0x%x",hex($f2_call_addr)+0x5);
 
-my @arg_addr;
-for my $i (0 .. 5) {
-	$arg_addr[$i] =
-		"0x" . substr(`nm $bin | fgrep " B global_arg$i"`, 0, 16);
-}
-
 my $match_jne_addr =
 	"0x" . substr(`objdump -dr $bin | grep 'jne.*compare+'`, 2, 6);
 
@@ -106,9 +109,6 @@ print "fuzz-start-addr : $fuzz_start_addr\n";
 print "f1:   $f1_addr @ $f1_call_addr\n";
 print "f2:   $f2_addr\n";
 print "wrap_f2: $wrap_f2_addr @ $f2_call_addr\n";
-for my $i (0 .. 5) {
-	print "arg$i: $arg_addr[$i]\n";
-}
 print "branch: $match_jne_addr\n";
 
 my($fields_addr);
@@ -139,13 +139,6 @@ my @ret_fields =
 	);
 
 my @struct_fields = ();
-# (
-#    ["f1_type",  "reg16_t", "%01x"],
-#    ["f2_type",  "reg16_t", "%01x"],
-#    ["f1_size",  "reg16_t", "%01x"],
-#    ["f2_size",  "reg16_t", "%01x"],
-# );
-
 for (my $i =1; $i <= $n_fields; $i++) {
 	my $f_type_str = sprintf("f%d_type", $i);
 	my $field_size_str = sprintf("f%d_size", $i);
@@ -155,13 +148,13 @@ for (my $i =1; $i <= $n_fields; $i++) {
 	push @struct_fields, [$field_n_str, "reg16_t", "%01x"];
 }
 
-my($f1nargs, $f2nargs) = (1,1);
+my($f1nargs, $f2nargs) = (3,3);
 #$f1nargs=6;
 #$f2nargs=6;
 splice(@fields, 2 * $f2nargs);
 
 my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp, "-smtlib-solver-type","stp"
-	#,"-save-solver-files"
+	# ,"-save-solver-files"
 );
 
 my @synth_opt = ("-synthesize-adaptor",
@@ -249,12 +242,16 @@ sub check_adaptor {
 	my($adapt,$ret_adapt, $struct_adapt) = (@_);
 
 	open(TESTS, ">ceinputs");
-	my @vals = ($sane_addr, 0, 0, 0, 0, 0);
+	my @vals = ();
+	if ($mo_adapter == 1) {
+	    @vals = ($sane_addr, $input_string_addr, 1, 0, 0, 0);
+	} elsif ($mo_adapter == 0) {
+	    @vals = ($sane_addr, 1, $input_string_addr, 0, 0, 0);
+	}
 	splice(@vals, 6);
 	my $test_str = join(" ", map(sprintf("0x%x", $_), @vals));
 	print TESTS $test_str, "\n";
 	close TESTS;
-
 
 	#print "checking arg-adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 	my @conc_adapt = ();
@@ -279,28 +276,18 @@ sub check_adaptor {
 		push @conc_struct_adapt, ("-extra-condition", $s);
 	}
 	reinitialize_synth_struct_opt(1);
+#	my $tmp_str = sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
 	my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
-		"-symbolic-long", "$arg_addr[0]=a",
-		"-symbolic-long", "$arg_addr[1]=b",
-		"-symbolic-long", "$arg_addr[2]=c",
-		"-symbolic-long", "$arg_addr[3]=d",
-		"-symbolic-long", "$arg_addr[4]=e",
-		"-symbolic-long", "$arg_addr[5]=f",
-		# "-extra-condition", "m1_arith:reg64_t==1:reg64_t",
-		# "-extra-condition", "c1_arith:reg64_t==0:reg64_t",
-		# "-extra-condition", "m2_arith:reg64_t==1:reg64_t",
-		# "-extra-condition", "c2_arith:reg64_t==0:reg64_t",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
 		"-trace-syscalls",
 		"-omit-pf-af",
 		"-trace-temps",
 		"-trace-regions",
-		#"-trace-struct-adaptor",
-		"-trace-adaptor",
-		# "-time-stats",
+		# "-trace-struct-adaptor",
+		"-time-stats",
 		"-trace-memory-snapshots",
 		"-trace-tables",
 		"-table-limit","12",
@@ -311,19 +298,22 @@ sub check_adaptor {
 		#"-trace-offset-limit",
 		"-trace-basic",
 		#"-trace-eip",
-		#"-trace-registers",
+		#		"-trace-registers",
+		"-trace-adaptor",
 		#"-trace-stmts",
-		#"-trace-insns",
+		#		"-trace-insns",
+		#		"-trace-ir",
 		#"-trace-loads",
 		#"-trace-stores",
 		"-trace-conditions",
 		"-trace-decisions",
 		#"-trace-solver",
+#		"-store-byte", $tmp_str,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
 		@synth_ret_opt, @conc_ret_adapt,
-		@synth_struct_opt, @conc_struct_adapt,
+		@synth_struct_opt,@conc_struct_adapt,
 		"-disable-ce-cache",
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
@@ -333,7 +323,7 @@ sub check_adaptor {
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
-		"--", $bin, $f1num, $f2num, "g", "ceinputs");
+		"--", $bin, 0, 0, "g", "ceinputs");
 	my @printable;
 	for my $a (@args) {
 		if ($a =~ /[\s|<>]/) {
@@ -367,6 +357,9 @@ sub check_adaptor {
 			for my $i (1 .. ($f1nargs+1)) { push @region_contents, [@tmp_reg_arr]; }
 			$iteration_count++;
 			for (my $i=$sane_addr; $i<$sane_addr+$max_conc_region_size; $i++) {
+				$ce_mem_bytes{$i}=0;
+			}
+			for (my $i=$input_string_addr; $i<$input_string_addr+$input_string_length; $i++) {
 				$ce_mem_bytes{$i}=0;
 			}
 		} elsif ($_ eq "Completed f1\n") {
@@ -440,19 +433,45 @@ sub check_adaptor {
 	}
 	close LOG;
 
-	my $ce_arg_contents="";
+	my $ce_arg0_contents="";
+	my $ce_arg2_contents="";
 	for my $addr (sort (keys %ce_mem_bytes)) {
+		if (($addr >= $sane_addr) && ($addr <= $sane_addr + $max_conc_region_size)) {
+			$ce_arg0_contents .= sprintf("%02x", $ce_mem_bytes{$addr});
+		}
+		if ($addr >= $input_string_addr && $addr < $input_string_addr + $input_string_length) {
+			$ce_arg2_contents .= sprintf("%02x", $ce_mem_bytes{$addr});
+		}
 		push @fuzzball_extra_args, "-store-byte";
 		push @fuzzball_extra_args,
 			sprintf("0x%x=0x%x", $addr, $ce_mem_bytes{$addr});
-		$ce_arg_contents .= sprintf("%02x", $ce_mem_bytes{$addr});
-		# printf("found memory assignment in CE search: $addr = $ce_mem_bytes{$addr}\n");
+		#printf("found memory assignment in CE search: $addr = $ce_mem_bytes{$addr}\n");
 	}
-	printf("ce_arg_contents = $ce_arg_contents\n");;
-	my @data_ary = split //, $ce_arg_contents;
-	generate_new_file("ce_arg0_$numTests", \@data_ary);
+	printf("ce_arg0_contents = $ce_arg0_contents\n");
+	my @data0_ary = split //, $ce_arg0_contents;
+	generate_new_file("ce_arg0_$numTests", \@data0_ary);
+
+	printf("ce_arg2_contents = $ce_arg2_contents\n");
+	my @data2_ary = split //, $ce_arg2_contents;
+	if ($mo_adapter == 0) {
+	    generate_new_file("ce_arg2_$numTests", \@data2_ary);
+	} elsif ($mo_adapter == 1) {
+	    generate_new_file("ce_arg1_$numTests", \@data2_ary);
+	}
+
+	#push @fuzzball_extra_args, "-store-byte";
+	#push @fuzzball_extra_args,sprintf("0x%x=0x%x", $input_string_addr, $key_const_val);
 
 	$ce[0]=$sane_addr;
+	if ($mo_adapter == 0) {
+	    $ce[1] = 1;
+	    $ce[2]=$input_string_addr; 
+	} elsif ($mo_adapter == 1) {
+	    $ce[2] = 1;
+	    $ce[1]=$input_string_addr; 
+	}
+	
+
 	$sane_addr = $sane_addr + $max_conc_region_size;
 
 	if ($matches == 0 and $fails == 0) {
@@ -484,7 +503,8 @@ sub try_synth {
 	}
 	close TESTS;
 	reinitialize_synth_struct_opt(0);
-	my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, $region_limit, $n_fields, "1");
+	my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, 0, 0, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, $region_limit, $n_fields, "1");
+	#print "@args\n";
 	my @printable;
 	for my $a (@args) {
 		if ($a =~ /[\s|<>]/) {
@@ -548,22 +568,12 @@ sub try_synth {
 my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
 my $struct_adapt = [(0) x @struct_fields];
+# type, size, number of array entries
 for(my $i=0; $i< $n_fields; $i++) {
 	$struct_adapt->[$i*3] = (($i*4)<<32)+(((($i+1)*4)-1)<<16);
 	$struct_adapt->[$i*3+1] = 4;
 	$struct_adapt->[$i*3+2] = 1;
 }
-# $struct_adapt->[0]=0x8000b0000;
-# $struct_adapt->[2]=0x400070000;
-# $struct_adapt->[4]=0x000030000;
-#
-# correct adaptor is:
-#  arg=,, ret=72,,
-#  struct=f1_type=0x70000, f1_size=0x1, f1_n=0x8, f2_type=0x801070000, f2_size=0x4, f2_n=0x100
-#$struct_adapt = [0x70000, 0x1, 0x8, 0x801070000, 0x4, 0x100];
-
-# $struct_adapt = [0x400070001, 0x4, 0x1, 0x30001, 0x4, 0x1];
-#$ret_adapt = [51, 0];
 
 # Setting up the default adaptor to be the identity adaptor
 if ($default_adaptor_pref == 1) {
@@ -577,6 +587,10 @@ if ($default_adaptor_pref == 1) {
 		}
 	}
 }
+
+#$adapt = [0, 0, 1, 1, 0, 1]; 
+#$ret_adapt = [51, 0];
+#$struct_adapt = [0x30001, 0x4, 0x2, 0x8000b0001, 0x4, 0x4];
 
 # If outer function takes no arguments, then the inner function can only use constants
 if ($f1nargs==0) {
@@ -598,7 +612,7 @@ sub get_struct_adapt_str () {
 }
 
 sub find_all_adaptors {
-	my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, $region_limit, $n_fields, "0");
+	my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, 0, 0, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, $region_limit, $n_fields, "0");
 	my @printable;
 	for my $a (@args) {
 		if ($a =~ /[\s|<>]/) {
@@ -649,7 +663,7 @@ while (!$done) {
 		}
 		$done = 1;
 		$reset_time = time();
-		#find_all_adaptors();
+		find_all_adaptors();
 		$diff1 = time() - $reset_time;
 		printf "Final adaptors: arg=$adapt_s, ret=$ret_adapt_s, ".
 			"struct=%s with $f1_completed_count,$iteration_count,$verified\n",

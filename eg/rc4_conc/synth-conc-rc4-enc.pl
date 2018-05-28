@@ -5,9 +5,9 @@ use warnings;
 
 $| = 1;
 
-die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
-	unless @ARGV == 6;
-my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
+die "Usage: synth-one.pl <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
+	unless @ARGV == 4;
+my($rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
 
 srand($rand_seed);
 my $unused_1=`ulimit -s unlimited`;
@@ -17,7 +17,7 @@ my $split_target_formulas=1;
 my $adaptor_family = 14;
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
-
+my $mo_adapter = 1;
 my $adaptor_ivc = 1;
 
 my $n_fields = 2;
@@ -47,24 +47,26 @@ my $iteration_count = 0;
 my $bin = "./ce-search-rc4enc";
 
 print "compiling binary: ";
-#my $unused = `gcc -static -g -o $bin $bin.c`;
-my $unused = `gcc -static ce-search-rc4enc.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o ce-search-rc4enc -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+my $adapter_direction;
+if ($mo_adapter == 1) { $adapter_direction = "MO_ADAPTER=1"; }
+elsif ($mo_adapter == 0) { $adapter_direction = "OM_ADAPTER=1"; }
+my $unused = `gcc -static -DARR_LEN=$arr_len -DRC4ENC=1 -D$adapter_direction ce-search-rc4enc.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib -g -o ce-search-rc4enc -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
 print "gcc_ec = $gcc_ec\n";
 
 my $conc_adaptor_bin = "$pwd/two-funcs-conc";
 print "compiling concrete adaptor search binary: ";
-my $unused = `gcc -static $conc_adaptor_bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib  -g -o $conc_adaptor_bin -lpthread -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
-my $gcc_ec = $?;
-die "failed to compile $conc_adaptor_bin" unless $gcc_ec == 0;
-print "gcc_ec = $gcc_ec\n";
+my $unused1 = `gcc -static -DARR_LEN=$arr_len -DRC4ENC=1 -D$adapter_direction $conc_adaptor_bin.c -Wl,-rpath,/export/scratch/vaibhav/opt_openssl/lib  -g -o $conc_adaptor_bin -lpthread -lcrypto -I /export/scratch/vaibhav/mbedtls-install/include/`;
+my $gcc_ec1 = $?;
+die "failed to compile $conc_adaptor_bin" unless $gcc_ec1 == 0;
+print "gcc_ec1 = $gcc_ec1\n";
 
 print "compiling PinMonitor: ";
-my $unused = `make`;
-my $gcc_ec = $?;
-die "failed to compile PinMonitor" unless $gcc_ec == 0;
-print "gcc_ec = $gcc_ec\n";
+my $unused2 = `make`;
+my $gcc_ec2 = $?;
+die "failed to compile PinMonitor" unless $gcc_ec2 == 0;
+print "gcc_ec2 = $gcc_ec2\n";
 
 # Try to figure out the code and data addresses we need based on
 # matching the output of "nm" and "objdump". Not the most robust
@@ -317,7 +319,7 @@ sub check_adaptor {
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
-		"--", $bin, $f1num, $f2num, "g", "ceinputs");
+		"--", $bin, 0, 0, "g", "ceinputs");
 	my @printable;
 	for my $a (@args) {
 		if ($a =~ /[\s|<>]/) {
@@ -493,7 +495,7 @@ sub try_synth {
 	}
 	close TESTS;
 	reinitialize_synth_struct_opt(0);
-	my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, $region_limit, $n_fields, "1");
+	my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, 0, 0, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, $region_limit, $n_fields, "1");
 	#print "@args\n";
 	my @printable;
 	for my $a (@args) {
@@ -602,7 +604,7 @@ sub get_struct_adapt_str () {
 }
 
 sub find_all_adaptors {
-	my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, $f1num, $f2num, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, $region_limit, $n_fields, "0");
+	my @args = ("pin", "-t", "obj-intel64/PinMonitor.so", "--", $conc_adaptor_bin, 0, 0, "f", "tests", $const_lb, $const_ub, $side_effects_equal_addr, $adaptor_family, $region_limit, $n_fields, "0");
 	my @printable;
 	for my $a (@args) {
 		if ($a =~ /[\s|<>]/) {

@@ -32,40 +32,55 @@ typedef struct
 } mbedtls_arc4_context;
 
 */
-
+#ifdef RC4ENC
 long wrap_f2(long a0, long a1, long a2, long a3) {
-    return f2(a0, a1, a2, a3);
+  return f2(a0, a1, a2, a3);
 }
+#endif
+#ifdef RC4SETUP
+long wrap_f2(long a0, long a1, long a2) {
+  return f2(a0, a1, a2);
+}
+#endif
 
 int compare(long *r1p, long *r2p,
             long a0, long a1, long a2, long a3, long a4, long a5) {
 
-    printf("Starting f1\n");
-    fflush(stdout);
+  printf("Starting f1\n");
+  fflush(stdout);
 
-    long r1 = f1(a0, a1, a2, a3);
+#ifdef RC4ENC
+  long r1 = f1(a0, a1, a2, a3);
+#endif
+#ifdef RC4SETUP
+  long r1 = f1(a0, a1, a2);
+#endif
+  printf("Completed f1\n");
+  fflush(stdout);
+  
+  printf("Starting adapted_f1\n");
+  fflush(stdout);
+  
+#ifdef RC4ENC
+  long r2 = wrap_f2(a0, a1, a2, a3);
+#endif
+#ifdef RC4SETUP
+  long r2 = wrap_f2(a0, a1, a2);
+#endif
+  
+  printf("Completed adapted_f1\n");
+  fflush(stdout);
 
-    printf("Completed f1\n");
-    fflush(stdout);
-
-    printf("Starting adapted_f1\n");
-    fflush(stdout);
-
-    long r2 = wrap_f2(a0, a1, a2, a3);
-
-    printf("Completed adapted_f1\n");
-    fflush(stdout);
-
-    if (r1 == r2) {
-        printf("Match\n");
-    } else {
-        printf("Mismatch\n");
-    }
-    if (r1p)
-        *r1p = r1;
-    if (r2p)
-        *r2p = r2;
-    return r1 == r2;
+  if (r1 == r2) {
+    printf("Match\n");
+  } else {
+    printf("Mismatch\n");
+  }
+  if (r1p)
+    *r1p = r1;
+  if (r2p)
+    *r2p = r2;
+  return r1 == r2;
 }
 
 void fuzz_start() {}
