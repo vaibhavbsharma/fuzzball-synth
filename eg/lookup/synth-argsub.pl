@@ -16,6 +16,9 @@ my $region_limit = 255;
 
 my $sane_addr = 0x42420000;
 
+my $rax_addr = "0x401221";
+my $rdx_addr = "0x40121a";
+
 my @fuzzball_extra_args_arr;
 my $numTests=0;
 # Paths to binaries: these probably differ on your system. You can add
@@ -149,7 +152,7 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f2nargs=6;
 splice(@fields, 2 * $f2nargs);
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
+my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp
 		   # , "-save-solver-files"
 		   , "-solver-timeout",5,"-timeout-as-unsat"
     );
@@ -206,7 +209,7 @@ sub check_adaptor {
     my($adapt,$ret_adapt) = (@_);
     
     open(TESTS, ">ceinputs");
-    my @vals = ($sane_addr, 0, 0, 0, 0, 0); #for mo
+    my @vals = ($sane_addr, 0, 0, 0, 0, 0);
     splice(@vals, 6);
     my $test_str = join(" ", map(sprintf("0x%x", $_), @vals));
     print TESTS $test_str, "\n";
@@ -227,9 +230,9 @@ sub check_adaptor {
 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
 	push @conc_ret_adapt, ("-extra-condition", $s);
     }
-    my $addr_lb = sprintf("0x403db7:R_RAX:reg64_t>=0x%x:reg64_t", 
+    my $addr_lb = sprintf("%s:R_RAX:reg64_t<0x%x:reg64_t", $rax_addr,
 			  $sane_addr);
-    my $addr_ub = sprintf("0x403db7:R_RAX:reg64_t<=0x%x:reg64_t",
+    my $addr_ub = sprintf("%s:R_RAX:reg64_t>0x%x:reg64_t", $rax_addr,
 			  $sane_addr+$region_limit);
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
@@ -240,11 +243,18 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		"-extra-condition", "c:reg64_t<=\$0xff:reg64_t",
-		"-check-condition-at", "0x403db0:R_RDX:reg64_t<=0xff:reg64_t",
-		"-check-condition-at", "0x403db0:R_RDX:reg64_t>=0x0:reg64_t",
+		#"-extra-condition", "b:reg64_t<=\$0xff:reg64_t",
+		"-check-condition-at", sprintf("%s:R_RDX:reg64_t>0xff:reg64_t", $rdx_addr),
+		"-check-condition-at", sprintf("%s:R_RDX:reg64_t<0x0:reg64_t", $rdx_addr),
 		"-check-condition-at", $addr_lb,
 		"-check-condition-at", $addr_ub,
+		"-stop-on-nonfalse-cond",
+		"-trace-stopping",
+		#"-trace-loads",
+		# "-trace-stores",
+		# "-trace-insns",
+		# "-trace-registers",
+		"-trace-adaptor",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
 		"-trace-syscalls",
@@ -261,11 +271,7 @@ sub check_adaptor {
 		#"-trace-offset-limit",
 		"-trace-basic",
 		#"-trace-eip",
-		#"-trace-registers",
 		#"-trace-stmts",
-		#"-trace-insns",
-		#"-trace-loads",
-		#"-trace-stores",
 		"-trace-conditions",
 		"-trace-decisions",
 		#"-trace-solver",
@@ -279,6 +285,7 @@ sub check_adaptor {
 		"-iteration-limit", $iteration_limit,
 		"-region-limit", $region_limit,
 		"-nonzero-divisors",
+		"-zero-memory",
 		"-branch-preference", "$match_jne_addr:0",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
@@ -394,8 +401,8 @@ sub check_adaptor {
 	die "Missing results from check run";
     }
     $numTests++;
-    $ce[0]=$sane_addr; #for mo
-    $sane_addr = $sane_addr + $region_limit;
+    $ce[0]=$sane_addr; 
+    #$sane_addr = $sane_addr + $region_limit;
     if ($fails == 0) {
 	return 1;
     } else {
@@ -420,10 +427,29 @@ sub try_synth {
     }
     close TESTS;
     
+    my $addr_lb = sprintf("%s:R_RAX:reg64_t<0x%x:reg64_t", $rax_addr,
+			  $sane_addr);
+    # my $adapt = [0, 0, 1, 255, 0, 1]; 
+    # my $ret_adapt = [0, 0];
+    # my @conc_adapt = ();
+    # for my $i (0 .. $#$adapt) {
+    # 	my($name, $ty, $fmt) = @{$fields[$i]};
+    # 	my $val = $adapt->[$i];
+    # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    # 	push @conc_adapt, ("-extra-condition", $s);
+    # }
+    # my @conc_ret_adapt = ();
+    # for my $i (0 .. $#$ret_adapt) {
+    # 	my($name, $ty, $fmt) = @{$ret_fields[$i]};
+    # 	my $val = $ret_adapt->[$i];
+    # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    # 	push @conc_ret_adapt, ("-extra-condition", $s);
+    # }
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 	    @solver_opts, 
 	    "-fuzz-start-addr", $fuzz_start_addr,
-	    "-trace-temps",
+		"-trace-temps",
+		"-check-condition-at", $addr_lb,
 	    #tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 	    #counter example search mode otherwise
 	    "-adaptor-search-mode",
@@ -431,7 +457,8 @@ sub try_synth {
 	    "-table-limit","12",
 	    "-return-zero-missing-x64-syscalls",
 	    @synth_opt, @const_bounds_ec,
-	    @synth_ret_opt,
+		@synth_ret_opt,
+		# @conc_adapt, @conc_ret_adapt,
 	    "-match-syscalls-in-addr-range",
 	    $f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 	    "-branch-preference", "$match_jne_addr:1",
@@ -536,7 +563,8 @@ if ($default_adaptor_pref == 1) {
     }
 }
 
-$adapt->[0]=1;
+# my $adapt = [0, 0, 1, 255, 0, 1]; 
+# my $ret_adapt = [0, 0];
 
 # If outer function takes no arguments, then the inner function can only use constants
 if ($f1nargs==0) {

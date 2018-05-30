@@ -96,7 +96,7 @@
 #include <sys/gmon.h>
 #include <sys/inotify.h>
 #include <sys/io.h>
-#include <sys/kdaemon.h>
+//#include <sys/kdaemon.h>
 #include <sys/klog.h>
 #include <sys/mount.h>
 #include <sys/personality.h>
@@ -133,7 +133,7 @@
 #define UNGETC(c) ungetc(c, stdin)
 #define RETURN(ptr) return ptr
 #define ERROR(val) return 0
-#include <regexp.h>
+//#include <regexp.h>
 #undef INIT
 #undef GETC
 #undef PEEKC
@@ -166,18 +166,20 @@
   return s[0]=='\0';
   } */
 
-int _f1(int *preds, int len, int c) {
-  if(abs(c) > (len/2)) //buggy for c = -2147483648
+int noop2(int a, int b) { return 0; }
+
+unsigned char _f1(unsigned char *preds, int c) {
+  if(abs(c) > 127) //buggy for c = -2147483648
     return -1; 
   //if(abs(c) > (len/2) || c == INT_MIN) return -1; //fixed
-  return preds[c+(len/2)+1];
+  return preds[c+127];
 }
 
-int _f2(int c, int *preds, int len) {
+unsigned char _f2(unsigned char *preds, int len, int c) {
   if( !(-(len/2) <= c && c <= (len/2)) ) 
     return -1;
   //if(abs(c) > (len/2) || c == INT_MIN) return -1; //fixed
-  return preds[c+(len/2)+1];
+  return preds[c+(len/2)];
 }
 
 int _isalpha(int i) {
@@ -469,16 +471,16 @@ noconv:
 
 
 int arch_prctl(int, unsigned long);
-caddr_t create_module(const char *, size_t);
+//caddr_t create_module(const char *, size_t);
 int delete_module(const char *, int);
-int get_kernel_syms(void *);
+//int get_kernel_syms(void *);
 char *gets(char *s);
 int init_module(void *, unsigned long, const char *);
 int modify_ldt(int, void *, unsigned long);
 long nfsservctl(int, void *, void *);
 int pivot_root(const char *, const char *);
-int query_module(const char *, int, void *, size_t, size_t);
-int uselib(const char *);
+//int query_module(const char *, int, void *, size_t, size_t);
+//int uselib(const char *);
 
 void passwd2des(char *passwd, char *key);
 int xencrypt(char *secret, char *passwd);
@@ -600,8 +602,8 @@ struct func_info funcs[] = {
     /*   56 */ {"lsetxattr", (func*)&lsetxattr, 5, 0, 0},
     /*   57 */ {"removexattr", (func*)&removexattr, 2, 0, 0},
     /*   58 */ {"setxattr", (func*)&setxattr, 5, 0, 0},
-    /*   59 */ {"step", (func*)&step, 2, 0, 0},
-    /*   60 */ {"advance", (func*)&advance, 2, 0, 0},
+    /*   59 */ {"step", (func*)&noop2, 2, 0, 0},
+    /*   60 */ {"advance", (func*)&noop2, 2, 0, 0},
     /*   61 */ {"setfsent", (func*)&setfsent, 0, 0, 0},
     /*   62 */ {"getfsent", (func*)&getfsent, 0, 0, 0},
     /*   63 */ {"getfsspec", (func*)&getfsspec, 1, 0, 0},
@@ -632,13 +634,13 @@ struct func_info funcs[] = {
     /*   88 */ {"fanotify_mark", (func*)&fanotify_mark, 5, 0, 0},
     /*   89 */ {"adjtimex", (func*)&adjtimex, 1, 0, 0},
     /*   90 */ {"clock_adjtime", (func*)&clock_adjtime, 2, 0, 0},
-    /*   91 */ {"create_module", (func*)&create_module, 2, 0, 0},
+    /*   91 */ {"create_module", (func*)&noop2, 2, 0, 0},
     /*   92 */ {"delete_module", (func*)&delete_module, 2, 0, 0},
     /*   93 */ {"epoll_create", (func*)&epoll_create, 1, 0, 0},
     /*   94 */ {"epoll_create1", (func*)&epoll_create1, 1, 0, 0},
     /*   95 */ {"epoll_ctl", (func*)&epoll_ctl, 4, 0, 0},
     /*   96 */ {"epoll_wait", (func*)&epoll_wait, 4, 0, 0},
-    /*   97 */ {"get_kernel_syms", (func*)&get_kernel_syms, 1, 0, 0},
+    /*   97 */ {"get_kernel_syms", (func*)&noop2, 1, 0, 0},
     /*   98 */ {"init_module", (func*)&init_module, 3, 0, 0},
     /*   99 */ {"inotify_add_watch", (func*)&inotify_add_watch, 3, 0, 0},
     /*  100 */ {"inotify_init", (func*)&inotify_init, 0, 0, 0},
@@ -651,13 +653,13 @@ struct func_info funcs[] = {
     /*  107 */ {"personality", (func*)&personality, 1, 0, 0},
     /*  108 */ {"pivot_root", (func*)&pivot_root, 2, 0, 0},
     /*  109 */ {"prctl", (func*)&prctl, 1, 1, 0},
-    /*  110 */ {"query_module", (func*)&query_module, 5, 0, 0},
+    /*  110 */ {"query_module", (func*)&noop2, 5, 0, 0},
     /*  111 */ {"quotactl", (func*)&quotactl, 4, 0, 0},
     /*  112 */ {"splice", (func*)&splice, 6, 0, 0},
     /*  113 */ {"sysinfo", (func*)&sysinfo, 1, 0, 0},
     /*  114 */ {"tee", (func*)&tee, 4, 0, 0},
     /*  115 */ {"unshare", (func*)&unshare, 1, 0, 0},
-    /*  116 */ {"uselib", (func*)&uselib, 1, 0, 0},
+    /*  116 */ {"uselib", (func*)&noop2, 1, 0, 0},
     /*  117 */ {"vmsplice", (func*)&vmsplice, 4, 0, 0},
     /*  118 */ {"timerfd_create", (func*)&timerfd_create, 2, 0, 0},
     /*  119 */ {"timerfd_settime", (func*)&timerfd_settime, 4, 0, 0},
@@ -668,7 +670,7 @@ struct func_info funcs[] = {
     /*  124 */ {"setns", (func*)&setns, 2, 0, 0},
     /*  125 */ {"process_vm_readv", (func*)&process_vm_readv, 6, 0, 0},
     /*  126 */ {"process_vm_writev", (func*)&process_vm_writev, 6, 0, 0},
-    /*  127 */ {"bdflush", (func*)&bdflush, 2, 0, 0},
+    /*  127 */ {"bdflush", (func*)&noop2, 2, 0, 0},
     /*  128 */ {"accept", (func*)&accept, 3, 0, 0},
     /*  129 */ {"bind", (func*)&bind, 3, 0, 0},
     /*  130 */ {"connect", (func*)&connect, 3, 0, 0},
@@ -1857,7 +1859,7 @@ struct func_info funcs[] = {
     /* 1313 */ {"setusershell", (func*)&setusershell, 0, 0, 1},
     /* 1314 */ {"getpass", (func*)&getpass, 1, 0, 0},
     /* 1315 */ {"ttyslot", (func*)&ttyslot, 0, 0, 0},
-    /* 1316 */ {"_f1", (func*)&_f1, 3, 0, 0},
+    /* 1316 */ {"_f1", (func*)&_f1, 2, 0, 0},
     /* 1317 */ {"_f2", (func*)&_f2, 3, 0, 0},
     /* 1318 */ {"frexpf", (func*)&frexpf, 2, 0, 0},
     /* 1319 */ {"frexp", (func*)&frexp, 2, 0, 0},
