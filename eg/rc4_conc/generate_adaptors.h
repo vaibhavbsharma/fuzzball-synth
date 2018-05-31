@@ -114,27 +114,27 @@ void generate_ret_adaptors_randomized(fieldsub *m) {
   int ads_ind=0;
   if(!generated_ret_adaptors) {
     ret_ads[ads_ind++].ret_type=0; 
-    // //populateAdaptor();
-    // for(i=const_lb; i<= const_ub; i++) {
-    //   ret_ads[ads_ind].ret_type=1;
-    //   ret_ads[ads_ind++].ret_val=i;
-    //   assert(ads_ind <= PER_ARG_LIM);
-    // //populateAdaptor(); 
-    // }
-    // for(i=0; i<8; i++) {
-    //   for(j=0; j < f2nargs; j++) {
-    // 	ret_ads[ads_ind].ret_type = f2arg_ret_type[i];
-    // 	ret_ads[ads_ind++].ret_val = j;
-    // 	assert(ads_ind <= PER_ARG_LIM);
-    // 	//populateAdaptor();
-    //   }
-    // }
-    // for(i=0; i<9; i++) {
-    //   ret_ads[ads_ind++].ret_type = retarg_ret_type[i];
-    //   assert(ads_ind <= PER_ARG_LIM);
-    //   //populateAdaptor();
-    // }
-    // shuffle_adaptors_retsub(ret_ads, ads_ind);
+    //populateAdaptor();
+    for(i=const_lb; i<= const_ub; i++) {
+      ret_ads[ads_ind].ret_type=1;
+      ret_ads[ads_ind++].ret_val=i;
+      assert(ads_ind <= PER_ARG_LIM);
+    //populateAdaptor(); 
+    }
+    for(i=0; i<8; i++) {
+      for(j=0; j < f2nargs; j++) {
+    	ret_ads[ads_ind].ret_type = f2arg_ret_type[i];
+    	ret_ads[ads_ind++].ret_val = j;
+    	assert(ads_ind <= PER_ARG_LIM);
+    	//populateAdaptor();
+      }
+    }
+    for(i=0; i<9; i++) {
+      ret_ads[ads_ind++].ret_type = retarg_ret_type[i];
+      assert(ads_ind <= PER_ARG_LIM);
+      //populateAdaptor();
+    }
+    shuffle_adaptors_retsub(ret_ads, ads_ind);
     if(calculating) {
       num_adaptors_g *= ads_ind;
       printf("ret: ads_ind = %d\n", ads_ind);
