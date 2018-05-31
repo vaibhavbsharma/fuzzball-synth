@@ -29,11 +29,10 @@ my $iteration_count = 0;
 
 my $bin = "./two-funcs";
 
-# print "compiling binary: ";
-# my $unused = `gcc -static two-funcs.c -g -o two-funcs -lpthread`;
-# my $gcc_ec = $?;
-# die "failed to compile $bin" unless $gcc_ec == 0;
-# print "gcc_ec = $gcc_ec\n";
+print "compiling binary: ";
+my $unused = `gcc -static -DF2VER=0 -DF2NARGS=2 two-funcs.c -g -o two-funcs -lpthread`;
+my $gcc_ec = $?;
+die "failed to compile $bin" unless $gcc_ec == 0;
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -185,13 +184,13 @@ sub check_adaptor {
 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
 	push @conc_adapt, ("-extra-condition", $s);
     }
-    my @conc_ret_adapt = ();
-    for my $i (0 .. $#$ret_adapt) {
-	my($name, $ty, $fmt) = @{$ret_fields[$i]};
-	my $val = $ret_adapt->[$i];
-	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
-	push @conc_ret_adapt, ("-extra-condition", $s);
-    }
+    # my @conc_ret_adapt = ();
+    # for my $i (0 .. $#$ret_adapt) {
+    # 	my($name, $ty, $fmt) = @{$ret_fields[$i]};
+    # 	my $val = $ret_adapt->[$i];
+    # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    # 	push @conc_ret_adapt, ("-extra-condition", $s);
+    # }
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -201,21 +200,22 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		"-trace-sym-addr-details",
-		"-trace-sym-addrs",
-		"-trace-syscalls",
+		"-trace-adaptor",
+		#"-trace-sym-addr-details",
+		#"-trace-sym-addrs",
+		#"-trace-syscalls",
 		"-omit-pf-af",
-		# "-trace-temps",
-		"-trace-regions",
-		"-trace-memory-snapshots",
-		"-trace-tables",
+		"-trace-temps",
+		#"-trace-regions",
+		#"-trace-memory-snapshots",
+		#"-trace-tables",
 		"-table-limit","12",
 		#"-save-decision-tree-interval", 1,
 		#"-trace-decision-tree",
 		"-trace-binary-paths-bracketed",
                 #"-narrow-bitwidth-cutoff","1",
 		#"-trace-offset-limit",
-		"-trace-basic",
+		#"-trace-basic",
 		# "-trace-eip",
 		#"-trace-registers",
 		#"-trace-stmts",
@@ -229,7 +229,7 @@ sub check_adaptor {
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
-		@synth_ret_opt, @conc_ret_adapt,
+		#@synth_ret_opt, @conc_ret_adapt,
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
@@ -348,7 +348,7 @@ sub check_adaptor {
 			$str_arg_contents .= "00";
 		    }
 		}
-		printf("str_arg_contents = $str_arg_contents\n");;
+		# printf("str_arg_contents = $str_arg_contents\n");;
 		my @data_ary = split //, $str_arg_contents;
 		generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
@@ -406,7 +406,8 @@ sub try_synth {
     close TESTS;
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
-	    @solver_opts, 
+		@solver_opts, 
+		"-trace-adaptor",
 	    "-fuzz-start-addr", $fuzz_start_addr,
 	    # "-trace-temps",
 	    #tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
@@ -416,24 +417,24 @@ sub try_synth {
 	    "-table-limit","12",
 	    "-return-zero-missing-x64-syscalls",
 	    @synth_opt, @const_bounds_ec,
-	    @synth_ret_opt,
+	    #@synth_ret_opt,
 	    "-match-syscalls-in-addr-range",
 	    $f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 	    "-branch-preference", "$match_jne_addr:1",
 	    "-trace-conditions", "-omit-pf-af",
-	    "-trace-syscalls",
+	    #"-trace-syscalls",
 	    #"-trace-decision-tree",
 	    #"-save-decision-tree-interval","1",
 	    "-trace-decisions",
 	    "-trace-stopping",
-	    "-trace-regions",
-	    "-trace-binary-paths-bracketed",
-	    "-trace-memory-snapshots",
-	    "-trace-sym-addr-details",
-	    "-trace-sym-addrs",
-	    "-trace-tables",
+	    #"-trace-regions",
+	    #"-trace-binary-paths-bracketed",
+	    #"-trace-memory-snapshots",
+	    #"-trace-sym-addr-details",
+	    #"-trace-sym-addrs",
+	    #"-trace-tables",
 	    #"-trace-offset-limit",
-	    "-trace-basic",
+	    #"-trace-basic",
 	    # "-trace-eip",
 	    #"-trace-registers",
 	    #"-trace-stmts",
@@ -497,14 +498,6 @@ sub try_synth {
     return ([@afields],[@bfields]);
 }
 
-# Set these to test a specific adaptor
-#  $adapt->[0]=0;
-#  $adapt->[1]=0;
-#  $adapt->[2]=1;
-#  $adapt->[3]=0;
-#  $adapt->[4]=1;
-#  $adapt->[5]=10;
-
 # Main loop: starting with a stupid adaptor and no tests, alternate
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
@@ -522,6 +515,16 @@ if ($default_adaptor_pref == 1) {
 	}
     }
 }
+
+# Set these to test a specific adaptor
+# $adapt->[0]=0;
+# $adapt->[1]=1;
+# $adapt->[2]=1;
+# $adapt->[3]=7;
+# $adapt->[4]=0;
+# $adapt->[5]=0;
+# $adapt->[6]=0;
+# $adapt->[7]=0;
 
 $adapt->[0]=1;
 

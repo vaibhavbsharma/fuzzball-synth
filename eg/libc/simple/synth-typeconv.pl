@@ -26,11 +26,10 @@ my $adaptor_score = 0;
 
 my $bin = "./two-funcs";
 
-print "compiling concrete adaptor search binary: ";
-my $unused = `gcc -static $bin.c -g -o $bin -lpthread`;
+print "compiling binary: ";
+my $unused = `gcc -static -DF2VER=0 -DF2NARGS=3 two-funcs.c -g -o two-funcs -lpthread`;
 my $gcc_ec = $?;
 die "failed to compile $bin" unless $gcc_ec == 0;
-print "gcc_ec = $gcc_ec\n";
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -197,6 +196,7 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
+		#"-trace-adaptor",
 		"-trace-sym-addr-details",
 		"-trace-sym-addrs",
 		"-trace-syscalls",
@@ -224,7 +224,7 @@ sub check_adaptor {
 		#"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
-		@synth_opt, @conc_adapt, @const_bounds_ec,
+		@synth_opt, @conc_adapt, #@const_bounds_ec,
 		@synth_ret_opt, @conc_ret_adapt,
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
@@ -410,7 +410,7 @@ sub try_synth {
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-table-limit","12",
 		"-return-zero-missing-x64-syscalls",
-		@synth_opt, @const_bounds_ec,
+		@synth_opt, #@const_bounds_ec,
 		@synth_ret_opt,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
