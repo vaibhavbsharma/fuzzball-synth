@@ -3,9 +3,11 @@
 use strict;
 
 
-die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [constant bounds file] <fragment file name> <return=>enable ret.val.sub.> <1=verbose, else non-verbose mode>"
+die "Usage: synth-arithmetic-frag.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) <fragment file name> <return=>enable ret.val.sub.> <1=verbose, else non-verbose mode>"
   unless @ARGV == 8;
 my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_bounds_file, $frag_file_name, $is_ret_enabled, $verbose) = @ARGV;
+
+die "identity as default adapter is not supported" unless $default_adaptor_pref == 0;
 
 $|=1;
 
@@ -15,7 +17,7 @@ srand($rand_seed);
 my $arch_str = "arm";
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
-
+my $arith_depth = 2; # corresponds to int_arith_depth in adapter_synthesis.ml#line 241
 my $region_limit = 936;
 
 my $sane_addr = 0x42420000;
@@ -97,34 +99,54 @@ my($fields_addr);
 # Field [1]: Vine type
 # Field [2]: printf format for the string form
 
-my @fields =
-  (["a_type_R",  "reg8_t", "%01x"],
-   ["a_val_R",      "reg32_t", "%016x"],
-   ["b_type_R",  "reg8_t", "%01x"],
-   ["b_val_R",      "reg32_t", "%016x"],
-   ["c_type_R",  "reg8_t", "%01x"],
-   ["c_val_R",      "reg32_t", "%016x"],
-   ["d_type_R",  "reg8_t", "%01x"],
-   ["d_val_R",      "reg32_t", "%016x"],
-   ["e_type_R",  "reg8_t", "%01x"],
-   ["e_val_R",      "reg32_t", "%016x"],
-   ["f_type_R",  "reg8_t", "%01x"],
-   ["f_val_R",      "reg32_t", "%016x"],
-   ["g_type_R",  "reg8_t", "%01x"],
-   ["g_val_R",      "reg32_t", "%016x"],
-   ["h_type_R",  "reg8_t", "%01x"],
-   ["h_val_R",      "reg32_t", "%016x"],
-   ["i_type_R",  "reg8_t", "%01x"],
-   ["i_val_R",      "reg32_t", "%016x"],
-   ["j_type_R",  "reg8_t", "%01x"],
-   ["j_val_R",      "reg32_t", "%016x"],
-   ["k_type_R",  "reg8_t", "%01x"],
-   ["k_val_R",      "reg32_t", "%016x"],
-   ["l_type_R",  "reg8_t", "%01x"],
-   ["l_val_R",      "reg32_t", "%016x"],
-   ["m_type_R",  "reg8_t", "%01x"],
-   ["m_val_R",      "reg32_t", "%016x"],
-);
+#my @fields =
+#    (["a_type_R",  "reg8_t", "%01x"],
+#     ["a_val_R",      "reg32_t", "%016x"],
+#     ["b_type_R",  "reg8_t", "%01x"],
+#     ["b_val_R",      "reg32_t", "%016x"],
+#     ["c_type_R",  "reg8_t", "%01x"],
+#     ["c_val_R",      "reg32_t", "%016x"],
+#     ["d_type_R",  "reg8_t", "%01x"],
+#     ["d_val_R",      "reg32_t", "%016x"],
+#     ["e_type_R",  "reg8_t", "%01x"],
+#     ["e_val_R",      "reg32_t", "%016x"],
+#     ["f_type_R",  "reg8_t", "%01x"],
+#     ["f_val_R",      "reg32_t", "%016x"],
+#     ["g_type_R",  "reg8_t", "%01x"],
+#     ["g_val_R",      "reg32_t", "%016x"],
+#     ["h_type_R",  "reg8_t", "%01x"],
+#     ["h_val_R",      "reg32_t", "%016x"],
+#     ["i_type_R",  "reg8_t", "%01x"],
+#     ["i_val_R",      "reg32_t", "%016x"],
+#     ["j_type_R",  "reg8_t", "%01x"],
+#     ["j_val_R",      "reg32_t", "%016x"],
+#     ["k_type_R",  "reg8_t", "%01x"],
+#     ["k_val_R",      "reg32_t", "%016x"],
+#     ["l_type_R",  "reg8_t", "%01x"],
+#     ["l_val_R",      "reg32_t", "%016x"],
+#     ["m_type_R",  "reg8_t", "%01x"],
+#     ["m_val_R",      "reg32_t", "%016x"],
+#    );
+my @fields = ();
+for (my $i = 0; $i < 13; $i++) {
+    my $n = chr(97 + $i);
+    my $type_var = sprintf("%s_type_R", $n);
+    my $val_var = sprintf("%s_val_R", $n);
+    my $type_var_0 = sprintf("%s_type_R0", $n);
+    my $val_var_0 = sprintf("%s_val_R0", $n);
+    my $type_var_1 = sprintf("%s_type_R1", $n);
+    my $val_var_1 = sprintf("%s_val_R1", $n);
+    push @fields, [$type_var, "reg8_t", "%01x"];
+    push @fields, [$val_var, "reg32_t", "%016x"];
+    if ($arith_depth > 1) {
+	die "unsupported arithmetic adapter depth" unless $arith_depth == 2;
+	push @fields, [$type_var_0, "reg8_t", "%01x"];
+	push @fields, [$val_var_0, "reg32_t", "%016x"];
+	push @fields, [$type_var_1, "reg8_t", "%01x"];
+	push @fields, [$val_var_1, "reg32_t", "%016x"];
+    }
+}
+
 
 my @ret_fields =  
 (
@@ -135,7 +157,10 @@ my @ret_fields =
 
 my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 
-splice(@fields, 2 * $f2nargs);
+if ($arith_depth == 1) {
+    splice(@fields, 2 * $f2nargs);
+} elsif ($arith_depth == 2) { splice(@fields, 6 * $f2nargs); }
+else { die "unsupported arithmetic adapter depth"; } 
 
 my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
 		   # , "-save-solver-files"
@@ -148,46 +173,6 @@ my @synth_opt = ("-synthesize-adaptor",
 my @synth_ret_opt = ("-synthesize-return-adaptor",
 		 join(":", "return-typeconv", $f2_call_addr, $post_f2_call, $f2nargs));
 print "synth_ret_opt = @synth_ret_opt\n";
-
-my @const_bounds = ();
-my @const_vals = ();
-my @const_bounds_ec = ();
-if($const_bounds_file ne "-") {
-  open(F, "<$const_bounds_file") or die "cannot open constant bounds file";
-  while(<F>) {
-    if(/^([-0-9]+)-([-0-9]+)$/) {
-    my ($lb,$ub) = ($1,$2);
-  	push @const_bounds, ($lb, $ub);
-      } else { 
-  	my $c = $_ + 0;
-  	push @const_vals, $c;
-      }
-  }
-  if(scalar(@const_bounds)==0 && scalar(@const_vals)==0) {
-      die "no constant bounds specified in $const_bounds_file";
-  }
-}
-
-for (my $i=0; $i<$f2nargs && ($const_bounds_file ne "-"); $i++) {
-    my $n = chr(97 + $i);
-    my $s1 = sprintf("%s_type_R:reg8_t==0:reg8_t ", $n);
-    my $s2 = sprintf("%s_type_R:reg8_t==0:reg8_t ", $n);
-    if($f1nargs == 0) {
-	die "f1nargs is 0, cannot set constant bounds";
-    }
-    for (my $i=0; $i < scalar(@const_bounds); $i+=2) {
-	$s1 .= sprintf(" | %s_val_R:reg32_t>=\$0x%Lx:reg32_t",$n,$const_bounds[$i]);
-	$s2 .= sprintf(" | %s_val_R:reg32_t<=\$0x%Lx:reg32_t",$n,$const_bounds[$i+1]);
-    }
-    for (my $i=0; $i < scalar(@const_vals); $i++) {
-	$s1 .= sprintf(" | %s_val_R==0x%Lx:reg32_t", $n, $const_vals[$i]);
-	$s2 .= sprintf(" | %s_val_R==0x%Lx:reg32_t", $n, $const_vals[$i]);
-    }
-    push @const_bounds_ec, ("-extra-condition", $s1);
-    push @const_bounds_ec, ("-extra-condition", $s2);
-}
-
-#print "const_bounds_ec = @const_bounds_ec\n";
 
 # http://stackoverflow.com/questions/17860976/how-do-i-output-a-string-of-hex-values-into-a-binary-file-in-perl
 sub generate_new_file
@@ -278,7 +263,7 @@ sub check_adaptor {
 		#"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
-		@synth_opt, @conc_adapt, @const_bounds_ec,
+		@synth_opt, @conc_adapt, 
 		@synth_ret_opt, @conc_ret_adapt,
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
@@ -474,7 +459,7 @@ sub try_synth {
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-table-limit","12",
 		"-return-zero-missing-x64-syscalls",
-		@synth_opt, @const_bounds_ec,
+		@synth_opt, 
 		@synth_ret_opt,
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
@@ -555,32 +540,6 @@ sub try_synth {
 my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
 
-# Setting up the default adaptor to be the identity adaptor
-if ($default_adaptor_pref == 1) {
-    my $f1_narg_counter=0;
-    for my $i (0 .. $#$adapt) {
-	if ($i%2 == 1) {
-	    $adapt->[$i] = $f1_narg_counter;
-	    if ($f1_narg_counter < $f1nargs-1) {
-		$f1_narg_counter= $f1_narg_counter + 1;
-	    }
-	}
-    }
-}
-
-$adapt->[0]=1;
-
-# If outer function takes no arguments, then the inner function can only use constants
-if ($f1nargs==0) {
-    for my $i (0 .. $#$adapt) {
-	if ($i%2 == 0) { # X_is_const field
-	    $adapt->[$i] = 1;
-	    $adapt->[$i+1] = 1;
-	}
-    }
-}
-
-#print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
 my @tests = ();
 my $done = 0;
 my $start_time = time();
@@ -592,10 +551,17 @@ my $success;
 sub get_adaptor_str {
     my $a = shift(@_);
     my $a_str = "{";
-    for(my $i=0; $i < $#$a; $i+=2) {
-	$a_str .= sprintf("(%d, %d)", $a->[$i], $a->[$i+1]);
-	if($i + 2 < $#$a) { $a_str .= ", "; }
-    }
+    if ($arith_depth == 1) {
+	for(my $i=0; $i < $#$a; $i+=2) {
+	    $a_str .= sprintf("(%d, %d)", $a->[$i], $a->[$i+1]);
+	    if($i + 2 < $#$a) { $a_str .= ", "; }
+	}
+    } elsif ($arith_depth == 2) {
+	for(my $i=0; $i < $#$a; $i+=6) {
+	    $a_str .= sprintf("(%d, %d, %d, %d, %d, %d)", $a->[$i], $a->[$i+1], $a->[$i+2], $a->[$i+3], $a->[$i+4], $a->[$i+5]);
+	    if($i + 6 < $#$a) { $a_str .= ", "; }
+	}
+    } else { die "unsupported arithmetic adapter depth"; }
     $a_str = $a_str . "}";
     return $a_str;
 }
@@ -628,6 +594,9 @@ while (!$done) {
     } else {
 	push @fuzzball_extra_args_arr, @{ $_fuzzball_extra_args };
 	my $ce_s = join(", ", @$cer);
+	if (grep( /^$ce_s$/, @tests) ) {
+	    die "$ce_s found twice in tests";
+	}
 	print "Mismatch on input $ce_s; adding as test\n";
 	push @tests, [@$cer];
     }
