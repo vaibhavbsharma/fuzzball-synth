@@ -4,8 +4,8 @@ use strict;
 
 
 die "Usage: synth-arithmetic-frag.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) <fragment file name> <return=>enable ret.val.sub.> <1=verbose, else non-verbose mode>"
-  unless @ARGV == 8;
-my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_bounds_file, $frag_file_name, $is_ret_enabled, $verbose) = @ARGV;
+  unless @ARGV == 7;
+my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $frag_file_name, $is_ret_enabled, $verbose) = @ARGV;
 
 die "identity as default adapter is not supported" unless $default_adaptor_pref == 0;
 
