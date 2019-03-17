@@ -2,7 +2,7 @@
 
 use strict;
 
-die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buckets)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, 2=boost_clamp,3-14=vlc ref. fns.> <1=argsub, 2=typeconv adaptor> <constant bounds file> <return => ret.val.sub.>"
+die "Usage: run-fragments.pl <fragments-dir> <max_buckets> <bucket-num(1-max_buckets)> <min-fragment-length> <max-fragment-length> <1=find identity fragments, 2=boost_clamp,3-14=vlc ref. fns.> <1=argsub, 2=typeconv adaptor, 3=arithmetic-depth-2-adapter> <constant bounds file> <return => ret.val.sub.>"
   unless @ARGV == 9;
 
 $|=1;
@@ -211,9 +211,14 @@ for(my $i = $last_index+1; $i < scalar(@this_bucket_fragments); $i++) {
 
     my $adaptor_driver = "synth-argsub-frag.pl";
     if($adaptor_family==2) { $adaptor_driver = "synth-typeconv-frag.pl"; }
-    
+    elsif($adaptor_family==3) { $adaptor_driver = "synth-arithmetic-frag.pl"; }
     my @cmd = ("perl",$adaptor_driver,"1",$inner_func_num,$rand_seed, "1", $const_bounds_file,
 	       "1", "$frag_file", $is_return_enabled, "0");
+    if ($adaptor_family == 3) {
+	@cmd = ("perl",$adaptor_driver,"1",$inner_func_num,$rand_seed, "0", 
+		"$frag_file", $is_return_enabled, "0");
+    }
+    
     printf(LOG "cmd = @cmd\n");
     select((select(LOG), $|=1)[0]);
     printf("cmd = @cmd\n");
