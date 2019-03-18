@@ -25,7 +25,7 @@ for ((i=$START_REF_NUM; i<=$END_REF_NUM; i++)); do
 		rm -rf $REFS_BASE_DIR/ref$i/arm-$j/fuzzball-tmp-* 2>/dev/null;
 		rm $REFS_BASE_DIR/ref$i/arm-$j/str_arg* 2>/dev/null;
 		# delete log files from an incomplete previous run
-		rm $REFS_BASE_DIR/ref$i/arm-$j/logs/LOG_FILE 2>/dev/null;
+		rm $REFS_BASE_DIR/ref$i/arm-$j/logs/$LOG_FILE 2>/dev/null;
 		rm $REFS_BASE_DIR/ref$i/arm-$j/logs/run-fragments-msi.log 2>/dev/null;
   done;
 	echo ", finished processing ref$i";
