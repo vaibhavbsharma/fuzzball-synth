@@ -567,6 +567,7 @@ sub get_adaptor_str {
 }
 
 `rm str_arg*`;
+`rm -rf fuzzball-tmp-*`;
 while (!$done) {
     my $adapt_s = get_adaptor_str($adapt);
     my $ret_adapt_s = get_adaptor_str($ret_adapt); #join(",", @$ret_adapt);
