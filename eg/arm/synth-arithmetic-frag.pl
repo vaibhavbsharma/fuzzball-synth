@@ -245,14 +245,12 @@ sub check_adaptor {
 		@verbose_args,
 		"-trace-regions",
 		"-omit-pf-af",
-		"-trace-memory-snapshots",
+		#"-trace-memory-snapshots",
 		"-table-limit","12",
 		#"-save-decision-tree-interval", 1,
 		#"-trace-decision-tree",
-		"-trace-binary-paths-bracketed",
-                #"-narrow-bitwidth-cutoff","1",
+    #"-narrow-bitwidth-cutoff","1",
 		#"-trace-offset-limit",
-		"-trace-basic",
 		#"-trace-eip",
 		#"-trace-registers",
 		#"-trace-stmts",
@@ -321,9 +319,11 @@ sub check_adaptor {
 		}
 	    }
 	    $iteration_count++;
+			print "  $_";
 	} elsif ($_ eq "Completed f1\n") {
 	    $f1_completed = 1;
 	    $f1_completed_count++;
+			print "  $_";
 	} elsif (($_ eq "Mismatch\n") or 
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
 		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
@@ -331,6 +331,7 @@ sub check_adaptor {
 		 (/^Disqualified path at (0x[0-9a-f]+)$/ and $f1_completed == 1)) {
 	    $fails++;
 	    $this_ce = 1;
+			print "  $_";
 	} elsif (/^Input vars: (.*)$/ and $this_ce) {
 	    my $vars = $1;
 	    @ce = (0) x $f1nargs;
@@ -394,7 +395,7 @@ sub check_adaptor {
 		generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
 	    $this_ce = 0;
-	    print "  $_";
+	    if ($verbose == 1) { print "  $_"; }
 	    last;
 	} elsif (/Address [a-f]_([0-9])+:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
 	    my $add_line = $_;
@@ -415,11 +416,11 @@ sub check_adaptor {
 		}
 	    }
 	} elsif (/.*STP timeout.*/ and ($f1_completed == 1)) {
-	    $stp_timeout = 1;
+	    $stp_timeout = 1;print "  $_";
 	} elsif (/.*Fatal error.*/) {
-	    $fatal_error = 1;
+	    $fatal_error = 1;print "  $_";
 	}
-	print "  $_";
+	if ($verbose == 1) { print "  $_"; }
     }
     close LOG;
     if ($matches == 0 and $fails == 0) {
