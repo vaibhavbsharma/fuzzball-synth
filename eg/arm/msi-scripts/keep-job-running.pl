@@ -35,7 +35,7 @@ sub keep_job_running {
 	print "done running all buckets for $job_name\n";
 	return 1;
     }
-    $output = `ssh itasca "qstat -u vaibhav -f"`;
+    $output = `ssh itasca "qstat -t | grep -v 'C batch'"`; #dont wait around for cancelled/completed jobs to be deleted from MSI's batch queue
     if(index($output, "Connection closed") != -1) { printf("Connection closed!\n"); exit(1); }
     if(index($output, "Connection timed out") != -1) { printf("Connection closed!\n"); exit(1); }
     if(index($output, "Connection closed") != -1) { printf("Connection closed!\n"); exit(1); }
