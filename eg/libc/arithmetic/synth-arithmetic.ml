@@ -10,10 +10,11 @@ open Printf
 (* 'outer function' = the 'black box' function (f1)
    'inner function' = the function whose arguments we want to adapt (f2) *)
 let print_usage () = 
-  (printf "usage: synth.ml <bin> <type> <tree depth> <f1num> <f2num> <rand. seed>\n%!";
+  (printf "usage: synth.ml <bin> <type> <tree depth> <f1num> <f2num> <rand. seed> <verbose>\n%!";
    printf "notes: <type> must be 'int' or 'float'\n%!";
    printf "       'outer' refers to the oracle function (f1)\n%!";
    printf "       'inner' refers to the function you're adapting (f2)\n%!";
+   printf "       verbose=1 turns on printing of debugging outputs, use verbose=0 for minimal debugging output\n%!";
    exit 1)
 let bin = 
   try Sys.argv.(1)
@@ -35,7 +36,9 @@ let f2num =
 let _ = 
   try Random.init (int_of_string Sys.argv.(6))
   with Invalid_argument _ -> print_usage ()
-
+let verbose =
+  try int_of_string Sys.argv.(7)
+  with Invalid_argument _ -> print_usage ()
 
 let func_info = ref []
 let in_chan = (open_in "types-no-float-1204.lst")
@@ -129,7 +132,6 @@ let print_adaptor () =
 
 (*** FUZZBall command line arguments ***)
 
-(* hardcoded path for the fevis repository *)
 let fuzzball = "fuzzball"
 
 (* STP is the default for the integer adaptor; Z3 is required for floating 
@@ -242,6 +244,9 @@ let check_adaptor () =
 			      but it works for now, TODO: fix this in the near future *)
        synth_opt]
     @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
+    @ (if verbose = 1 then
+	["-trace-decisions"; "-trace-conditions"; "-trace-binary-paths";"-trace-tables"]
+      else [])
     @ [(*"-table-limit 8";*)
       "-zero-memory";
       (* "-trace-temps"; 
@@ -250,17 +255,12 @@ let check_adaptor () =
       "-trace-sym-addr-details";
       "-trace-insns";
       "-trace-registers"; *)
-      "-trace-assigns";
-      "-trace-decisions";
-      "-trace-conditions";
-      "-trace-binary-paths";
-      "-trace-tables"; 
        "-random-seed"; string_of_int (Random.int 10000000); 
        "-trace-stopping";
        "--"; bin; string_of_int f1num; 
        string_of_int f2num; "g"]
   in
-  let _ = printf "%s\n%!" (String.concat " " cmd) in
+  let _ = if verbose = 1 then printf "%s\n%!" (String.concat " " cmd) else () in
   let ic = Unix.open_process_in (String.concat " " cmd) in
   let ce = ref (Array.make 6 0L) in
   (* read_results : string list -> (int * int) -> bool -> (bool * (int * int))
@@ -277,7 +277,7 @@ let check_adaptor () =
       let _ = if not (List.fold_left (||) 
                         false 
                         (List.map (fun s -> match_regex line s) no_print))
-              then printf " %s\n%!" line
+              then (if verbose = 1 then printf " %s\n%!" line else ())
               else () in
       match line with
       | "Match" -> read_results (matches + 1, fails) record_ce f1_completed
@@ -352,7 +352,7 @@ let try_synth () =
       "-zero-memory";
       "-random-seed"; string_of_int (Random.int 10000000);
       "--"; bin; string_of_int f1num; string_of_int f2num; "f tests"] in
-  let _ = printf "%s\n%!" (String.concat " " cmd) in
+  let _ = (if verbose = 1 then printf "%s\n%!" (String.concat " " cmd) else ()) in
   let ic = Unix.open_process_in (String.concat " " cmd) in
   (* read_results : string list -> bool -> string
      read through the results of the call to FuzzBALL looking for a case
@@ -368,7 +368,7 @@ let try_synth () =
       let _ = if not (List.fold_left (||) 
                         false 
                         (List.map (fun s -> match_regex line s) no_print))
-              then printf " %s\n%!" line
+              then (if verbose = 1 then printf " %s\n%!" line else ())
               else () in
       match line with 
       | "All tests succeeded!" -> read_results true
@@ -419,7 +419,7 @@ let try_synth () =
 
 let total_ce_time = ref 0.0
 let total_as_time = ref 0.0
-
+  
 (*** main : () -> ()
      start with a simple adaptor and no tests and alternate between test 
      generation and synthesis, updating the adaptor and test set as needed ***)
@@ -462,6 +462,8 @@ Printf.printf "branch: %s\n" match_jne_addr;
 Printf.printf "%d = %s(%d)\n" f1num f1name outer_nargs;
 Printf.printf "%d = %s(%d)\n" f2num f2name inner_nargs;
 
+Printf.printf "Checking initial adapter\n";
+print_adaptor ();
 
 main ();;      
 
