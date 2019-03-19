@@ -471,8 +471,8 @@ let rec main () =
       print_adaptor ();
       main () (* repeat *)
 ;;
-syscall("rm str_arg*");
-syscall("rm -rf fuzzball-tmp-*");
+ignore(syscall("rm str_arg*"));
+ignore(syscall("rm -rf fuzzball-tmp-*"));
 Printf.printf "main: %s\n" main_addr;
 Printf.printf "f1: %s\n" f2_call_addr;
 Printf.printf "f2: %s\n" inner_func_addr;

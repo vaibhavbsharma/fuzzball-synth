@@ -227,7 +227,7 @@ for(my $i = $last_index+1; $i < $this_bucket_num_fns; $i++) {
         } elsif(/.*CounterExample search failed.*/ && ($result == 0)) {
           $result = 4;
         }
-        print " $_"; # unless (/.*Query time = .*/ || /.*Starting new query.*$/);
+        print " $_" unless (/.*Query time = .*/ || /.*Starting new query.*$/);
       }
       close(CHILD);
       waitpid($pid, 0);
