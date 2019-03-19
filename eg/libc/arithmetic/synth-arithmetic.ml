@@ -126,7 +126,7 @@ let print_adaptor () =
   List.iter (fun el -> let l = Str.split (Str.regexp " \\|:\\|=") el in
                        let name = List.nth l 1 in
                        let valu = List.nth l 4 in
-                       printf "%s = %s%!\n" name valu)
+                       printf "%s = %s%! " name valu)
             !adapt
 
 
@@ -174,14 +174,18 @@ let input_addr =
              :: (loop (List.tl l) (n+1))
     in loop (syscall ("nm " ^ bin ^ " | grep ' B [a-z]$'")) 0
 
-let (outer_call1_addr,outer_call_addr) =
+let f1_call_addr =
   match syscall ("objdump -dr " ^ bin ^ " | grep 'call.*<f1>'") with
-  | [str1; str2] -> (("0x0" ^ String.sub str1 2 6),("0x0" ^ String.sub str2 2 6))
-  | _ -> failwith "Unexpected function call address formats"
+  | [str1] -> "0x0" ^ String.sub str1 2 6
+  | _ -> failwith "Unexpected f1 function call address format"
+let f2_call_addr =
+  match syscall ("objdump -dr " ^ bin ^ " | grep 'call.*<wrap_f2>'") with
+  | [str1] -> "0x0" ^ String.sub str1 2 6
+  | _ -> failwith "Unexpected f1 function call address format"
 
-let post_outer_call1_addr = (Printf.sprintf "0x%x" ((int_of_string outer_call1_addr)+5))
+let post_f1_call_addr = (Printf.sprintf "0x%x" ((int_of_string f1_call_addr)+5))
 
-let post_outer_call_addr = (Printf.sprintf "0x%x" ((int_of_string outer_call_addr)+5))
+let post_f2_call_addr = (Printf.sprintf "0x%x" ((int_of_string f2_call_addr)+5))
 
 let inner_func_addr = 
   match syscall ("nm " ^ bin ^ " | fgrep ' T f2'") with
@@ -218,7 +222,7 @@ let synth_opt =
   (if adaptor_type = "int" 
    then " arithmetic_int:" 
    else " arithmetic_float:") ^
-   outer_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^
+   f2_call_addr ^ ":" ^ (string_of_int outer_nargs) ^ ":" ^
    inner_func_addr ^ ":" ^ (string_of_int inner_nargs)
 
 let path_depth_limit = 300
@@ -237,8 +241,8 @@ let check_adaptor () =
       then ["-branch-preference"; match_jne_addr ^ ":0"]
       else [])
     @ ["-match-syscalls-in-addr-range"; 
-       outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
-         outer_call_addr ^ ":" ^ post_outer_call_addr;
+       f1_call_addr ^ ":" ^ post_f1_call_addr ^ ":" ^
+         f2_call_addr ^ ":" ^ post_f2_call_addr;
        "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
        "-no-fail-on-huer"; (* not the right way to make strange term failures go away
 			      but it works for now, TODO: fix this in the near future *)
@@ -283,6 +287,12 @@ let check_adaptor () =
       | "Match" -> read_results (matches + 1, fails) record_ce f1_completed
       | "Completed f1" -> read_results (matches, fails) record_ce true
       | "Mismatch" -> read_results (matches, fails + 1) true f1_completed
+      | _ when (match_regex line ".*total query time =.*") || 
+      (match_regex line ".*Query time =.*") ||
+      (match_regex line ".*Starting new query.*") ||
+      (match_regex line ".*Fatal error.*") ->
+        printf " %s\n%!" line;
+        read_results (matches, fails) record_ce f1_completed
       | _ when (match_regex line "Stopping at null deref at 0x[0-9a-f]+") && f1_completed ->
             read_results (matches, fails + 1) true f1_completed
       | _ when (match_regex line "Stopping at access to unsupported address at 0x[0-9a-f]+") 
@@ -312,7 +322,8 @@ let check_adaptor () =
     with End_of_file -> 
       let _ = Unix.close_process_in ic in
       if matches = 0 && fails = 0 
-      then failwith "Missing results from check run"
+      then (printf "CounterExample search failed\n"; 
+        failwith "Missing results from check run")
       else (true, Array.to_list !ce) in
   read_results (0, 0) false false
 
@@ -338,8 +349,8 @@ let try_synth () =
       then ["-branch-preference"; match_jne_addr ^ ":1"]
       else []) 
     @ ["-match-syscalls-in-addr-range";
-       outer_call1_addr ^ ":" ^ post_outer_call1_addr ^ ":" ^
-         outer_call_addr ^ ":" ^ post_outer_call_addr;
+       f1_call_addr ^ ":" ^ post_f1_call_addr ^ ":" ^
+         f2_call_addr ^ ":" ^ post_f2_call_addr;
        "-return-zero-missing-x64-syscalls";
        "-adaptor-search-mode";
        "-trace-sym-addrs";
@@ -372,6 +383,12 @@ let try_synth () =
               else () in
       match line with 
       | "All tests succeeded!" -> read_results true
+      | _ when (match_regex line ".*total query time =.*") ||
+      (match_regex line ".*Query time =.*") ||
+      (match_regex line ".*Starting new query.*") ||
+      (match_regex line ".*Fatal error.*") ->
+        printf " %s\n%!" line;
+        read_results success
       | _ when (match_regex line "Disqualified path at 0x[0-9a-f]+") ->
 	read_results false
       | _ when (match_regex line "^Input vars: .*$") && success ->
@@ -419,6 +436,7 @@ let try_synth () =
 
 let total_ce_time = ref 0.0
 let total_as_time = ref 0.0
+let start_process = Unix.gettimeofday ()
   
 (*** main : () -> ()
      start with a simple adaptor and no tests and alternate between test 
@@ -432,11 +450,12 @@ let rec main () =
       total_ce_time := !total_ce_time +. (end_ver -. start_ver);
       printf "Success!\nFinal test set:\n%!";
       print_tests ();
-      printf "Final adaptor:\n%!";
+      printf "Final adaptor: %!";
       print_adaptor ();
   | (_, test) -> (* we need to synthesize a new adaptor *)
       let end_ver = Unix.gettimeofday () in
       printf "Time for verification: %fs\n" (end_ver -. start_ver);
+      printf "elapsed time = %fs, last CE search time = %fs\n" (end_ver -. start_process) (end_ver -. start_ver);
       total_ce_time := !total_ce_time +. (end_ver -. start_ver);
       printf "Adding test: %!";
       List.iter (Printf.printf "%Ld %!") test;
@@ -446,14 +465,16 @@ let rec main () =
       let _ = adapt := try_synth () in
       let end_syn = Unix.gettimeofday () in
       printf "Time for synthesis: %fs\n" (end_syn -. start_syn);
+      printf "elapsed time = %fs, last AS search time = %fs\n" (end_syn -. start_process) (end_syn -. start_syn);
       total_as_time := !total_as_time +. (end_syn -. start_syn);
       printf "Synthesized adaptor:\n%!";
       print_adaptor ();
       main () (* repeat *)
 ;;
-
+syscall("rm str_arg*");
+syscall("rm -rf fuzzball-tmp-*");
 Printf.printf "main: %s\n" main_addr;
-Printf.printf "f1: %s\n" outer_call_addr;
+Printf.printf "f1: %s\n" f2_call_addr;
 Printf.printf "f2: %s\n" inner_func_addr;
 
 List.iteri (fun idx str -> Printf.printf "arg %d = %s\n" idx str;) input_addr;
@@ -462,7 +483,7 @@ Printf.printf "branch: %s\n" match_jne_addr;
 Printf.printf "%d = %s(%d)\n" f1num f1name outer_nargs;
 Printf.printf "%d = %s(%d)\n" f2num f2name inner_nargs;
 
-Printf.printf "Checking initial adapter\n";
+Printf.printf "Checking initial adapter: ";
 print_adaptor ();
 
 main ();;      
