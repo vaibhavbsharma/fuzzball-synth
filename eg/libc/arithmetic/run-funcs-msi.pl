@@ -139,6 +139,7 @@ for(my $i = $last_index+1; $i < $this_bucket_num_fns; $i++) {
   for (my $inner_fn = $inner_func_start; 
 				$inner_fn <= $inner_func_end; 
 				$inner_fn++) {
+		if ($target_fn == $inner_fn) { next; }
     my $adaptor_driver = "synth-argsub.pl";
     if($adaptor_family==2) { $adaptor_driver = "synth-typeconv.pl"; }
     elsif($adaptor_family==3) { $adaptor_driver = "synth-arithmetic.ml"; }
