@@ -96,7 +96,7 @@
 #include <sys/gmon.h>
 #include <sys/inotify.h>
 #include <sys/io.h>
-#include <sys/kdaemon.h>
+//#include <sys/kdaemon.h>
 #include <sys/klog.h>
 #include <sys/mount.h>
 #include <sys/personality.h>
@@ -133,7 +133,7 @@
 #define UNGETC(c) ungetc(c, stdin)
 #define RETURN(ptr) return ptr
 #define ERROR(val) return 0
-#include <regexp.h>
+//#include <regexp.h>
 #undef INIT
 #undef GETC
 #undef PEEKC
@@ -141,35 +141,239 @@
 #undef RETURN
 #undef ERROR
 
-/* Equivalent with 0,00000000,0,00000000,0,00000001,1,00000001 */
-/*int _f1(int x, unsigned y){//, int z) {
-    return (x << 1) + (y % 2);// + (z << 1);
+
+
+
+# define STRTOL_LONG_MIN LONG_MIN
+# define STRTOL_LONG_MAX LONG_MAX
+# define L_(Ch) Ch
+
+// int _f1(int x, unsigned y, int z) {
+// //int _f1(int x){//, int z) {
+//   //return (x << 1);// + (z << 1);
+//   return (x << 1) + (y % 2);
+// }
+// 
+// int _f2(int a, int b) {//, int c, int d) {//,int e){//, int f) {
+// //int _f2(int y1, int y2) {//,int e){//, int f) {
+//   //return y1 << y2;// + e;// + f;
+//   //return c + d + (a & b);// + e;// + f;
+//     //return a + b + (c & d);
+//   return (a & 1) + (b * 2);
+// }
+
+// unsigned short _f2(unsigned short x, 
+// 		   //unsigned short fives,
+// 		   //unsigned short threes,
+// 		   //unsigned short sevens,
+// 		 unsigned short f) {
+//   //unsigned short popCountSketch(unsigned short x) {
+//   x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+//   x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+//   x= (x & 0x0077)+ ((x>> 8) & 0x0077); 
+//   x= (x & f)+ ((x>> 4) & f); 
+//   return x;
+// }
+
+
+// unsigned short _f2(unsigned short x, 
+// 		 unsigned short fives,
+// 		 unsigned short threes,
+// 		 unsigned short sevens,
+// 		 unsigned short f) {
+//   //unsigned short popCountSketch(unsigned short x) {
+//   x= (x & fives)+ ((x>> 1) & fives); 
+//   x= (x & threes)+ ((x>> 2) & threes); 
+//   x= (x & sevens)+ ((x>> 8) & sevens); 
+//   x= (x & f)+ ((x>> 4) & f); 
+//   return x;
+// }
+
+int noop2( int a, int b) { return 0; }
+
+// unsigned short popCountNaive(unsigned short v) {
+//   unsigned short c;
+//   for (c = 0; v; v >>= 1) {
+//     c += v & 1;
+//   }
+//   return c;
+// }
+
+int _f1(int x, unsigned y) { return (x << 1) + (y % 2);}
+
+unsigned short _f11(unsigned short v) {
+  // code corresponds to popCountNaive
+  char code[] = {0x55, 0x48, 0x89, 0xe5, 0x89, 0xf8, 0x66, 0x89, 0x45, 0xec, 0x66, 0xc7, 0x45, 0xfe, 0x00, 0x00, 0xeb, 0x0f, 0x0f, 0xb7, 0x45, 0xec, 0x83, 0xe0, 0x01, 0x66, 0x01, 0x45, 0xfe, 0x66, 0xd1, 0x6d, 0xec, 0x66, 0x83, 0x7d, 0xec, 0x00, 0x75, 0xea, 0x0f, 0xb7, 0x45, 0xfe, 0x5d, 0xc3};
+  void *buf;
+
+  /* copy code to executable buffer */    
+  // buf = mmap (0,sizeof(code),PROT_READ|PROT_WRITE|PROT_EXEC,
+  //             MAP_PRIVATE|MAP_ANON,-1,0);
+  // memcpy (buf, code, sizeof(code));
+  // printf(" buf = %p\n", buf);
+
+  /* run code */
+  return ((int (*) (int))code)(v);
 }
 
-int _f2(int a, int b, int c, int d,int e){//, int f) {
-    return c + d + (a & b) + e;// + f;
-    //return a + b + (c & d);
-    }*/
-
-int _f1(int a) {
-    int i;
-    
-    if (a == 0) {
-        return a;
-    }
-    
-    for (i = 0; i < 8 * sizeof(a); i++) {
-        if (a & (1 << i)) {
-            break;
-        }
-    }
-    return a ^= (1 << i);
+#if (F2VER == 0)
+int _f2(int a, int b, int c, int d) { return c + d + (a & b); }
+#elif  ((F2VER==1 ) || (F2VER==2 ) || (F2VER==4 ) || (F2VER==5 ) || (F2VER==7 ) || (F2VER==8 ) || (F2VER==12) || (F2VER==15))
+unsigned short _f2(unsigned short x) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> 8) & 0x0077); 
+  x= (x & 0xf)+ ((x>> 4) & 0xf); 
+  return x;
 }
-
-int _f2(int x) {
-    return x;
+#elif F2VER==3
+unsigned short _f2(unsigned short x,
+		     unsigned short c1) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> c1) & 0x0077); 
+  x= (x & 0xf)+ ((x>> 4) & 0xf); 
+  return x;
 }
+#elif F2VER==6
+unsigned short _f2(unsigned short x,
+		     unsigned short c1) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> 8) & 0x0077); 
+  x= (x & c1)+ ((x>> 4) & c1); 
+  return x;
+}
+#elif F2VER==9
+unsigned short _f2(unsigned short x,
+		     unsigned short c1,
+		     unsigned short c2) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> c2) & 0x0077); 
+  x= (x & 0xf)+ ((x>> c1) & 0xf); 
+  return x;
+}
+#elif F2VER==10
+unsigned short _f2(unsigned short x,
+		     unsigned short c1,
+		     unsigned short c2) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> c1) & 0x0077); 
+  x= (x & c2)+ ((x>> 4) & c2); 
+  return x;
+}
+#elif F2VER==11
+unsigned short _f2(unsigned short x,
+		     unsigned short c1,
+		     unsigned short c2, 
+		     unsigned short c3) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> c1) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> c3) & 0x0077); 
+  x= (x & 0xf)+ ((x>> c2) & 0xf); 
+  return x;
+}
+#elif ((F2VER==13) || (F2VER==14))
+unsigned short _f2(unsigned short x,
+		     unsigned short c1) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & c1)+ ((x>> 8) & c1); 
+  x= (x & 0xf)+ ((x>> 4) & 0xf); 
+  return x;
+}
+#elif F2VER==16
+unsigned short _f2(unsigned short x,
+		   unsigned short c1, 
+		   unsigned short c2,
+		   unsigned short c3,
+		   unsigned short c4) {
+  x= (x & 0x5555)+ ((x>> c1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> c2) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> c4) & 0x0077); 
+  x= (x & 0xf)+ ((x>> c3) & 0xf); 
+  return x;
+}
+#elif F2VER==17
+unsigned short _f2(unsigned short x,
+		   unsigned short c1,
+		   unsigned short c2,
+		   unsigned short c3) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> c2) & 0x0077); 
+  x= (x & c3)+ ((x>> c1) & c3); 
+  return x;
+}
+#elif ((F2VER==18) || (F2VER==19))
+unsigned short _f2(unsigned short x,
+		   unsigned short c1) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & c1)+ ((x>> 8) & c1); 
+  x= (x & 0xf)+ ((x>> 4) & 0xf); 
+  return x;
+}
+#elif F2VER==21
+unsigned short _f2(unsigned short x,
+		   unsigned short c1,
+		   unsigned short c2,
+		   unsigned short c3,
+		   unsigned short c4) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> c1) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> c3) & 0x0077); 
+  x= (x & c4)+ ((x>> c2) & c4); 
+  return x;
+}
+#elif ((F2VER==22) || (F2VER==23))
+unsigned short _f2(unsigned short x,
+		   unsigned short c1,
+		   unsigned short c2) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & c2)+ ((x>> 8) & c2); 
+  x= (x & c1)+ ((x>> 4) & c1); 
+  return x;
+}
+#elif F2VER==24
+unsigned short _f2(unsigned short x,
+		   unsigned short c1,
+		   unsigned short c2,
+		   unsigned short c3,
+		   unsigned short c4,
+		   unsigned short c5) {
+  x= (x & 0x5555)+ ((x>> c1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> c2) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> c4) & 0x0077); 
+  x= (x & c5)+ ((x>> c3) & c5); 
+  return x;
+}
+#elif F2VER==25
+unsigned short _f2(unsigned short x,
+		   unsigned short c1,
+		   unsigned short c2) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & c2)+ ((x>> 8) & c2); 
+  x= (x & c1)+ ((x>> 4) & c1); 
+  return x;
+}
+#else
+unsigned short _f2(unsigned short x) {
+  x= (x & 0x5555)+ ((x>> 1) & 0x5555); 
+  x= (x & 0x3333)+ ((x>> 2) & 0x3333); 
+  x= (x & 0x0077)+ ((x>> 8) & 0x0077); 
+  x= (x & 0xf)+ ((x>> 4) & 0xf); 
+  return x;
+}
+#endif
 
+/* int _f1(char *s) {
+  return s[0]=='\0';
+  } */
 int my_isupper(int c) {
   if((c >= 0) && (c <= 127)) {
     if(isupper(c)) return 1;
@@ -186,25 +390,311 @@ int my_islower(int c) {
   //return (unsigned)c-'a' < 26;
 }
 
-int _killpg(__pid_t pgrp, int sig) {
-  return sig + killpg(pgrp, 0);
+int _isalpha(int i) {
+  if( ( i < 0 ) || ( i > 127 ) ) {
+    return 0;
+  }
+  if(isalpha(i)!=0) return 1;
+  else return 0;
 }
 
-int _kill(__pid_t pgrp, int sig) {
-  return sig + kill(pgrp, 0); 
+int _isdigit(int i) {
+  if( ( i < 0 ) || ( i > 127 ) ) {
+    return 0;
+  }
+  return (isdigit(i)!=0 || isalpha(i)!=0);
+}
+
+int _isalnum(int i) {
+  if( ( i < 0 ) || ( i > 127 ) ) {
+    return 0;
+  }
+  return isalnum(i);
+  //if(isalnum(i)!=0) return 1;
+  //else return 0;
+}
+
+int _seteuid(uid_t uid) {
+  if(uid == (uid_t) ~0) {
+    return 0;
+  }
+  return seteuid(uid);
+}
+
+int _killpg(__pid_t pgrp, int sig) {
+  return killpg(abs(pgrp), sig);
+}
+
+long int mystrtol_1(char *nptr, char **endptr, int base) 
+{
+  int negative;
+  unsigned long int cutoff;
+  unsigned long int i;
+  const char *s;
+  unsigned char c;
+  const char *save, *end;
+
+  if (base < 0 || base == 1 || base > 36)
+    {
+      return 0;
+    }
+
+  save = s = nptr;
+
+  /* Skip white space.  */
+  while (isspace (*s))
+    ++s;
+  if (__builtin_expect (*s == L_('\0'), 0))
+    goto noconv;
+
+  /* Check for a sign.  */
+  negative = 0;
+  if (*s == L_('-'))
+    {
+      negative = 1;
+      ++s;
+    }
+  else if (*s == L_('+'))
+  ++s;
+
+  /* Recognize number prefix and if BASE is zero, figure it out ourselves.  */
+  if (*s == L_('0'))
+    {
+      if ((base == 0 || base == 16) && toupper (s[1]) == L_('X'))
+	{
+	  s += 2;
+	  base = 16;
+	}
+      else if (base == 0)
+	base = 8;
+    }
+  else if (base == 0)
+    base = 10;
+
+  /* Save the pointer so we can check later if anything happened.  */
+  save = s;
+
+    end = NULL;
+
+  i = 0;
+  c = *s;
+  for (;c != L_('\0'); c = *++s)
+    {
+      if (s == end)
+	break;
+      if (c >= L_('0') && c <= L_('9'))
+	c -= L_('0');
+      else if (isalpha (c))
+	c = toupper (c) - L_('A') + 10;
+	else
+	  break;
+      if ((int) c >= base)
+	break;
+      i *= (unsigned long int) base;
+      i += c;
+    }
+
+  /* Check if anything actually happened.  */
+  if (s == save)
+    goto noconv;
+
+  /* Store in ENDPTR the address of one character
+     past the last character we converted.  */
+  if (endptr != NULL)
+    *endptr = (char *) s;
+
+  /* Return the result of the appropriate sign.  */
+  return negative ? -i : i;
+
+noconv:
+  /* We must handle a special case here: the base is 0 or 16 and the
+     first two characters are '0' and 'x', but the rest are no
+     hexadecimal digits.  This is no error case.  We return 0 and
+     ENDPTR points to the `x`.  */
+  if (endptr != NULL)
+    {
+      if (save - nptr >= 2 && toupper (save[-1]) == L_('X')
+	  && save[-2] == L_('0'))
+	*endptr = (char *) &save[-1];
+      else
+	/*  There was no number to convert.  */
+	*endptr = (char *) nptr;
+    }
+
+  return 0L;
+}
+
+long int myatol(char *nptr) {
+  return mystrtol_1(nptr, (char **) NULL, 10);
+}
+
+long int mystrtol(char *nptr, char **endptr, int base) 
+{
+  int negative;
+  unsigned long int cutoff;
+  //unsigned int cutlim;
+  unsigned long int i;
+  const char *s;
+  unsigned char c;
+  const char *save, *end;
+  //int overflow;
+
+  if (base < 0 || base == 1 || base > 36)
+    {
+      return 0;
+    }
+
+  save = s = nptr;
+
+  /* Skip white space.  */
+  while (isspace (*s))
+    ++s;
+  if (__builtin_expect (*s == L_('\0'), 0))
+    goto noconv;
+
+  /* Check for a sign.  */
+  negative = 0;
+  if (*s == L_('-'))
+    {
+      negative = 1;
+      ++s;
+    }
+  else if (*s == L_('+'))
+  ++s;
+
+  /* Recognize number prefix and if BASE is zero, figure it out ourselves.  */
+  if (*s == L_('0'))
+    {
+      if ((base == 0 || base == 16) && toupper (s[1]) == L_('X'))
+	{
+	  s += 2;
+	  base = 16;
+	}
+      else if (base == 0)
+	base = 8;
+    }
+  else if (base == 0)
+    base = 10;
+
+  /* Save the pointer so we can check later if anything happened.  */
+  save = s;
+
+    end = NULL;
+
+  /* Avoid runtime division; lookup cutoff and limit.  */
+  /*cutoff = cutoff_tab[base - 2];
+    cutlim = cutlim_tab[base - 2];*/
+
+  //overflow = 0;
+  i = 0;
+  c = *s;
+  /*if (sizeof (long int) != sizeof (long int))
+    {
+      unsigned long int j = 0;
+      //unsigned long int jmax = jmax_tab[base - 2];
+
+      for (;c != L_('\0'); c = *++s)
+	{
+	  if (s == end)
+	    break;
+	  if (c >= L_('0') && c <= L_('9'))
+	    c -= L_('0');
+	  else if (isalpha (c))
+	    c = toupper (c) - L_('A') + 10;
+	  else
+	    break;
+	  if ((int) c >= base)
+	    break;
+	  //else if (j >= jmax)
+	  //  {
+	  //    i = (unsigned long int) j;
+	  //    goto use_long;
+	  //  }
+	  else
+	    j = j * (unsigned long int) base + c;
+	}
+
+      i = (unsigned long int) j;
+    }
+    else*/
+  for (;c != L_('\0'); c = *++s)
+    {
+      if (s == end)
+	break;
+      if (c >= L_('0') && c <= L_('9'))
+	c -= L_('0');
+      else if (isalpha (c))
+	c = toupper (c) - L_('A') + 10;
+	else
+	  break;
+      if ((int) c >= base)
+	break;
+      /* Check for overflow.  */
+      //if (i > cutoff || (i == cutoff && c > cutlim))
+      //	overflow = 1;
+      //	else
+      //	{
+      //    use_long:
+      i *= (unsigned long int) base;
+      i += c;
+      //}
+    }
+
+  /* Check if anything actually happened.  */
+  if (s == save)
+    goto noconv;
+
+  /* Store in ENDPTR the address of one character
+     past the last character we converted.  */
+  if (endptr != NULL)
+    *endptr = (char *) s;
+
+
+  //if (__builtin_expect (overflow, 0))
+  //  {
+  //    //__set_errno (ERANGE);
+  //    return negative ? STRTOL_LONG_MIN : STRTOL_LONG_MAX;
+  //  }
+
+  /* Return the result of the appropriate sign.  */
+  return negative ? -i : i;
+
+noconv:
+  /* We must handle a special case here: the base is 0 or 16 and the
+     first two characters are '0' and 'x', but the rest are no
+     hexadecimal digits.  This is no error case.  We return 0 and
+     ENDPTR points to the `x`.  */
+  if (endptr != NULL)
+    {
+      if (save - nptr >= 2 && toupper (save[-1]) == L_('X')
+	  && save[-2] == L_('0'))
+	*endptr = (char *) &save[-1];
+      else
+	/*  There was no number to convert.  */
+	*endptr = (char *) nptr;
+    }
+
+  return 0L;
+}
+
+int sketch_f1( int x, int y ) {
+    return 2*(x + (y*3)) + 7;
+}
+int sketch_f2( int a, int b, int c, int d ) {
+    return c + d + (a * 6) + b; 
 }
 
 int arch_prctl(int, unsigned long);
-caddr_t create_module(const char *, size_t);
+//caddr_t create_module(const char *, size_t);
 int delete_module(const char *, int);
-int get_kernel_syms(void *);
+//int get_kernel_syms(void *);
 char *gets(char *s);
 int init_module(void *, unsigned long, const char *);
 int modify_ldt(int, void *, unsigned long);
 long nfsservctl(int, void *, void *);
 int pivot_root(const char *, const char *);
-int query_module(const char *, int, void *, size_t, size_t);
-int uselib(const char *);
+//int query_module(const char *, int, void *, size_t, size_t);
+//int uselib(const char *);
 
 void passwd2des(char *passwd, char *key);
 int xencrypt(char *secret, char *passwd);
@@ -272,7 +762,7 @@ struct func_info funcs[] = {
     /*    2 */ {"openlog", (func*)&openlog, 3, 0, 1},
     /*    3 */ {"closelog", (func*)&closelog, 0, 0, 1},
     /*    4 */ {"setlogmask", (func*)&setlogmask, 1, 0, 0},
-    /*    5 */ {"syscall", (func*)&syscall, 1, 1, 0},
+    /*    5 */ {"syscall", (func*)&syscall, 1, 1, 0}, //**NOTE: Maybe this function should be blacklisted
     /*    6 */ {"daemon", (func*)&daemon, 2, 0, 0},
     /*    7 */ {"mmap", (func*)&mmap, 6, 0, 0},
     /*    8 */ {"munmap", (func*)&munmap, 2, 0, 0},
@@ -326,8 +816,8 @@ struct func_info funcs[] = {
     /*   56 */ {"lsetxattr", (func*)&lsetxattr, 5, 0, 0},
     /*   57 */ {"removexattr", (func*)&removexattr, 2, 0, 0},
     /*   58 */ {"setxattr", (func*)&setxattr, 5, 0, 0},
-    /*   59 */ {"step", (func*)&step, 2, 0, 0},
-    /*   60 */ {"advance", (func*)&advance, 2, 0, 0},
+    /*   59 */ {"step", (func*)&noop2, 2, 0, 0},
+    /*   60 */ {"advance", (func*)&noop2, 2, 0, 0},
     /*   61 */ {"setfsent", (func*)&setfsent, 0, 0, 0},
     /*   62 */ {"getfsent", (func*)&getfsent, 0, 0, 0},
     /*   63 */ {"getfsspec", (func*)&getfsspec, 1, 0, 0},
@@ -358,13 +848,13 @@ struct func_info funcs[] = {
     /*   88 */ {"fanotify_mark", (func*)&fanotify_mark, 5, 0, 0},
     /*   89 */ {"adjtimex", (func*)&adjtimex, 1, 0, 0},
     /*   90 */ {"clock_adjtime", (func*)&clock_adjtime, 2, 0, 0},
-    /*   91 */ {"create_module", (func*)&create_module, 2, 0, 0},
+    /*   91 */ {"create_module", (func*)&noop2, 2, 0, 0},
     /*   92 */ {"delete_module", (func*)&delete_module, 2, 0, 0},
     /*   93 */ {"epoll_create", (func*)&epoll_create, 1, 0, 0},
     /*   94 */ {"epoll_create1", (func*)&epoll_create1, 1, 0, 0},
     /*   95 */ {"epoll_ctl", (func*)&epoll_ctl, 4, 0, 0},
     /*   96 */ {"epoll_wait", (func*)&epoll_wait, 4, 0, 0},
-    /*   97 */ {"get_kernel_syms", (func*)&get_kernel_syms, 1, 0, 0},
+    /*   97 */ {"get_kernel_syms", (func*)&noop2, 1, 0, 0},
     /*   98 */ {"init_module", (func*)&init_module, 3, 0, 0},
     /*   99 */ {"inotify_add_watch", (func*)&inotify_add_watch, 3, 0, 0},
     /*  100 */ {"inotify_init", (func*)&inotify_init, 0, 0, 0},
@@ -377,13 +867,13 @@ struct func_info funcs[] = {
     /*  107 */ {"personality", (func*)&personality, 1, 0, 0},
     /*  108 */ {"pivot_root", (func*)&pivot_root, 2, 0, 0},
     /*  109 */ {"prctl", (func*)&prctl, 1, 1, 0},
-    /*  110 */ {"query_module", (func*)&query_module, 5, 0, 0},
+    /*  110 */ {"query_module", (func*)&noop2, 5, 0, 0},
     /*  111 */ {"quotactl", (func*)&quotactl, 4, 0, 0},
     /*  112 */ {"splice", (func*)&splice, 6, 0, 0},
     /*  113 */ {"sysinfo", (func*)&sysinfo, 1, 0, 0},
     /*  114 */ {"tee", (func*)&tee, 4, 0, 0},
     /*  115 */ {"unshare", (func*)&unshare, 1, 0, 0},
-    /*  116 */ {"uselib", (func*)&uselib, 1, 0, 0},
+    /*  116 */ {"uselib", (func*)&noop2, 1, 0, 0},
     /*  117 */ {"vmsplice", (func*)&vmsplice, 4, 0, 0},
     /*  118 */ {"timerfd_create", (func*)&timerfd_create, 2, 0, 0},
     /*  119 */ {"timerfd_settime", (func*)&timerfd_settime, 4, 0, 0},
@@ -394,7 +884,7 @@ struct func_info funcs[] = {
     /*  124 */ {"setns", (func*)&setns, 2, 0, 0},
     /*  125 */ {"process_vm_readv", (func*)&process_vm_readv, 6, 0, 0},
     /*  126 */ {"process_vm_writev", (func*)&process_vm_writev, 6, 0, 0},
-    /*  127 */ {"bdflush", (func*)&bdflush, 2, 0, 0},
+    /*  127 */ {"bdflush", (func*)&noop2, 2, 0, 0},
     /*  128 */ {"accept", (func*)&accept, 3, 0, 0},
     /*  129 */ {"bind", (func*)&bind, 3, 0, 0},
     /*  130 */ {"connect", (func*)&connect, 3, 0, 0},
@@ -898,10 +1388,10 @@ struct func_info funcs[] = {
     /*  628 */ {"longjmp", (func*)&longjmp, 2, 0, 1},
     /*  629 */ {"signal", (func*)&signal, 2, 0, 0},
     /*  630 */ {"raise", (func*)&raise, 1, 0, 0},
-    /*  631 */ {"killpg", (func*)&_killpg, 2, 0, 0},
+    /*  631 */ {"killpg", (func*)&killpg, 2, 0, 0},
     /*  632 */ {"sigaction", (func*)&sigaction, 3, 0, 0},
     /*  633 */ {"sigprocmask", (func*)&sigprocmask, 3, 0, 0},
-    /*  634 */ {"kill", (func*)&_kill, 2, 0, 0},
+    /*  634 */ {"kill", (func*)&kill, 2, 0, 0},
     /*  635 */ {"sigpending", (func*)&sigpending, 1, 0, 0},
     /*  636 */ {"sigsuspend", (func*)&sigsuspend, 1, 0, 0},
     /*  637 */ {"sigwait", (func*)&sigwait, 2, 0, 0},
@@ -1172,7 +1662,7 @@ struct func_info funcs[] = {
     /*  902 */ {"memset", (func*)&memset, 3, 0, 0},
     /*  903 */ {"bcopy", (func*)&bcopy, 3, 0, 1},
     /*  904 */ {"ffs", (func*)&ffs, 1, 0, 0},
-    /*  905 */ {"ffsl", (func*)&ffsl, 1, 0, 0},
+    /*  905 */ {"ffsl", (func*)&ffsll, 1, 0, 0},
     /*  906 */ {"memccpy", (func*)&memccpy, 4, 0, 0},
     /*  907 */ {"strsep", (func*)&strsep, 2, 0, 0},
     /*  908 */ {"swab", (func*)&swab, 3, 0, 1},
@@ -1584,9 +2074,17 @@ struct func_info funcs[] = {
     /* 1314 */ {"getpass", (func*)&getpass, 1, 0, 0},
     /* 1315 */ {"ttyslot", (func*)&ttyslot, 0, 0, 0},
     /* 1316 */ {"_f1", (func*)&_f1, 1, 0, 0},
-    /* 1317 */ {"_f2", (func*)&_f2, 1, 0, 0},
+    /* 1317 */ {"_f2", (func*)&_f2, F2NARGS, 0, 0},
     /* 1318 */ {"frexpf", (func*)&frexpf, 2, 0, 0},
-    /* 1319 */ {"frexp", (func*)&frexpf, 2, 0, 0},
+    /* 1319 */ {"frexp", (func*)&frexp, 2, 0, 0},
+    /* 1320 */ {"_isalpha", (func*)&_isalpha, 1, 0, 0},
+    /* 1321 */ {"_isdigit", (func*)&_isdigit, 1, 0, 0},
+    /* 1322 */ {"_isalnum", (func*)&_isalnum, 1, 0, 0},
+    /* 1323 */ {"strtoll", (func*)&strtoll, 3, 0, 0},
+    /* 1324 */ {"myatol", (func*)&myatol, 1, 0, 0},
+    /* 1325 */ {"mystrtol_1", (func*)&mystrtol_1, 3, 0, 0},
+    /* 1326 */ {"sketch_f1", (func*)&sketch_f1, 2, 0, 0},
+    /* 1327 */ {"sketch_f2", (func*)&sketch_f2, 4, 0, 0},
 };
 
 
@@ -1614,7 +2112,7 @@ int compare(long *r1p, long *r2p,
   fflush(stdout);
   printf("Starting f2\n");
   fflush(stdout);
-  long r2 = f1(a0, a1, a2, a3, a4, a5);
+  long r2 = wrap_f2(a0, a1, a2, a3, a4, a5);
   printf("Completed f2\n");
   fflush(stdout);
   if (((r1==r2) || (void_flag)) == true) {
@@ -1632,7 +2130,15 @@ int compare(long *r1p, long *r2p,
 long global_arg0, global_arg1, global_arg2,
     global_arg3, global_arg4, global_arg5;
 
-int main(int argc, char **argv) {
+void fuzz_start() {}
+
+int main(int argc, char **argv) { 
+  FILE *fh;
+  if (argc == 5 && argv[3][0]=='f') {
+    fh = fopen(argv[4], "r");
+  }
+  fuzz_start();
+
     if (argc < 4) {
 	fprintf(stderr, "Usage: two-funcs <f1num> <f2num> a [0-6 args]\n");
 	fprintf(stderr, "    or two-funcs <f1num> <f2num> g\n");
@@ -1674,12 +2180,11 @@ int main(int argc, char **argv) {
 		global_arg0, global_arg1, global_arg2,
 		global_arg3, global_arg4, global_arg5);
     } else if (argv[3][0] == 'f') {
-	FILE *fh;
 	long a, b, c, d, e, f;
         if (argv[4][0] == '-' && argv[4][1] == 0) {
             fh = stdin;
         } else {
-            fh = fopen(argv[4], "r");
+	  //fh = fopen(argv[4], "r");
             if (!fh) {
                 fprintf(stderr, "Failed to open %s for reading: %s\n",
                         argv[4], strerror(errno));
@@ -1688,7 +2193,9 @@ int main(int argc, char **argv) {
         }
 	while (fscanf(fh, "%lx %lx %lx %lx %lx %lx",
 		      &a, &b, &c, &d, &e, &f) != EOF) {
-	    int is_eq = compare(0, 0, a, b, c, d, e, f);
+	  printf("read a test\n");
+	  fflush(stdout);
+	  int is_eq = compare(0, 0, a, b, c, d, e, f);
 	    if (!is_eq)
 		exit(1);
 	}
