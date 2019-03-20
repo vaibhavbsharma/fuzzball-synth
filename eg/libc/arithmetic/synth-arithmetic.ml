@@ -447,6 +447,7 @@ let rec main () =
   | (true, _) -> (* we found a suitable adaptor *)
       let end_ver = Unix.gettimeofday () in
       printf "Time for verification: %fs\n" (end_ver -. start_ver);
+      printf "elapsed time = %fs, last CE search time = %fs\n" (end_ver -. start_process) (end_ver -. start_ver);
       total_ce_time := !total_ce_time +. (end_ver -. start_ver);
       printf "Success!\nFinal test set:\n%!";
       print_tests ();
@@ -487,7 +488,7 @@ Printf.printf "Checking initial adapter: ";
 print_adaptor ();
 
 main ();;      
-
+printf "\n";
 printf "Total CE time = %fs\n" !total_ce_time;
 printf "Total AS time = %fs\n" !total_as_time;
   
