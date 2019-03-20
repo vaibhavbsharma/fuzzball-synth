@@ -31,11 +31,8 @@ let syscall cmd =
   let _ = Unix.close_process_in ic in
   List.rev !lines
 
-let base_dir = 
-  try (sub Sys.argv.(0) 0 (rindex Sys.argv.(0) '/')) ^ "/"
-  with Not_found _ | Invalid_argument _ -> "./"
 let bin = 
-  try (base_dir ^ Sys.argv.(1))
+  try Sys.argv.(1)
   with Invalid_argument _ -> print_usage ()
 let adaptor_type = 
   try let s = Sys.argv.(2) in
@@ -59,7 +56,7 @@ let verbose =
   with Invalid_argument _ -> print_usage ()
 
 let func_info = ref []
-let in_chan = (open_in (base_dir ^ "types-no-float-1204.lst"))
+let in_chan = (open_in "types-no-float-1204.lst")
 let _ =
   (try 
     while true; do
