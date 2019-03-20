@@ -1,6 +1,7 @@
 (* usage: synth.ml <bin> <type> <tree depth> <# outer args> <# inner args> <rand. seed> *)
 
 open Printf
+open String
 #load "str.cma"  (* used for regular expressions *)
 #load "unix.cma" (* used to execute system commands *)
 
@@ -16,8 +17,25 @@ let print_usage () =
    printf "       'inner' refers to the function you're adapting (f2)\n%!";
    printf "       verbose=1 turns on printing of debugging outputs, use verbose=0 for minimal debugging output\n%!";
    exit 1)
+(* syscall : string -> string list
+   return the standard out of cmd as a list of lines *)
+let syscall cmd = 
+  (*let _ = printf "Command: %s\n%!" cmd in*)
+  let ic = Unix.open_process_in cmd in
+  let lines = ref [] in
+  (try
+     while true do
+       lines := input_line ic :: !lines
+     done
+   with End_of_file -> ());
+  let _ = Unix.close_process_in ic in
+  List.rev !lines
+
+let base_dir = 
+  try (sub Sys.argv.(0) 0 (rindex Sys.argv.(0) '/')) ^ "/"
+  with Not_found _ | Invalid_argument _ -> "./"
 let bin = 
-  try Sys.argv.(1)
+  try (base_dir ^ Sys.argv.(1))
   with Invalid_argument _ -> print_usage ()
 let adaptor_type = 
   try let s = Sys.argv.(2) in
@@ -41,7 +59,7 @@ let verbose =
   with Invalid_argument _ -> print_usage ()
 
 let func_info = ref []
-let in_chan = (open_in "types-no-float-1204.lst")
+let in_chan = (open_in (base_dir ^ "types-no-float-1204.lst"))
 let _ =
   (try 
     while true; do
@@ -97,19 +115,6 @@ let tests = ref [] (* will be a list of lists *)
 let match_regex str regex =
   Str.string_match (Str.regexp regex) str 0
 
-(* syscall : string -> string list
-   return the standard out of cmd as a list of lines *)
-let syscall cmd = 
-  (*let _ = printf "Command: %s\n%!" cmd in*)
-  let ic = Unix.open_process_in cmd in
-  let lines = ref [] in
-  (try
-     while true do
-       lines := input_line ic :: !lines
-     done
-   with End_of_file -> ());
-  let _ = Unix.close_process_in ic in
-  List.rev !lines
 
 (* print_tests : () -> () 
    print out the current set of tests *)
