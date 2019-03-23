@@ -54,6 +54,7 @@
 #include "all_adapters_ref2.h"
 #elif REFNUM==1
 #include "all_adapters_ref1.h"
+#include "all_arith_adapters_ref1.h"
 #endif
 #include "test1.h"
 #include <stdio.h>
