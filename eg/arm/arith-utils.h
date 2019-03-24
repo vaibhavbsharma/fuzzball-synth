@@ -2,10 +2,10 @@ char *print_arith_node (int var_type, int var_val,
 			char *type_string) {
   switch(var_type) {
   case 0:
-    sprintf(type_string, "%sconst(0x%x)", type_string, var_val);
+    sprintf(type_string, "const(0x%x)", var_val);
     break;
   case 1:
-    sprintf(type_string, "%s(0x%x)", type_string, var_val);
+    sprintf(type_string, "arg(0x%x)", var_val);
     break;
   case 2:
   default: printf("illegal var_type value (%d)", var_type); assert(false);
@@ -17,14 +17,14 @@ char *print_arithd2 (arithd2 ad,
 			char *type_string) {
   switch(ad.this_var_type) {
     case 0:
-      sprintf(type_string, "%sconst(0x%lx)", type_string, ad.this_var_val);
+      sprintf(type_string, "const(0x%lx)", ad.this_var_val);
       break;
     case 1:
-      sprintf(type_string, "%s(0x%lx)", type_string, ad.this_var_val);
+      sprintf(type_string, "arg(0x%lx)", ad.this_var_val);
       break;
     case 2:
       char lstr[100], rstr[100];
-      sprintf(type_string, "%s(%s, %s, %s)", type_string,
+      sprintf(type_string, "(%s, %s, %s)",
 	      (ad.this_var_val == 0 ? "PLUS" : "MINUS"),
 	      print_arith_node(ad.left_var_type, ad.left_var_val, lstr),
 	      print_arith_node(ad.right_var_type, ad.right_var_val, rstr));
@@ -41,11 +41,11 @@ void print_adapter(arithd2ret ad, int fnargs) {
   //printf("Input vars: ");
   int i;
   char type_varname[10];
-  char type_string[100];
   sprintf(type_varname, "_type");
   for(i=0; i<fnargs; i++) {
+    char type_string[100];
     print_arithd2(ad.arith[i], type_string);
-    printf("%s", type_string);
+    printf("%s ", type_string);
     // printf("%c%s=0x%x %c_val=0x%lx ", 'a'+i, type_varname,  
     // 	   ad.a_ad[i].var_is_const, 'a'+i, ad.a_ad[i].var_val); 
   }

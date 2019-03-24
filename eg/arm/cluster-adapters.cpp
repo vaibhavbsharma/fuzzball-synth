@@ -236,7 +236,7 @@ int main(int argc, char **argv) {
 	for(int k=0; k < v.size(); k++) {
 	  bool match = (adapter_family != 3) ?
 	    compare(all_ads[i], all_ads[v[k]]) :
-	    compare(all_arith_ads[i], all_arith_ads[v[j]]);
+	    compare(all_arith_ads[i], all_arith_ads[v[k]]);
 	  if(!match) {
 	    found_cluster=false;
 	    break;
