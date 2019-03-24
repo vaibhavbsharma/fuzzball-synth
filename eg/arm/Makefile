@@ -5,14 +5,14 @@ HEADERS = ./all_adapters/include/all_adapters_ref1.h \
 INCLUDE_DIRS=./all_adapters
 
 ifndef REFNUM
-  $(error REFNUM is not set, run make REFNUM=<1-25>)
+  $(warning REFNUM is not set, run make REFNUM=<1-25>)
 endif
 
-default: clean two-funcs-conc 
+default: clean cluster-adapters 
 
-two-funcs-conc : two-funcs-conc.cpp $(HEADERS) 
-	c++ two-funcs-conc.cpp -g -o two-funcs-conc \
+cluster-adapters : cluster-adapters.cpp $(HEADERS) 
+	c++ cluster-adapters.cpp -g -o cluster-adapters \
 	-I $(INCLUDE_DIRS)/include -I . -DREFNUM=$(REFNUM)
 
 clean:
-	rm -f two-funcs-conc 
+	rm -f cluster-adapters 

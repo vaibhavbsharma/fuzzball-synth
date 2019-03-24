@@ -1,4 +1,4 @@
-#include "two-funcs-conc.h"
+#include "cluster-adapters.h"
 //#include "SignalHandlers.h"
 //#include "generate_adapters.h"
 //#include "calc_num_adapters.h"
@@ -6,33 +6,13 @@
 #include <vector>
 #include <assert.h>
 #include <iostream>
+#include "utils.h"
+#include "arith-utils.h"
 using namespace std;
 
-#define MAX_ADAPTERS 1000000
-#define MAX_TESTS 100000
-
-int fnum;
-
-typedef struct { int a,b,c,d,e,f,g,h,i,j,k,l,m; } test; 
-test tests[MAX_TESTS];
-
-int f1(int a, int b, int c, int d, int e, int f,
-	int g, int h, int i, int j, int k, int l, int m) {
-  return (funcs[fnum].fptr)(a, b, c, d, e, f,g,h,i,j,k,l,m);
-}
 
 argret ad;
 int adapter_family = 2;
-
-void populateAdapter() {
-  int i;
-  for(i=0;i<13; i++) 
-    all_ads[num_adapters].a_ad[i] = ad.a_ad[i];
-  all_ads[num_adapters].r_ad = ad.r_ad;
-  //print_adapter(num_adapters);
-  num_adapters++;
-  assert(num_adapters <= MAX_ADAPTERS);
-}
 
 void print_test(int ind) {
   printf("test(%d): (%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d)\n", ind,
@@ -210,27 +190,37 @@ int main(int argc, char **argv) {
   int numTests=0, adapter_ind = 0;
   generate_tests();
   FILE *fh;
-  if (argc < 4) {
-    fprintf(stderr, "Usage: two-funcs-conc <c(luster) or s(ingle)> <fnum> <fnargs> <if s(ingle) then adapter num>\n");
+  if (argc < 5) {
+    fprintf(stderr, "Usage: cluster-adapters <adapter family (2=typeconv, 3=arithmetic-depth-2)> <c(luster) or s(ingle)> <fnum> <fnargs> <if s(ingle) then adapter num>\n");
     exit(1);
   }
-  char mode = argv[1][0];
+  adapter_family = atoi(argv[1]);
+  if (adapter_family < 1 || adapter_family > 3) {
+    fprintf(stderr, "unsupported adapter family");
+    exit(1);
+  }
+  char mode = argv[2][0];
   if(mode != 'c' && mode != 's') {
     fprintf(stderr, "Error: unsupported mode, 1st argument needs to be c or s\n");
+    exit(1);
   }
-  fnum = atoi(argv[2]);
+  fnum = atoi(argv[3]);
   if (fnum < 0 || fnum >= sizeof(funcs)/sizeof(struct func_info)) {
     fprintf(stderr, "Error: fnum %d out of range\n", fnum);
+    exit(1);
   }
-  int fnargs = atoi(argv[3]);
+  int fnargs = atoi(argv[4]);
   if(fnargs < 1 || fnargs > 10) { 
     fprintf(stderr, "Error: fnargs %d is not valid (has to be between 1 and 10)\n", fnum);
+    exit(1);
   }
+  if (adapter_family == 3) num_adapters = num_arith_adapters;
   if(mode == 's') {
-    if(argc != 5) fprintf(stderr, "Error: adapter index unspecified\n");
-    adapter_ind = atoi(argv[4]);
+    if(argc != 6) fprintf(stderr, "Error: adapter index unspecified\n");
+    adapter_ind = atoi(argv[5]);
     if(adapter_ind >= num_adapters) {
       fprintf(stderr, "Error: invalid adapter index provided\n");
+      exit(1);
     }
   }
   
@@ -244,7 +234,10 @@ int main(int argc, char **argv) {
 	vector<int> v = clusters[j];
 	found_cluster = true;
 	for(int k=0; k < v.size(); k++) {
-	  if(!compare(all_ads[i], all_ads[v[k]])) {
+	  bool match = (adapter_family != 3) ?
+	    compare(all_ads[i], all_ads[v[k]]) :
+	    compare(all_arith_ads[i], all_arith_ads[v[j]]);
+	  if(!match) {
 	    found_cluster=false;
 	    break;
 	  } 
@@ -269,18 +262,28 @@ int main(int argc, char **argv) {
       cout << "Cluster "<< i << " ("<<v.size()<<") : " << endl;
       for(int j=0; j < v.size(); j++) {
 	cout << v[j] <<": Input vars: ";
-	print_adapter(all_ads[v[j]], fnargs);
+	if (adapter_family != 3)
+	  print_adapter(all_ads[v[j]], fnargs);
+	else 
+	  print_adapter(all_arith_ads[v[j]], fnargs);
 	cout << endl;
       }
     }
   } else if (mode == 's') {
     int a0, a1, a2, a3, a4, a5, a6;
     while (fscanf(stdin, "%d %d %d %d", &a0, &a1, &a2, &a3) != EOF) {
-      printf("0x%x or %d\n", 
-	     wrap_f(all_ads[adapter_ind], a0, a1, a2,
-		    a3, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-	     wrap_f(all_ads[adapter_ind], a0, a1, a2,
-		    a3, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+      if (adapter_family != 3) 
+	printf("0x%x or %d\n", 
+	       wrap_f(all_ads[adapter_ind], a0, a1, a2,
+		      a3, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	       wrap_f(all_ads[adapter_ind], a0, a1, a2,
+		      a3, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+      else 
+	printf("0x%x or %d\n", 
+	       wrap_f(all_arith_ads[adapter_ind], a0, a1, a2,
+		      a3, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+	       wrap_f(all_arith_ads[adapter_ind], a0, a1, a2,
+		      a3, 0, 0, 0, 0, 0, 0, 0, 0, 0));
     }
   }
  
