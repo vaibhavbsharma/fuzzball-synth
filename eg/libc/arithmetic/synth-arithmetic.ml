@@ -1,4 +1,5 @@
 (* usage: synth.ml <bin> <type> <tree depth> <# outer args> <# inner args> <rand. seed> *)
+(* compile as: ocamlopt -o synth-arithmetic unix.cmxa str.cmxa synth-arithmetic.ml*)
 
 open Printf
 open String
