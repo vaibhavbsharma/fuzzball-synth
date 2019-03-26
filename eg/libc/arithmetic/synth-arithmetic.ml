@@ -325,7 +325,7 @@ let check_adaptor () =
       let _ = Unix.close_process_in ic in
       if matches = 0 && fails = 0 
       then (printf "CounterExample search failed\n"; 
-        failwith "Missing results from check run")
+        printf "Missing results from check run"; exit 1)
       else (true, Array.to_list !ce) in
   read_results (0, 0) false false
 

@@ -151,7 +151,7 @@ for(my $i = $last_index+1; $i < $this_bucket_num_fns; $i++) {
 	my @cmd = ("perl",$adaptor_driver,$target_fn,$inner_fn,$rand_seed, "1", 
 		   $const_lb, $const_ub, "1", "2>&1");
 	if ($adaptor_family == 3) {
-	    @cmd = ("ocaml","synth-arithmetic.ml", $binary,"int","2",$target_fn, $inner_fn, $rand_seed,"0", "2>&1");
+	    @cmd = ("./synth-arithmetic", $binary,"int","2",$target_fn, $inner_fn, $rand_seed,"0", "2>&1");
 	}
 	printf(LOG "cmd = @cmd\n");
 	select((select(LOG), $|=1)[0]);
