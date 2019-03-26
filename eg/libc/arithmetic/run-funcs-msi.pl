@@ -8,7 +8,7 @@ die "Usage: run-funcs-msi.pl <max_buckets> <bucket-num(1-max_buckets)> <1=argsub
 
 
 $|=1;
-my $end_time = time() + 14400;
+my $end_time = time() + 2592000; # keep running for up to 30 days
 my $checkpoint_file = "checkpoint";
 
 my ($max_buckets,$bucket_num,$adaptor_family,$const_lb,$const_ub) = @ARGV;
