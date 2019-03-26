@@ -2,8 +2,8 @@
 
 open Printf
 open String
-#load "str.cma"  (* used for regular expressions *)
-#load "unix.cma" (* used to execute system commands *)
+(*#load "str.cma"  (* used for regular expressions *)
+  #load "unix.cma" (* used to execute system commands *)*)
 
 
 (*** Read command line args ***)
@@ -208,8 +208,8 @@ let solver_opts =
 let fields = 
   let rec create_tree d base var_name =
     if d > 0
-    then [(var_name ^ "_type_" ^ base, 8, format_of_string "%01x");
-          (var_name ^ "_val_" ^ base, 64, format_of_string "%16x")]
+    then [(var_name ^ "_type_" ^ base, 8);
+          (var_name ^ "_val_" ^ base, 64)]
          @ (create_tree (d-1) (base ^ "0") var_name)
          @ (create_tree (d-1) (base ^ "1") var_name)
     else [] in
@@ -417,7 +417,7 @@ let try_synth () =
                        | (k',v)::t -> if k = k' then Some v else getval t k in
           let new_adaptor = ref [] in
           List.iter 
-            (fun (name, size, fmt) -> 
+            (fun (name, size) -> 
                let v = match getval !specified_vals name with 
                        | None -> 0L | Some v -> v in
                new_adaptor := !new_adaptor @
