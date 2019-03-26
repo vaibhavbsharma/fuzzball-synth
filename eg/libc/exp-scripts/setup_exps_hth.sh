@@ -9,7 +9,7 @@ LOG_FILE=1.log && export LOG_FILE
 for ((j=1; j<=$NUM_DIRS; j++)); do
     # populate files
     cp $FUZZBALL_SYNTH/eg/libc/arithmetic/run-funcs-msi.pl $REFS_BASE_DIR/glibc-$j/;
-    cp $FUZZBALL_SYNTH/eg/libc/arithmetic/synth-arithmetic.ml $REFS_BASE_DIR/glibc-$j/;  
+    cp $FUZZBALL_SYNTH/eg/libc/arithmetic/synth-arithmetic $REFS_BASE_DIR/glibc-$j/;  
     cp $FUZZBALL_SYNTH/eg/libc/arithmetic/two-funcs  $REFS_BASE_DIR/glibc-$j/; 
     cp $FUZZBALL_SYNTH/eg/libc/arithmetic/types-no-float-1204.lst  $REFS_BASE_DIR/glibc-$j/;  
     # delete checkpointing files and temporary files
