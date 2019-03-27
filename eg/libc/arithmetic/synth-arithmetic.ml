@@ -1,4 +1,3 @@
-(* usage: synth.ml <bin> <type> <tree depth> <# outer args> <# inner args> <rand. seed> *)
 (* compile as: ocamlopt -o synth-arithmetic unix.cmxa str.cmxa synth-arithmetic.ml*)
 
 open Printf
@@ -12,7 +11,7 @@ open String
 (* 'outer function' = the 'black box' function (f1)
    'inner function' = the function whose arguments we want to adapt (f2) *)
 let print_usage () = 
-  (printf "usage: synth.ml <bin> <type> <tree depth> <f1num> <f2num> <rand. seed> <verbose>\n%!";
+  (printf "usage: ./synth-arithmetic <bin> <type> <tree depth> <f1num> <f2num> <rand. seed> <verbose>\n%!";
    printf "notes: <type> must be 'int' or 'float'\n%!";
    printf "       'outer' refers to the oracle function (f1)\n%!";
    printf "       'inner' refers to the function you're adapting (f2)\n%!";
@@ -204,8 +203,14 @@ let match_jne_addr =
       else "" (* again, not great error handling here *)
 
 let solver_opts = 
-  "-solver smtlib-batch -smtlib-solver-type " ^ solver_type
+  "-solver smtlib-batch -smtlib-solver-type " ^ solver_type ^ " -solver-timeout 30 -timeout-as-unsat "
 
+let common_opts = ["-return-zero-missing-x64-syscalls"; "-nonzero-divisors"; "-omit-pf-af"; "-region-limit"; "936"]
+
+let verbose_opts = (if verbose = 1 then
+	["-trace-decisions"; "-trace-conditions"; "-trace-binary-paths";"-trace-tables";"-trace-regions"; "-trace-sym-addr-details"; "-trace-sym-addrs"; "-trace-tables"; "-trace-syscalls"]
+      else [])
+  
 let fields = 
   let rec create_tree d base var_name =
     if d > 0
@@ -243,6 +248,7 @@ let check_adaptor () =
     @ (if adaptor_type = "int" 
       then ["-branch-preference"; match_jne_addr ^ ":0"]
       else [])
+    @ common_opts @ verbose_opts
     @ ["-match-syscalls-in-addr-range"; 
        f1_call_addr ^ ":" ^ post_f1_call_addr ^ ":" ^
          f2_call_addr ^ ":" ^ post_f2_call_addr;
@@ -251,11 +257,8 @@ let check_adaptor () =
 			      but it works for now, TODO: fix this in the near future *)
        synth_opt]
     @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
-    @ (if verbose = 1 then
-	["-trace-decisions"; "-trace-conditions"; "-trace-binary-paths";"-trace-tables"]
-      else [])
-    @ [(*"-table-limit 8";*)
-      "-zero-memory";
+    @ ["-table-limit 12"; (* Kesha had turned off table-limit for some unknown reason *)
+       (*"-zero-memory";*) (* Vaibhav had turned off zero memory in CE search for some reason *)
       (* "-trace-temps"; 
       "-trace-solver";
       "-trace-sym-addrs";
@@ -350,11 +353,11 @@ let try_synth () =
      "-fuzz-start-addr"; main_addr]
     @ (if adaptor_type = "int" 
       then ["-branch-preference"; match_jne_addr ^ ":1"]
-      else []) 
+      else [])
+    @ common_opts @ verbose_opts
     @ ["-match-syscalls-in-addr-range";
        f1_call_addr ^ ":" ^ post_f1_call_addr ^ ":" ^
          f2_call_addr ^ ":" ^ post_f2_call_addr;
-       "-return-zero-missing-x64-syscalls";
        "-adaptor-search-mode";
        "-trace-sym-addrs";
        "-trace-sym-addr-details";
