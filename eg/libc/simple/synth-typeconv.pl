@@ -202,7 +202,7 @@ sub check_adaptor {
 		"-trace-syscalls",
 		"-omit-pf-af",
 		"-trace-temps",
-		"-trace-regions",
+		"-trace-regions",  # do not turn off, necessary for finding the "Address <> is region <>" line in output below
 		"-trace-memory-snapshots",
 		"-trace-tables",
 		"-table-limit","12",
@@ -351,11 +351,11 @@ sub check_adaptor {
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
-	} elsif (/Address [a-f]_([0-9])+:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
+	} elsif (/Address [a-f]:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
 	    my $add_line = $_;
 	    my $add_var = -1;
 	    for my $v (split(/ /, $add_line)) {
-		if ($v =~ /^[a-f]_([0-9]+):reg64_t$/) { # matches argument name
+		if ($v =~ /^[a-f]:reg64_t$/) { # matches argument name
 		    $add_var = ord($v) - ord('a');
 		    printf("add_var = $add_var\n");
 		} elsif ($v =~ /^[0-9]$/) { # matches region number
