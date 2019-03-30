@@ -2,10 +2,9 @@
 
 use strict;
 
-
-die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>]"
-  unless @ARGV == 6;
-my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub) = @ARGV;
+die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>] <verbose=1, non-verbose=0, extra-verbose=2 (is logging-heavy, be warned)>"
+  unless @ARGV == 7;
+my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub, $verbose) = @ARGV;
 
 srand($rand_seed);
 my $path_depth_limit = 300;
@@ -117,6 +116,28 @@ my($f1nargs, $f2nargs) = ($func_info[$f1num][1], $func_info[$f2num][1]);
 #$f2nargs=6;
 
 splice(@fields, 2 * $f2nargs);
+my @verbose_1_opts = (
+    "-trace-adaptor",
+    "-trace-sym-addr-details",
+    "-trace-sym-addrs",
+    "-trace-syscalls",
+    "-trace-temps",
+    "-trace-memory-snapshots",
+    "-trace-tables",
+    "-trace-binary-paths-bracketed",
+    "-trace-solver",
+    "-trace-regions");
+
+my @verbose_2_opts = (@verbose_1_opts,
+		      "-trace-offset-limit",
+		      "-trace-basic",
+		      "-trace-eip",
+		      "-trace-registers",
+		      "-trace-stmts",
+		      "-trace-insns",
+		      "-trace-loads",
+		      "-trace-stores");
+my @verbose_opts = ($verbose == 1) ? @verbose_1_opts : (($verbose == 2) ? @verbose_2_opts : ());
 
 my @solver_opts = ("-solver", "smtlib-batch", 
 		   # "-save-solver-files",
@@ -196,32 +217,13 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		#"-trace-adaptor",
-		"-trace-sym-addr-details",
-		"-trace-sym-addrs",
-		"-trace-syscalls",
 		"-omit-pf-af",
-		"-trace-temps",
 		"-trace-regions",  # do not turn off, necessary for finding the "Address <> is region <>" line in output below
-		"-trace-memory-snapshots",
-		"-trace-tables",
 		"-table-limit","12",
-		#"-save-decision-tree-interval", 1,
-		#"-trace-decision-tree",
-		"-trace-binary-paths-bracketed",
-#"-narrow-bitwidth-cutoff","1",
-		#"-trace-offset-limit",
-		"-trace-basic",
-		#"-trace-eip",
-		#"-trace-registers",
-		#"-trace-stmts",
-		#"-trace-insns",
-		#"-trace-loads",
-		#"-trace-stores",
+		@verbose_opts,
+		#"-narrow-bitwidth-cutoff","1",
 		"-trace-conditions",
 		"-trace-decisions",
-		#"-trace-solver",
-		#"-save-solver-files", 
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
@@ -351,7 +353,7 @@ sub check_adaptor {
 	    $this_ce = 0;
 	    print "  $_";
 	    last;
-	} elsif (/Address [a-f]:reg64_t is region ([0-9]+)/ and $f1_completed == 0 ) {
+	} elsif (/Address [a-f]:reg64_t is region ([0-9]+)/) {
 	    my $add_line = $_;
 	    my $add_var = -1;
 	    for my $v (split(/ /, $add_line)) {
@@ -403,12 +405,12 @@ sub try_synth {
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64", $bin,
 		@solver_opts, 
 		"-fuzz-start-addr", $fuzz_start_addr,
-		"-trace-temps",
 		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 		#counter example search mode otherwise
 		"-adaptor-search-mode",
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-table-limit","12",
+		@verbose_opts,
 		"-return-zero-missing-x64-syscalls",
 		@synth_opt, @const_bounds_ec,
 		@synth_ret_opt,
@@ -416,27 +418,8 @@ sub try_synth {
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		"-branch-preference", "$match_jne_addr:1",
 		"-trace-conditions", "-omit-pf-af",
-		"-trace-syscalls",
-		#"-trace-decision-tree",
-		#"-save-decision-tree-interval","1",
 		"-trace-decisions",
 		"-trace-stopping",
-		"-trace-regions",
-		"-trace-binary-paths-bracketed",
-		"-trace-memory-snapshots",
-		"-trace-sym-addr-details",
-		"-trace-sym-addrs",
-		"-trace-tables",
-		#"-trace-offset-limit",
-		"-trace-basic",
-		#"-trace-eip",
-		#"-trace-registers",
-		#"-trace-stmts",
-		#"-trace-insns",
-		#"-trace-loads",
-		#"-trace-stores",
-		#"-trace-solver",
-		#"-save-solver-files", 
 		"-zero-memory",
 		@fuzzball_extra_args,
 		"-region-limit", $region_limit,
