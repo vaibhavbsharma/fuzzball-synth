@@ -207,13 +207,13 @@ sub check_adaptor {
 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
 	push @conc_adapt, ("-extra-condition", $s);
     }
-    # my @conc_ret_adapt = ();
-    # for my $i (0 .. $#$ret_adapt) {
-    # 	my($name, $ty, $fmt) = @{$ret_fields[$i]};
-    # 	my $val = $ret_adapt->[$i];
-    # 	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
-    # 	push @conc_ret_adapt, ("-extra-condition", $s);
-    # }
+    my @conc_ret_adapt = ();
+    for my $i (0 .. $#$ret_adapt) {
+    	my($name, $ty, $fmt) = @{$ret_fields[$i]};
+    	my $val = $ret_adapt->[$i];
+    	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    	push @conc_ret_adapt, ("-extra-condition", $s);
+    }
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -233,7 +233,7 @@ sub check_adaptor {
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
-		#@synth_ret_opt, @conc_ret_adapt,
+		@synth_ret_opt, @conc_ret_adapt,
 		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
@@ -420,7 +420,7 @@ sub try_synth {
 	    @verbose_opts,
 	    "-return-zero-missing-x64-syscalls",
 	    @synth_opt, @const_bounds_ec,
-	    #@synth_ret_opt,
+	    @synth_ret_opt,
 	    "-match-syscalls-in-addr-range",
 	    $f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 	    "-branch-preference", "$match_jne_addr:1",
