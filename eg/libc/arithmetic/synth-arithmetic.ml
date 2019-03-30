@@ -193,7 +193,7 @@ let post_f1_call_addr = (sprintf "0x%x" ((int_of_string f1_call_addr)+5))
 
 let post_f2_call_addr = (sprintf "0x%x" ((int_of_string f2_call_addr)+5))
 
-let inner_func_addr = 
+let f2_addr = 
   match syscall ("nm " ^ bin ^ " | fgrep ' T f2'") with
   | [str] -> "0x" ^ String.sub str 0 16
   | _ -> failwith "Unexpected inner function format"
@@ -215,7 +215,7 @@ let verbose_opts = (if verbose = 1 then
     ["-trace-decisions"; "-trace-conditions"; "-trace-binary-paths";"-trace-tables";"-trace-regions"; "-trace-sym-addr-details"; "-trace-sym-addrs"; "-trace-tables"; "-trace-syscalls"]
   else [])
   
-let fields = 
+let arith_fields = 
   let rec create_tree d base var_name =
     if d > 0
     then [(var_name ^ "_type_" ^ base, 8);
@@ -229,14 +229,22 @@ let fields =
          (create_tree tree_depth "R" x) @ (create_fields (n-1)) in
   create_fields f2nargs
 
+let ret_fields =
+  [("ret_type",  8);
+   ("ret_val",   64);]
+
+let fields = arith_fields @ ret_fields
+  
 let synth_opt = 
   "-synthesize-adaptor " ^ 
     (if adaptor_type = "int" 
      then " arithmetic_int:" 
      else " arithmetic_float:") ^
     f2_call_addr ^ ":" ^ (string_of_int f1nargs) ^ ":" ^
-    inner_func_addr ^ ":" ^ (string_of_int f2nargs)
+    f2_addr ^ ":" ^ (string_of_int f2nargs)
 
+let synth_ret_opt = "-synthesize-return-adaptor return-typeconv:" ^ f2_addr ^ ":" ^ post_f2_call_addr ^ ":"  ^ (string_of_int f2nargs)
+  
 let path_depth_limit = 300
 let iteration_limit = 4000
 
@@ -259,7 +267,7 @@ let check_adaptor () =
        "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
        "-no-fail-on-huer"; (* not the right way to make strange term failures go away
 			      but it works for now, TODO: fix this in the near future *)
-       synth_opt]
+       synth_opt; synth_ret_opt]
     @ !adapt (* representation of the adaptor as '-extra-condition' arguments *)
     @ ["-table-limit 12"; (* Kesha had turned off table-limit for some unknown reason *)
        (*"-zero-memory";*) (* Vaibhav had turned off zero memory in CE search for some reason *)
@@ -433,7 +441,7 @@ let try_synth fb_extra_args =
        "-trace-iterations"; "-trace-assigns"; "-solve-final-pc";
        "-no-fail-on-huer"; (* not the right way to make strange term failures go away
 			      but it works for now, TODO: fix this in the near future *)
-       synth_opt; 
+       synth_opt; synth_ret_opt; 
        "-table-limit 12"; (* Kesha had turned this off for some reason *)
        "-zero-memory";
        "-trace-stopping";
@@ -543,7 +551,7 @@ ignore(syscall("rm str_arg*"));
 ignore(syscall("rm -rf fuzzball-tmp-*"));
 printf "main: %s\n" main_addr;
 printf "f1: %s\n" f2_call_addr;
-printf "f2: %s\n" inner_func_addr;
+printf "f2: %s\n" f2_addr;
 
 List.iteri (fun idx str -> printf "arg %d = %s\n" idx str;) input_addr;
 
