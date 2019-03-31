@@ -212,7 +212,7 @@ let solver_opts =
 let common_opts = ["-return-zero-missing-x64-syscalls"; "-nonzero-divisors"; "-omit-pf-af"; "-region-limit"; "936"]
 
 let verbose_opts = (if verbose = 1 then
-    ["-trace-decisions"; "-trace-conditions"; "-trace-binary-paths";"-trace-tables";"-trace-regions"; "-trace-sym-addr-details"; "-trace-sym-addrs"; "-trace-tables"; "-trace-syscalls"]
+    ["-trace-decisions"; "-trace-conditions"; "-trace-binary-paths";"-trace-tables";"-trace-regions"; "-trace-sym-addr-details"; "-trace-sym-addrs"; "-trace-tables"; "-trace-syscalls"; "-trace-memory-snapshots"; "-trace-adaptor"]
   else [])
   
 let arith_fields = 
