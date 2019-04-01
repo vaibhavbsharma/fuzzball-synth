@@ -158,6 +158,19 @@ my @verbose_2_opts = (@verbose_1_opts,
 		      "-trace-stores");
 my @verbose_opts = ($verbose == 1) ? @verbose_1_opts : (($verbose == 2) ? @verbose_2_opts : ());
 
+my @common_opts = (
+    "-no-fail-on-huer",
+    "-return-zero-missing-x64-syscalls",
+    "-region-limit", $region_limit,
+    "-trace-iterations", "-trace-assigns", "-solve-final-pc",
+    "-trace-stopping",
+    "-table-limit","12",
+    "-omit-pf-af",
+    "-match-syscalls-in-addr-range",
+    $f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
+    "-random-seed", int(rand(10000000)),
+    "-nonzero-divisors");
+
 my @const_bounds_ec = ();
 if($const_lb != $const_ub) {
     for (my $i=0; $i<$f2nargs; $i++) {
@@ -227,25 +240,15 @@ sub check_adaptor {
 		"-symbolic-long", "$arg_addr[3]=d",
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
-		"-omit-pf-af",
 		"-trace-regions", # do not turn off, necessary for finding the "Address <> is region <>" line in output below
-		"-table-limit","12",
 		@verbose_opts,
 		#"-narrow-bitwidth-cutoff","1", # I have no idea what this option does
-		"-match-syscalls-in-addr-range",
-		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
 		@synth_ret_opt, @conc_ret_adapt,
-		"-return-zero-missing-x64-syscalls",
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
-		"-region-limit", $region_limit,
-		"-nonzero-divisors",
 		"-branch-preference", "$match_jne_addr:0",
-		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
-		"-trace-stopping",
-		"-random-seed", int(rand(10000000)),
-		"-no-fail-on-huer",
+		@common_opts,
 		"--", $bin, $f1num, $f2num, "g");
     my @printable;
     for my $a (@args) {
@@ -427,22 +430,13 @@ sub try_synth {
 	    #tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
 	    #counter example search mode otherwise
 	    "-adaptor-search-mode",
-	    "-trace-iterations", "-trace-assigns", "-solve-final-pc",
-	    "-table-limit","12",
 	    @verbose_opts,
-	    "-return-zero-missing-x64-syscalls",
 	    @synth_opt, @const_bounds_ec,
 	    @synth_ret_opt,
-	    "-match-syscalls-in-addr-range",
-	    $f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 	    "-branch-preference", "$match_jne_addr:1",
-	    "-omit-pf-af",
-	    "-trace-stopping",
 	    @fuzzball_extra_args,
 	    "-zero-memory",
-	    "-region-limit", $region_limit,
-	    "-random-seed", int(rand(10000000)),
-	    "-no-fail-on-huer",
+	    @common_opts,
 	    "--", $bin, $f1num, $f2num, "f", "tests");
 
     my @printable;
