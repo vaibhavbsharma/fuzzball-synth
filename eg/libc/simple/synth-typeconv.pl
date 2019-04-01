@@ -142,7 +142,7 @@ my @verbose_2_opts = (@verbose_1_opts,
 my @verbose_opts = ($verbose == 1) ? @verbose_1_opts : (($verbose == 2) ? @verbose_2_opts : ());
 
 my @solver_opts = ("-solver", "smtlib-batch", 
-		   # "-save-solver-files",
+		   "-save-solver-files",
 		   "-solver-path", $stp, "-solver-timeout",5,"-timeout-as-unsat");
 
 my @synth_opt = ("-synthesize-adaptor",
@@ -197,11 +197,13 @@ sub check_adaptor {
     my($adapt,$ret_adapt) = (@_);
     #print "checking arg-adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
     my @conc_adapt = ();
-    for my $i (0 .. $#$adapt) {
-	my($name, $ty, $fmt) = @{$fields[$i]};
-	my $val = $adapt->[$i];
-	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
-	push @conc_adapt, ("-extra-condition", $s);
+    if ($f2nargs > 0) {
+	for my $i (0 .. $#$adapt) {
+	    my($name, $ty, $fmt) = @{$fields[$i]};
+	    my $val = $adapt->[$i];
+	    my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+	    push @conc_adapt, ("-extra-condition", $s);
+	}
     }
     my @conc_ret_adapt = ();
     for my $i (0 .. $#$ret_adapt) {
