@@ -7,10 +7,11 @@ if [[ $# -ne 2 || $2 -gt 32 || $2 -lt 1 ]]; then
   exit 1
 fi
 
-export BUCKET=$1
-if [[ $1 -eq 3 ]]; then
+export BUCKET=$2
+export ADAPTER_FAMILY=$1
+if [[ $ADAPTER_FAMILY -eq 3 ]]; then
     export SUBDIR="arith";
-elif [[ $1 -eq 2 ]]; then
+elif [[ $ADAPTER_FAMILY -eq 2 ]]; then
     export SUBDIR="typeconv";
 else
     export SUBDIR="argsub";
@@ -18,6 +19,10 @@ fi
 SCREENHANDLE="glibc-$SUBDIR-$BUCKET"
 screen -S $SCREENHANDLE -dm bash -c '
 cd $ESVHOME/glibc-exps/$SUBDIR/glibc-$BUCKET;
-FUZZBALL_LOC=$ESVHOME/fuzzball-adaptorsynth/exec_utils/fuzzball perl ./run-funcs-msi.pl 32 $BUCKET $1 -1 255 >> logs/1.log'
-echo "Started screen with handle $SCREENHANDLE";
+FUZZBALL_LOC=$ESVHOME/fuzzball-adaptorsynth/exec_utils/fuzzball perl ./run-funcs-msi.pl 32 $BUCKET $ADAPTER_FAMILY -1 255 >> logs/1.log 2>logs/1.error.log'
+if [[ $? -eq 0 ]]; then 
+    echo "Started screen with handle $SCREENHANDLE";
+else
+    echo "Failed to start screen $SCREENHANDLE";
+fi
 wait

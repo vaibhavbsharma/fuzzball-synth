@@ -156,6 +156,7 @@ for(my $i = $last_index+1; $i < $this_bucket_num_fns; $i++) {
 	printf(LOG "cmd = @cmd\n");
 	select((select(LOG), $|=1)[0]);
 	printf("cmd = @cmd\n");
+	print STDERR "cmd = @cmd\n";
 	$running_as = 0;
 	$last_ce_time = $last_as_time = 0;
 	$total_ce_time = $total_as_time = $total_time = 0;
