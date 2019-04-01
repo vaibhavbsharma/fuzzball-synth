@@ -239,6 +239,7 @@ sub check_adaptor {
 		"-trace-iterations", "-trace-assigns", "-solve-final-pc",
 		"-trace-stopping",
 		"-random-seed", int(rand(10000000)),
+		"-no-fail-on-huer",
 		"--", $bin, $f1num, $f2num, "g");
     my @printable;
     for my $a (@args) {
@@ -433,6 +434,7 @@ sub try_synth {
 		@fuzzball_extra_args,
 		"-region-limit", $region_limit,
 		"-random-seed", int(rand(10000000)),
+		"-no-fail-on-huer",
 		"--", $bin, $f1num, $f2num, "f", "tests");
     my @printable;
     for my $a (@args) {
