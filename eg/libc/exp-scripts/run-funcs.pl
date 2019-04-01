@@ -3,7 +3,7 @@ use POSIX;
 use strict;
 use File::Basename;
 
-die "Usage: run-funcs-msi.pl <max_buckets> <bucket-num(1-max_buckets)> <1=argsub, 2=typeconv adaptor, 3=arithmetic-depth-2-adapter> <constant lower bound> <constant upper bound>"
+die "Usage: run-funcs.pl <max_buckets> <bucket-num(1-max_buckets)> <1=argsub, 2=typeconv adaptor, 3=arithmetic-depth-2-adapter> <constant lower bound> <constant upper bound>"
   unless @ARGV == 5;
 
 
@@ -14,14 +14,14 @@ my $checkpoint_file = "checkpoint";
 my ($max_buckets,$bucket_num,$adaptor_family,$const_lb,$const_ub) = @ARGV;
 
 my $rand_seed = 1;
-my $num_secs_to_timeout = 600;
+my $num_secs_to_timeout = 300;
 my $num_glibc_fns = 1316;
 my $binary = "two-funcs";
 
 # if($adaptor_family == 1) { $num_secs_to_timeout = 60; }
 # else { $num_secs_to_timeout = 300; }# https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
 
-open(LOG, ">> logs/run-funcs-msi.log");
+open(LOG, ">> logs/run-funcs.log");
 printf(LOG "# of funcs = %d\n", $num_glibc_fns);
 select((select(LOG), $|=1)[0]);
 printf("# of funcs = %d\n", $num_glibc_fns);
@@ -144,12 +144,11 @@ for(my $i = $last_index+1; $i < $this_bucket_num_fns; $i++) {
 	 $inner_fn <= $inner_func_end; 
 	 $inner_fn++) {
 	if ($target_fn == $inner_fn) { next; }
-	# running synth-argsub.pl and synth-typeconv.pl with run-funcs-msi.pl has never been tested
 	my $adaptor_driver = "synth-argsub.pl";
 	if($adaptor_family==2) { $adaptor_driver = "synth-typeconv.pl"; }
 	elsif($adaptor_family==3) { $adaptor_driver = "synth-arithmetic.ml"; }
 	my @cmd = ("perl",$adaptor_driver,$target_fn,$inner_fn,$rand_seed, "1", 
-		   $const_lb, $const_ub, "1", "0", "2>&1");
+		   $const_lb, $const_ub, "0", "0");
 	if ($adaptor_family == 3) {
 	    @cmd = ("./synth-arithmetic", $binary,"int","2",$target_fn, $inner_fn, $rand_seed,"0", "2>&1");
 	}
