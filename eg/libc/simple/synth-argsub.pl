@@ -2,10 +2,10 @@
 
 use strict;
 
-
-die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>] <verbose=1, non-verbose=0, extra-verbose=2 (is logging-heavy, be warned)>"
-  unless @ARGV == 7;
-my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub, $verbose) = @ARGV;
+my $bin = "./two-funcs";
+die "Usage: synth-one.pl <f1num> <f2num> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>] <recompile $bin=1, use $bin as-is=0> <verbose=1, non-verbose=0, extra-verbose=2 (is logging-heavy, be warned)>"
+  unless @ARGV == 8;
+my($f1num, $f2num, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub, $recompile, $verbose) = @ARGV;
 
 srand($rand_seed);
 my $adaptor_grammar = 2;
@@ -15,7 +15,7 @@ my $adaptor_score = 0;
 
 my $region_limit = 936;
 
-my $sane_addr = 0x42420000;
+my $sane_addr = 0x42420000;  # starting sane address also assumed in SRFM#region_for (SRFM.ml line 873)
 
 my @fuzzball_extra_args_arr;
 my $numTests=0;
@@ -27,12 +27,12 @@ my $pwd = $ENV{PWD};
 my $f1_completed_count = 0;
 my $iteration_count = 0;
 
-my $bin = "./two-funcs";
-
-print "compiling binary: ";
-my $unused = `gcc -static -DF2VER=0 -DF2NARGS=2 two-funcs.c -g -o two-funcs -lpthread`;
-my $gcc_ec = $?;
-die "failed to compile $bin" unless $gcc_ec == 0;
+if ($recompile == 1) {
+    print "compiling binary: ";
+    my $unused = `gcc -static -DF2VER=0 -DF2NARGS=2 two-funcs.c -g -o two-funcs -lpthread`;
+    my $gcc_ec = $?;
+    die "failed to compile $bin" unless $gcc_ec == 0;
+}
 
 my @func_info;
 open(F, "<types-no-float-1204.lst") or die;
@@ -227,7 +227,7 @@ sub check_adaptor {
 		"-trace-regions", # do not turn off, necessary for finding the "Address <> is region <>" line in output below
 		"-table-limit","12",
 		@verbose_opts,
-                #"-narrow-bitwidth-cutoff","1",
+		#"-narrow-bitwidth-cutoff","1", # I have no idea what this option does
 		"-trace-conditions",
 		"-trace-decisions",
 		"-match-syscalls-in-addr-range",
