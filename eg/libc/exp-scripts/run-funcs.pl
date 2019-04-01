@@ -15,6 +15,7 @@ my ($max_buckets,$bucket_num,$adaptor_family,$const_lb,$const_ub) = @ARGV;
 
 my $rand_seed = 1;
 my $num_secs_to_timeout = 300;
+if ($adapter_family == 3) { $num_secs_to_timeout = 600; } # arithmetic adapter gets 10m timeout
 my $num_glibc_fns = 1316;
 my $binary = "two-funcs";
 
