@@ -134,6 +134,8 @@ my @synth_ret_opt = ("-synthesize-return-adaptor",
 print "synth_ret_opt = @synth_ret_opt\n";
 
 my @verbose_1_opts = (
+    "-trace-conditions",
+    "-trace-decisions",
     "-trace-adaptor",
     "-trace-sym-addr-details",
     "-trace-sym-addrs",
@@ -228,8 +230,6 @@ sub check_adaptor {
 		"-table-limit","12",
 		@verbose_opts,
 		#"-narrow-bitwidth-cutoff","1", # I have no idea what this option does
-		"-trace-conditions",
-		"-trace-decisions",
 		"-match-syscalls-in-addr-range",
 		$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 		@synth_opt, @conc_adapt, @const_bounds_ec,
@@ -312,7 +312,7 @@ sub check_adaptor {
 	    }
 	    for my $v (split (/ /, $vars)) {
 		if($v =~ /^region_([0-9]+)_byte_0x([0-9a-f]+)=(0x[0-9a-f]+)$/) {
-		    print "region assignment $1 $2 $3 for arg $regnum_to_arg[$1]\n";
+		    if ($verbose != 0) { print "region assignment $1 $2 $3 for arg $regnum_to_arg[$1]\n"; }
 		    # $1 -> region number, starts with 1
 		    # $2 -> offset within region, starts with 0
 		    # $3 -> value to be set, any value
@@ -357,7 +357,7 @@ sub check_adaptor {
 		generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
 	    $this_ce = 0;
-	    print "  $_";
+	    if ($verbose != 0) { print "  $_"; }
 	    last;
 	} elsif (/Address [a-f]:reg64_t is region ([0-9]+)/) {
 	    my $add_line = $_;
@@ -365,7 +365,7 @@ sub check_adaptor {
 	    for my $v (split(/ /, $add_line)) {
 		if ($v =~ /^[a-f]:reg64_t$/) { # matches argument name
 		    $add_var = ord($v) - ord('a');
-		    printf("add_var = $add_var\n");
+		    if ($verbose != 0) { printf("add_var = $add_var\n"); }
 		} elsif ($v =~ /^[0-9]$/) { # matches region number
 		    if ($add_var < $f1nargs and $add_var >= 0) {
 			$arg_to_regnum[$add_var] = $v-'0';
@@ -377,11 +377,18 @@ sub check_adaptor {
 		    }
 		}
 	    }
-	} 
-	print "  $_";
+	} # elsif print strings used by eg/libc/exp-scripts/run-funcs.pl 
+	elsif(/.*total query time = (.*)$/ || 
+		/.*Query time = (.*) sec$/ || 
+		/.*Starting new query.*$/) {
+	    print "  $_";
+	}
+ 
+	if ($verbose != 0) { print "  $_"; }
     }
     close LOG;
     if ($matches == 0 and $fails == 0) {
+	print "CounterExample search failed";
 	die "Missing results from check run";
     }
     $numTests++;
@@ -397,8 +404,10 @@ sub check_adaptor {
 sub try_synth {
     my($testsr, $_fuzzball_extra_args) = @_;
     my @fuzzball_extra_args = @{ $_fuzzball_extra_args };
-    foreach my $i (0 .. $#fuzzball_extra_args) {
-	print "fuzzball_extra_args: fuzzball_extra_args[$i]= $fuzzball_extra_args[$i]\n";
+    if ($verbose != 0) { 
+	foreach my $i (0 .. $#fuzzball_extra_args) {
+	    print "fuzzball_extra_args: fuzzball_extra_args[$i]= $fuzzball_extra_args[$i]\n";
+	}
     }
     open(TESTS, ">tests");
     for my $t (@$testsr) {
@@ -424,8 +433,7 @@ sub try_synth {
 	    "-match-syscalls-in-addr-range",
 	    $f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
 	    "-branch-preference", "$match_jne_addr:1",
-	    "-trace-conditions", "-omit-pf-af",
-	    "-trace-decisions",
+	    "-omit-pf-af",
 	    "-trace-stopping",
 	    @fuzzball_extra_args,
 	    "-zero-memory",
@@ -458,12 +466,18 @@ sub try_synth {
 		  or die "Parse failure on variable assignment <$v>";
 		$fields{$1} = hex $2;
 	    }
-	    print "  $_";
+	    if ($verbose != 0) { print "  $_"; }
 	    last;
 	} elsif (/^adaptor_score = (.*)$/ and $success) {
 	    $adaptor_score = $1;
+	} # elsif print strings used by eg/libc/exp-scripts/run-funcs.pl 
+	elsif(/.*total query time = (.*)$/ || 
+		/.*Query time = (.*) sec$/ || 
+		/.*Starting new query.*$/) {
+	    print "  $_";
 	}
-	print "  $_" unless /^Input vars:/;
+
+	if ($verbose != 0) { print "  $_" unless /^Input vars:/; }
     }
     close LOG;
     if (!$success) {
