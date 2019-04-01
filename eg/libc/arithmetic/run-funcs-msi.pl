@@ -149,7 +149,7 @@ for(my $i = $last_index+1; $i < $this_bucket_num_fns; $i++) {
 	if($adaptor_family==2) { $adaptor_driver = "synth-typeconv.pl"; }
 	elsif($adaptor_family==3) { $adaptor_driver = "synth-arithmetic.ml"; }
 	my @cmd = ("perl",$adaptor_driver,$target_fn,$inner_fn,$rand_seed, "1", 
-		   $const_lb, $const_ub, "1", "2>&1");
+		   $const_lb, $const_ub, "1", "0", "2>&1");
 	if ($adaptor_family == 3) {
 	    @cmd = ("./synth-arithmetic", $binary,"int","2",$target_fn, $inner_fn, $rand_seed,"0", "2>&1");
 	}

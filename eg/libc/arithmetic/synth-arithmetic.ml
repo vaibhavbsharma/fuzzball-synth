@@ -55,7 +55,7 @@ let verbose =
   try int_of_string Sys.argv.(7)
   with Invalid_argument _ -> print_usage ()
 
-let sane_addr = ref 0x42420000
+let sane_addr = ref 0x42420000 (* starting sane address also assumed in SRFM#region_for (SRFM.ml line 873) *)
 let region_limit = 936
   
 let func_info = ref []
