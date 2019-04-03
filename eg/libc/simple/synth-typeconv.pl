@@ -403,11 +403,6 @@ sub check_adaptor {
 sub try_synth {
     my($testsr, $_fuzzball_extra_args) = @_;
     my @fuzzball_extra_args = @{ $_fuzzball_extra_args };
-    if ($verbose != 0) {
-	foreach my $i (0 .. $#fuzzball_extra_args) {
-	    print "fuzzball_extra_args: fuzzball_extra_args[$i]= $fuzzball_extra_args[$i]\n";
-	}
-    }
     open(TESTS, ">tests");
     for my $t (@$testsr) {
 	my @vals = (@$t, (0) x 6);
@@ -507,17 +502,17 @@ if ($default_adaptor_pref == 1) {
 }
 
 # If outer function takes no arguments, then the inner function can only use constants
-if ($f1nargs==0) {
+if ($f1nargs==0 || $default_adaptor_pref == 0) {
     for my $i (0 .. $#$adapt) {
 	if ($i%2 == 0) { # X_type field
 	    $adapt->[$i] = 1;
-	    $adapt->[$i+1] = 1;
+	    $adapt->[$i+1] = 0;
 	}
     }
 }
 
 # Set these to test a specific adaptor
-$adapt->[0]=1;
+#  $adapt->[0]=1;
 #  $adapt->[1]=0;
 #  $adapt->[2]=1;
 #  $adapt->[3]=0;

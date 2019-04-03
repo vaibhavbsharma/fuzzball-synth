@@ -74,166 +74,12 @@ int main(int argc, char * argv[]) {
   if (adapter_family == 3) {
     f1_line_offset-=2; f2_line_offset-=2;
   }
-  vector<string> blacklisted_fns;
-  
-  //Functions that return -1 because of unimplemented syscalls
-  // blacklisted_fns.push_back(" = afs_syscall");
-  // blacklisted_fns.push_back(" = break");
-  // blacklisted_fns.push_back(" = fattach");
-  // blacklisted_fns.push_back(" = fdetach");
-  // blacklisted_fns.push_back(" = ftime");
-  // blacklisted_fns.push_back(" = getmsg");
-  // blacklisted_fns.push_back(" = getpmsg");
-  // blacklisted_fns.push_back(" = gtty");
-
- 
-  //Functions that return void
-  //blacklisted_fns.push_back(" = syslog");
-  //blacklisted_fns.push_back(" = vsyslog");
-  //blacklisted_fns.push_back(" = openlog");
-  //blacklisted_fns.push_back(" = closelog");
-  //blacklisted_fns.push_back(" = hdestroy");
-  //blacklisted_fns.push_back(" = hdestroy_r");
-  //blacklisted_fns.push_back(" = twalk");
-  //blacklisted_fns.push_back(" = tdestroy");
-  //blacklisted_fns.push_back(" = vwarnx");
-  //blacklisted_fns.push_back(" = vwarn");
-  //blacklisted_fns.push_back(" = warn");
-  //blacklisted_fns.push_back(" = warnx");
-  //blacklisted_fns.push_back(" = verr");
-  //blacklisted_fns.push_back(" = verrx");
-  //blacklisted_fns.push_back(" = err");
-  //blacklisted_fns.push_back(" = errx");
-  //blacklisted_fns.push_back(" = error");
-  //blacklisted_fns.push_back(" = error_at_line");
-  //blacklisted_fns.push_back(" = endfsent");
-  //blacklisted_fns.push_back(" = moncontrol");
-  //blacklisted_fns.push_back(" = monstartup");
-  //blacklisted_fns.push_back(" = _mcleanup");
-  //blacklisted_fns.push_back(" = mcount");
-  //blacklisted_fns.push_back(" = setspent");
-  //blacklisted_fns.push_back(" = endspent");
-  //blacklisted_fns.push_back(" = setsgent");
-  //blacklisted_fns.push_back(" = endsgent");
-  //blacklisted_fns.push_back(" = argp_failure");
-  //blacklisted_fns.push_back(" = argp_help");
-  //blacklisted_fns.push_back(" = argp_state_help");
-  //blacklisted_fns.push_back(" = argp_error");
-  //blacklisted_fns.push_back(" = argp_usage");
-  //blacklisted_fns.push_back(" = pthread_exit");
-  //blacklisted_fns.push_back(" = backtrace_symbols_fd");
-  //blacklisted_fns.push_back(" = sethostent");
-  //blacklisted_fns.push_back(" = endhostent");
-  //blacklisted_fns.push_back(" = setnetent");
-  //blacklisted_fns.push_back(" = endnetent");
-  //blacklisted_fns.push_back(" = setprotoent");
-  //blacklisted_fns.push_back(" = endprotoent");
-  //blacklisted_fns.push_back(" = setservent");
-  //blacklisted_fns.push_back(" = endservent");
-  //blacklisted_fns.push_back(" = setrpcent");
-  //blacklisted_fns.push_back(" = endrpcent");
-  //blacklisted_fns.push_back(" = endnetgrent");
-  //blacklisted_fns.push_back(" = if_freenameindex");
-  //blacklisted_fns.push_back(" = freeifaddrs");
-  //blacklisted_fns.push_back(" = setaliasent");
-  //blacklisted_fns.push_back(" = endaliasent");
-  //blacklisted_fns.push_back(" = herror");
-  //blacklisted_fns.push_back(" = _seterr_reply");
-  //blacklisted_fns.push_back(" = xdrrec_create");
-  //blacklisted_fns.push_back(" = des_setparity");
-  //blacklisted_fns.push_back(" = clnt_perror");
-  //blacklisted_fns.push_back(" = clnt_perrno");
-  //blacklisted_fns.push_back(" = clnt_pcreateerror");
-  //blacklisted_fns.push_back(" = get_myaddress");
-  //blacklisted_fns.push_back(" = xprt_register");
-  //blacklisted_fns.push_back(" = xprt_unregister");
-  //blacklisted_fns.push_back(" = svc_unregister");
-  //blacklisted_fns.push_back(" = svcerr_noproc");
-  //blacklisted_fns.push_back(" = svcerr_decode");
-  //blacklisted_fns.push_back(" = svcerr_systemerr");
-  //blacklisted_fns.push_back(" = svcerr_auth");
-  //blacklisted_fns.push_back(" = svcerr_weakauth");
-  //blacklisted_fns.push_back(" = svcerr_noprog");
-  //blacklisted_fns.push_back(" = svcerr_progvers");
-  //blacklisted_fns.push_back(" = svc_getreq_common");
-  //blacklisted_fns.push_back(" = svc_getreqset");
-  //blacklisted_fns.push_back(" = svc_getreq_poll");
-  //blacklisted_fns.push_back(" = svc_getreq");
-  //blacklisted_fns.push_back(" = xdr_free");
-  //blacklisted_fns.push_back(" = xdrmem_create");
-  //blacklisted_fns.push_back(" = xdrstdio_create");
-  //blacklisted_fns.push_back(" = svc_exit");
-  //blacklisted_fns.push_back(" = svc_run");
-  //blacklisted_fns.push_back(" = setutent");
-  //blacklisted_fns.push_back(" = endutent");
-  //blacklisted_fns.push_back(" = updwtmp");
-  //blacklisted_fns.push_back(" = setutxent");
-  //blacklisted_fns.push_back(" = endutxent");
-  //blacklisted_fns.push_back(" = updwtmpx");
-  //blacklisted_fns.push_back(" = getutmp");
-  //blacklisted_fns.push_back(" = freelocale");
-  //blacklisted_fns.push_back(" = longjmp");
-  //blacklisted_fns.push_back(" = abort");
-  //blacklisted_fns.push_back(" = qsort_r");
-  //blacklisted_fns.push_back(" = qsort");
-  //blacklisted_fns.push_back(" = exit");
-  //blacklisted_fns.push_back(" = on_exit");
-  //blacklisted_fns.push_back(" = quick_exit");
-  //blacklisted_fns.push_back(" = srand");
-  //blacklisted_fns.push_back(" = srand48");
-  //blacklisted_fns.push_back(" = lcong48");
-  //blacklisted_fns.push_back(" = makecontext");
-  //blacklisted_fns.push_back(" = perror");
-  //blacklisted_fns.push_back(" = psignal");
-  //blacklisted_fns.push_back(" = flockfile");
-  //blacklisted_fns.push_back(" = funlockfile");
-  //blacklisted_fns.push_back(" = psiginfo");
-  //blacklisted_fns.push_back(" = setbuffer");
-  //blacklisted_fns.push_back(" = clearerr");
-  //blacklisted_fns.push_back(" = rewind");
-  //blacklisted_fns.push_back(" = setbuf");
-  //blacklisted_fns.push_back(" = setlinebuf");
-  //blacklisted_fns.push_back(" = clearerr_unlocked");
-  //blacklisted_fns.push_back(" = free");
-  //blacklisted_fns.push_back(" = malloc_stats");
-  //blacklisted_fns.push_back(" = mcheck_check_all");
-  //blacklisted_fns.push_back(" = mcheck");
-  //blacklisted_fns.push_back(" = mcheck_pedantic");
-  //blacklisted_fns.push_back(" = tr_break");
-  //blacklisted_fns.push_back(" = mtrace");
-  //blacklisted_fns.push_back(" = muntrace");
-  //blacklisted_fns.push_back(" = bzero");
-  //blacklisted_fns.push_back(" = bcopy");
-  //blacklisted_fns.push_back(" = swab");
-  //blacklisted_fns.push_back(" = argz_delete");
-  //blacklisted_fns.push_back(" = argz_extract");
-  //blacklisted_fns.push_back(" = argz_stringify");
-  //blacklisted_fns.push_back(" = envz_remove");
-  //blacklisted_fns.push_back(" = envz_strip");
-  //blacklisted_fns.push_back(" = tzset");
-  //blacklisted_fns.push_back(" = rewinddir");
-  //blacklisted_fns.push_back(" = seekdir");
-  //blacklisted_fns.push_back(" = setgrent");
-  //blacklisted_fns.push_back(" = endgrent");
-  //blacklisted_fns.push_back(" = setpwent");
-  //blacklisted_fns.push_back(" = endpwent");
-  //blacklisted_fns.push_back(" = _Exit");
-  //blacklisted_fns.push_back(" = globfree");
-  //blacklisted_fns.push_back(" = freeaddrinfo");
-  //blacklisted_fns.push_back(" = regfree");
-  //blacklisted_fns.push_back(" = re_set_registers");
-  //blacklisted_fns.push_back(" = wordfree");
-  //blacklisted_fns.push_back(" = cfmakeraw");
-  //blacklisted_fns.push_back(" = sync");
-  //blacklisted_fns.push_back(" = insque");
-  //blacklisted_fns.push_back(" = remque");
-  //blacklisted_fns.push_back(" = endusershell");
-  //blacklisted_fns.push_back(" = setusershell");
-
+  //vector<string> blacklisted_fns;
+  //populate_blacklisted_fns(blacklisted_fns);
  
   for(int i=1;i<=num_dirs;i++) {
     string filename = getFileName(prefix_dir, adapter_family, log_file, i);
-    cout<<filename<<endl;
+    int thisfile_adaptor_count = 0;
     ifstream fin(filename.c_str());
     string line;
     vector<string> buf_line;
@@ -255,6 +101,7 @@ int main(int argc, char * argv[]) {
 	  //cout<<"Found "<<blacklisted_fns[ign_ind]<<" on line : "<<line<<endl;
 	  }*/
       if(line.find("Final adaptor")!=string::npos) {
+	thisfile_adaptor_count++;
 	total_adaptor_count++;
 	if(ignore_flag==0) {
 	  //cout<<"Found an adaptor, printing its execution log"<<endl;
@@ -284,6 +131,7 @@ int main(int argc, char * argv[]) {
       }
     }
     fin.close();
+    cout<<filename<<" " <<", number of adapters = " << thisfile_adaptor_count<<endl;
   }
   cout<<"ignored_adaptor_count = "<<ignored_adaptor_count<<endl;
   cout<<"total_adaptor_count = "<<total_adaptor_count<<endl;

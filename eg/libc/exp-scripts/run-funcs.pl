@@ -26,7 +26,7 @@ printf("# of funcs = %d\n", $num_glibc_fns);
 
 my $bucket_size = ceil($num_glibc_fns/$max_buckets);
 my $starting_target_fn = ($bucket_num-1)*$bucket_size;
-my $ending_target_fn = $starting_target_fn + $bucket_size;
+my $ending_target_fn = $starting_target_fn + $bucket_size - 1;
 if($ending_target_fn > $num_glibc_fns) { $ending_target_fn = $num_glibc_fns-1; }
 my $this_bucket_num_fns = $ending_target_fn-$starting_target_fn+1;
 print "bucket_size = $bucket_size\n";
@@ -145,7 +145,7 @@ for(my $i = $last_index+1; $i < $this_bucket_num_fns; $i++) {
 	my $adaptor_driver = "synth-argsub.pl";
 	if($adapter_family==2) { $adaptor_driver = "synth-typeconv.pl"; }
 	elsif($adapter_family==3) { $adaptor_driver = "synth-arithmetic.ml"; }
-	my @cmd = ("perl",$adaptor_driver,$target_fn,$inner_fn,$rand_seed, "1", 
+	my @cmd = ("perl",$adaptor_driver,$target_fn,$inner_fn,$rand_seed, "0", 
 		   $const_lb, $const_ub, "0", "0");
 	if ($adapter_family == 3) {
 	    @cmd = ("./synth-arithmetic", $binary,"int","2",$target_fn, $inner_fn, $rand_seed,"0", "2>&1");

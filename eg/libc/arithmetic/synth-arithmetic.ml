@@ -87,7 +87,7 @@ let create_adapt num_args =
   let rec create_tree d base var_name = 
     if d > 0
     then ["-extra-condition " ^ (var_name ^ "_type_" ^ base) ^
-	     (sprintf ":reg8_t==%d:reg8_t" (if d = tree_depth then 1 else 0));
+	     (sprintf ":reg8_t==%d:reg8_t" (if d = tree_depth then 0 else 0));
           "-extra-condition " ^ (var_name ^ "_val_" ^ base) ^ ":reg64_t==0:reg64_t"]
       @ (create_tree (d-1) (base ^ "0") var_name)
       @ (create_tree (d-1) (base ^ "1") var_name)
@@ -97,7 +97,9 @@ let create_adapt num_args =
     else let x = String.make 1 (Char.chr ((Char.code 'a') + (n-1))) in 
          (create_tree tree_depth "R" x) @ (main_loop (n-1))
   in main_loop num_args
-let adapt = ref (create_adapt f2nargs)
+let adapt = ref ((create_adapt f2nargs) @
+		    ["-extra-condition ret_type:reg8_t==0x0:reg8_t";
+		     "-extra-condition ret_val:reg64_t==0x0:reg64_t"])
 (* let adapt = ref ["-extra-condition"; "a_type_R:reg8_t==2:reg8_t";
    "-extra-condition"; "a_val_R:reg64_t==0:reg64_t";
    "-extra-condition"; "a_type_R0:reg8_t==1:reg8_t";
@@ -279,22 +281,27 @@ let check_adaptor () =
   in
   let _ = if verbose = 1 then printf "%s\n%!" (String.concat " " cmd) else () in
   let ic = Unix.open_process_in (String.concat " " cmd) in
-  let ce = ref (Array.make 6 0L) in
-  let arg_to_regnum = ref (Array.make 6 0) in
-  let regnum_to_arg = ref (Array.make 1000 0) in
-  let regnum_to_saneaddr = ref (Array.make (f1nargs+1) 0) in
-  let region_contents = Array.make f1nargs (Array.make region_limit 0) in
+  let ce = Array.make 6 0L in
+  let arg_to_regnum = Array.make 6 0 in
+  let regnum_to_arg = Array.make 1000 0 in
+  let regnum_to_saneaddr = Array.make (f1nargs+1) 0 in
+  let region_contents = Array.make_matrix f1nargs region_limit 0 in
   let reinit_arr arr value =
 		       for i = 0 to ((Array.length arr)-1) do
-			 Array.set arr i value
+			 arr.(i) <- value
 		       done
   in
   let reinit_mem_ce () =
-    reinit_arr !arg_to_regnum 0;
-    reinit_arr !regnum_to_arg 0;
-    reinit_arr !regnum_to_saneaddr 0;
-    reinit_arr !ce 0L;
-    Array.iter (fun arr -> reinit_arr arr 0) region_contents;
+    reinit_arr arg_to_regnum 0;
+    reinit_arr regnum_to_arg 0;
+    reinit_arr regnum_to_saneaddr 0;
+    reinit_arr ce 0L;
+    for i = 0 to f1nargs-1; do
+      for j = 0 to region_limit-1; do
+	region_contents.(i).(j) <- 0
+      done;
+    done;
+  (* Array.iter (fun arr -> reinit_arr arr 0) region_contents; *)
   in
   (* read_results : string list -> (int * int) -> bool -> (bool * (int * int))
      read through the results of the call to FuzzBALL keeping track of
@@ -336,11 +343,13 @@ let check_adaptor () =
              if (match_regex v "^.=0x[0-9a-f]+$") && (not (match_regex v "bfp.*"))
              then (let idx = (Char.code (String.get v 0)) - (Char.code 'a') in
                    let value = Int64.of_string (String.sub v 2 ((String.length v) - 2)) in
-		   if (Array.get !arg_to_regnum idx) <> 0
-		   then (Array.set !ce idx (Int64.of_int !sane_addr);
-			 Array.set !regnum_to_saneaddr (Array.get !arg_to_regnum idx) !sane_addr;
+		   if arg_to_regnum.(idx) <> 0
+		   then (ce.(idx) <- (Int64.of_int !sane_addr);
+			 regnum_to_saneaddr.(arg_to_regnum.(idx)) <- !sane_addr;
+			 printf "Mapping region number %d to sane address 0x%x\n"
+			   arg_to_regnum.(idx) !sane_addr;
 			 sane_addr := !sane_addr + region_limit)
-		   else  Array.set !ce idx value)
+		   else  ce.(idx) <- value)
              else (
 	       if (match_regex v "region_[0-9]+_byte_0x[0-9a-f]+.=0x[0-9a-f]+$")
 	       then (
@@ -352,17 +361,18 @@ let check_adaptor () =
 		     let region_offset = int_of_string (String.sub v offset_pos (equal_pos-offset_pos)) in
 		     let value = int_of_string (String.sub v (equal_pos+1) ((String.length v)-equal_pos-1)) in
 		     if verbose = 1 then
-		       printf "region assignment %d %d %d for arg %d\n" region_number region_offset value (Array.get !regnum_to_arg region_number);
-		     if (Array.get !regnum_to_saneaddr region_number) <> 0
-		     then (
-		       let arg_num = Array.get !regnum_to_arg region_number in
-		       Array.set (Array.get region_contents arg_num) region_offset value)
-		     else ()
+		       printf "region assignment %d %d %d for arg %d\n" region_number region_offset value regnum_to_arg.(region_number);
+		     let arg_num = regnum_to_arg.(region_number) in
+		     if region_number <> 0 && region_offset < region_limit then
+		       region_contents.(arg_num).(region_offset) <- value;
+		     if value <> 0 && verbose = 1 then
+		       printf "set arg = %d, offset = %d to value %d\n"
+			 arg_num region_offset value;
 	       )
 	     ))
            (Str.split (Str.regexp " ") line);
 	let rec loop arg =
-	  let regnum = Array.get !arg_to_regnum arg in
+	  let regnum = arg_to_regnum.(arg) in
 	  if verbose = 1 then printf "arg = %d, regnum = %d\n" arg regnum;
 	  let this_fb_args =
 	    if regnum <> 0 
@@ -371,11 +381,11 @@ let check_adaptor () =
 		if region_offset < region_limit then
 		  ["-store-byte";
 		   (sprintf "0x%x=%d" (base_addr+region_offset)
-		    (Array.get (Array.get region_contents argnum) region_offset))] @
+		      region_contents.(argnum).(region_offset))] @
 		    (loop_inner argnum base_addr (region_offset+1))
 		else []
 	      in
-	      loop_inner arg (Array.get !regnum_to_saneaddr regnum) 0
+	      loop_inner arg regnum_to_saneaddr.(regnum) 0
 	    ) else []
 	  in
 	  this_fb_args @ (if arg+1<f1nargs then loop (arg+1) else [])
@@ -383,7 +393,7 @@ let check_adaptor () =
 	let fb_extra_args = loop 0 in
         (* after updating ce once, we are done *)
         let _ = Unix.close_process_in ic in
-        (false, Array.to_list !ce, fb_extra_args)
+        (false, Array.to_list ce, fb_extra_args)
       | _ when (match_regex line "^Address [a-f]:reg64_t is region [0-9]+$") ->
 	 let add_var = ref (0-1) in
 	 List.iter 
@@ -393,8 +403,8 @@ let check_adaptor () =
 	     else (if (match_regex v "^[0-9]+$")
 	       then (if (!add_var < f1nargs && !add_var >= 0)
 		 then (let regnum = int_of_string v in
-		       Array.set !arg_to_regnum !add_var regnum;
-		       Array.set !regnum_to_arg regnum !add_var;
+		       arg_to_regnum.(!add_var) <- regnum;
+		       regnum_to_arg.(regnum) <- !add_var;
 		       if verbose = 1 then printf "arg %d is region %d\n" !add_var regnum; )
 		 else ()
 	       ) else ())
@@ -407,7 +417,7 @@ let check_adaptor () =
       if matches = 0 && fails = 0 
       then (printf "CounterExample search failed\n"; 
             printf "Missing results from check run"; exit 1)
-      else (true, Array.to_list !ce, []) in
+      else (true, Array.to_list ce, []) in
   read_results (0, 0) false false
 
 
