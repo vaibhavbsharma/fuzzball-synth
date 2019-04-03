@@ -11,16 +11,13 @@ $|=1;
 my $end_time = time() + 2592000; # keep running for up to 30 days
 my $checkpoint_file = "checkpoint";
 
-my ($max_buckets,$bucket_num,$adaptor_family,$const_lb,$const_ub) = @ARGV;
+my ($max_buckets,$bucket_num,$adapter_family,$const_lb,$const_ub) = @ARGV;
 
 my $rand_seed = 1;
 my $num_secs_to_timeout = 300;
 if ($adapter_family == 3) { $num_secs_to_timeout = 600; } # arithmetic adapter gets 10m timeout
 my $num_glibc_fns = 1316;
 my $binary = "two-funcs";
-
-# if($adaptor_family == 1) { $num_secs_to_timeout = 60; }
-# else { $num_secs_to_timeout = 300; }# https://stackoverflow.com/questions/1962985/how-can-i-timeout-a-forked-process-that-might-hang
 
 open(LOG, ">> logs/run-funcs.log");
 printf(LOG "# of funcs = %d\n", $num_glibc_fns);
@@ -146,11 +143,11 @@ for(my $i = $last_index+1; $i < $this_bucket_num_fns; $i++) {
 	 $inner_fn++) {
 	if ($target_fn == $inner_fn) { next; }
 	my $adaptor_driver = "synth-argsub.pl";
-	if($adaptor_family==2) { $adaptor_driver = "synth-typeconv.pl"; }
-	elsif($adaptor_family==3) { $adaptor_driver = "synth-arithmetic.ml"; }
+	if($adapter_family==2) { $adaptor_driver = "synth-typeconv.pl"; }
+	elsif($adapter_family==3) { $adaptor_driver = "synth-arithmetic.ml"; }
 	my @cmd = ("perl",$adaptor_driver,$target_fn,$inner_fn,$rand_seed, "1", 
 		   $const_lb, $const_ub, "0", "0");
-	if ($adaptor_family == 3) {
+	if ($adapter_family == 3) {
 	    @cmd = ("./synth-arithmetic", $binary,"int","2",$target_fn, $inner_fn, $rand_seed,"0", "2>&1");
 	}
 	printf(LOG "cmd = @cmd\n");

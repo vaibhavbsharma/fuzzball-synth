@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
+#include <cstdlib>
 using namespace std;
 
 string pretty_adaptor(string s) {
@@ -30,29 +31,49 @@ string pretty_adaptor(string s) {
   return ret.str();
 }
 
-string getFileName(int n) {
-  char str[20];
-  switch(n) {
-  case 1: case 2: case 3: case 4: 
-  case 5: case 6: case 7: case 8:
-    sprintf(str, "../simple-%d/logs/5.log", n);
-    return str;
+string getFileName(char *prefix_dir, int adapter_family, char *log_file, int n) {
+  char str[200];
+  switch(adapter_family) {
+  case 1:
+    sprintf(str, "%s/argsub/glibc-%d/logs/%s", prefix_dir, n, log_file);
     break;
-  case 9: case 10: case 11: case 12:
-  case 13: case 14: case 15: case 16:
-    sprintf(str, "../simple+%d/logs/5.log", n-8);
-    return str;
+  case 2:
+    sprintf(str, "%s/typeconv/glibc-%d/logs/%s", prefix_dir, n, log_file);
+    break;
+  case 3:
+    sprintf(str, "%s/arith/glibc-%d/logs/%s", prefix_dir, n, log_file);
     break;
   default: 
-    cout<<"dont know how to generate log file for n = "<<n<<endl;
+    cout<<"dont know how to generate log file for adapter family = "<<adapter_family<<endl;
     assert(false); 
   }
-  return "NULL";
+  return str;
 }
 
+
 int main(int argc, char * argv[]) {
+  if (argc < 5) {
+    fprintf(stderr, "Usage: collect-adapters <argument 1> <argument 2> <argument 3> <argument 4>\n");
+    fprintf(stderr, "arguments list is as follows\n");
+    fprintf(stderr, "1. <adapter family, 1=argsub, 2=typeconv, 3=arithmetic-int>\n");
+    fprintf(stderr, "2. <log file to search through, e.g. 1.log>\n");
+    fprintf(stderr, "3. <prefix directory containing the argsub/typeconv/arith subdirectories, e.g. /export/scratch/vaibhav/glibc-exps>\n");
+    fprintf(stderr, "4. <number of bucket directories expected in prefix-directory/argsub or typeconv or arith/, e.g. 32>\n");
+    exit(1);
+  }
+  char *log_file, *prefix_dir;
+  int adapter_family = atoi(argv[1]);
+  log_file = argv[2];
+  prefix_dir = argv[3];
+  int num_dirs = atoi(argv[4]);
   int ignored_adaptor_count=0;
   int total_adaptor_count=0;
+  // offset of line containing f1 = <function name> from "cmd =" line, ditto for f2
+  int f1_line_offset = 14, f2_line_offset = 15;
+  // these two offsets are a bit different in the arithmetic adapter logs
+  if (adapter_family == 3) {
+    f1_line_offset-=2; f2_line_offset-=2;
+  }
   vector<string> blacklisted_fns;
   
   //Functions that return -1 because of unimplemented syscalls
@@ -64,19 +85,7 @@ int main(int argc, char * argv[]) {
   // blacklisted_fns.push_back(" = getmsg");
   // blacklisted_fns.push_back(" = getpmsg");
   // blacklisted_fns.push_back(" = gtty");
-  // blacklisted_fns.push_back(" = isastream");
-  // blacklisted_fns.push_back(" = lock");
-  // blacklisted_fns.push_back(" = madvise1");
-  // blacklisted_fns.push_back(" = mpx");
-  // blacklisted_fns.push_back(" = prof");
-  // blacklisted_fns.push_back(" = profil");
-  // blacklisted_fns.push_back(" = putmsg");
-  // blacklisted_fns.push_back(" = putpmsg");
-  // blacklisted_fns.push_back(" = security");
-  // blacklisted_fns.push_back(" = stty");
-  // blacklisted_fns.push_back(" = tuxcall");
-  // blacklisted_fns.push_back(" = ulimit");
-  // blacklisted_fns.push_back(" = vserver");
+
  
   //Functions that return void
   //blacklisted_fns.push_back(" = syslog");
@@ -222,16 +231,8 @@ int main(int argc, char * argv[]) {
   //blacklisted_fns.push_back(" = setusershell");
 
  
-  for(int i=1;i<=16;i++) {
-    string filename = getFileName(i);// ("../simple-");
-    // filename=filename+(char)('1'+i);
-    // filename=filename+"/logs/5.log";
-    // //filename=filename+(char)('1'+i);
-    // if(argc>1) {
-    //   if(argv[1][1]=='0') filename=filename+"-zero";
-    //   else if(argv[1][1]=='1') filename=filename+"-identity";
-    // } 
-    // //filename=filename+".txt";
+  for(int i=1;i<=num_dirs;i++) {
+    string filename = getFileName(prefix_dir, adapter_family, log_file, i);
     cout<<filename<<endl;
     ifstream fin(filename.c_str());
     string line;
@@ -239,7 +240,7 @@ int main(int argc, char * argv[]) {
     int ignore_flag=0;
     while(getline(fin,line)) {
       //cout<<line<<endl;
-      if(line.find("Startin synthesis")!=string::npos) {
+      if(line.find("cmd = ")!=string::npos) {
 	//cout<<"Clearing buf_line\n";
 	buf_line.clear();
 	ignore_flag=0;
@@ -258,17 +259,24 @@ int main(int argc, char * argv[]) {
 	if(ignore_flag==0) {
 	  //cout<<"Found an adaptor, printing its execution log"<<endl;
 	  //for(int j=0;j<buf_line.size();j++) cout<<"    "<<buf_line[j]<<endl;
-	  //cout<<buf_line[15]<<endl<<buf_line[16]<<endl<<buf_line[buf_line.size()-1]<<endl;
-	  stringstream ss1(buf_line[15]),ss2(buf_line[16]),ss3(buf_line[buf_line.size()-1]);
-	  string f1,f1_name,f2,f2_name,adaptor,ret_adaptor;
+	  //cout<<buf_line[f1_line_offset]<<endl<<buf_line[f2_line_offset]<<endl<<buf_line[buf_line.size()-1]<<endl;
+	  stringstream ss1(buf_line[f1_line_offset]),ss2(buf_line[f2_line_offset]),ss3(buf_line[buf_line.size()-1]);
+	  string f1_num,f1_name,f2_num,f2_name,adaptor,ret_adaptor;
 	  string tmpstr;
-	  string adaptor_score;
-	  ss1>>f1>>tmpstr>>f1_name;
-	  ss2>>f2>>tmpstr>>f2_name;
-	  ss3>>tmpstr>>tmpstr>>tmpstr>>adaptor>>tmpstr>>ret_adaptor>>tmpstr>>tmpstr>>tmpstr>>tmpstr>>adaptor_score;
-	  adaptor=pretty_adaptor(adaptor);
-	  ret_adaptor=pretty_adaptor(ret_adaptor);
-	  cout<<f1<<" "<<f2<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<" "<<adaptor_score<<endl;
+	  ss1>>f1_num>>tmpstr>>f1_name; //line is <f1num> = <f1name>
+	  ss2>>f2_num>>tmpstr>>f2_name; //line is <f2num> = <f2name>
+	  if (adapter_family != 3) { 
+	    ss3>>tmpstr>>tmpstr>>tmpstr>>adaptor>>tmpstr>>ret_adaptor>>tmpstr>>tmpstr>>tmpstr>>tmpstr>>tmpstr;
+	    adaptor=pretty_adaptor(adaptor);
+	    ret_adaptor=pretty_adaptor(ret_adaptor);
+	  } else {
+	    if (line.find(':', 0) == string::npos) {
+	      cout<<"line = "<<line<<" -- should have contained a : but did not"<<endl;
+	      exit(1);
+	    }
+	    adaptor = line.substr(line.find(':', 0)+1, line.length());
+	  }
+	  cout<<f1_num<<" "<<f2_num<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<" "<<endl;
 	}
 	//else cout<<"Skipping adaptor because one of the functions was pthread_* or blacklisted"<<endl;
 	if(ignore_flag==1) ignored_adaptor_count++;

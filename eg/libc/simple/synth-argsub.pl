@@ -544,6 +544,7 @@ my $total_as_time = 0;
 my $diff;
 my $diff1;
 `rm str_arg*`;
+`rm fuzzball-tmp-*`;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
