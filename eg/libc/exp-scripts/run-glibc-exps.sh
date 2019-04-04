@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export ESVHOME=/export/scratch/vaibhav
+export ESVHOME=/export/scratch2/vaibhav
 
 if [[ $# -ne 2 || $2 -gt 32 || $2 -lt 1 ]]; then
   echo "$0: usage: run-glibc-exps.sh <adapter family, 1=argsub, 2=typeconv, 3=arithmetic-int> <index of bucket to initialize between 1 and 32>"
