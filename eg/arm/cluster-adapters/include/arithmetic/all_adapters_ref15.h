@@ -1,4 +1,3 @@
-opening file = ./include/arithmetic/ref15_arith_adapters.lst
 #include "adapter_types.h"
 int num_adapters = 1174;
 arithd2ret all_ads[1174] = {

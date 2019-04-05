@@ -9,7 +9,6 @@ my ($family, $file) = @ARGV;
 if ($family < 2 || $family > 3) {
     die "unsupported adapter family";
 }
-print "opening file = $file\n";
 open(F, "<$file") or die;
 my $num_adapters = 0;
 my $adapters = "";
