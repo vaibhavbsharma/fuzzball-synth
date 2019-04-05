@@ -13,7 +13,7 @@ endif
 default: clean cluster-adapters 
 
 cluster-adapters : cluster-adapters.cpp $(HEADERS) 
-	c++ cluster-adapters.cpp -g -o cluster-adapters \
+	c++ cluster-adapters.cpp -g -o cluster-adapters-$(REFNUM) \
 	-I ./include -I . -I .. -DREFNUM=$(REFNUM) -DADAPTER_FAMILY=$(ADAPTER_FAMILY)
 
 clean:
