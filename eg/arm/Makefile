@@ -5,7 +5,11 @@ HEADERS = ./all_adapters/include/all_adapters_ref1.h \
 INCLUDE_DIRS=./all_adapters
 
 ifndef REFNUM
-  $(warning REFNUM is not set, run make REFNUM=<1-25>)
+  $(warning REFNUM is not set, run make REFNUM=<1-25> ADAPTER_FAMILY=<2-3>)
+endif
+
+ifndef ADAPTER_FAMILY
+  $(warning ADAPTER_FAMILY is not set, run make REFNUM=<1-25> ADAPTER_FAMILY=<2-3>)
 endif
 
 default: clean cluster-adapters 
