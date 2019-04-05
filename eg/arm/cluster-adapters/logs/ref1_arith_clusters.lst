@@ -1,0 +1,58 @@
+number of clusters = 5
+Cluster 0 (19) : 
+0: Input vars: const(0x0) and (0x0) 
+
+5: Input vars: (PLUS, arg(0x9), arg(0x9)) and 1-to-32Z(0x9) 
+
+6: Input vars: const(0x0) and (0x0) 
+
+7: Input vars: const(0x0) and (0x0) 
+
+8: Input vars: const(0x0) and (0x0) 
+
+9: Input vars: const(0x0) and (0x0) 
+
+10: Input vars: (PLUS, const(0x0), const(0x42)) and 1-to-32Z(0x1e) 
+
+12: Input vars: const(0x0) and (0x0) 
+
+13: Input vars: const(0x0) and (0x0) 
+
+14: Input vars: (PLUS, const(0x0), const(0x42)) and 1-to-32Z(0x1e) 
+
+15: Input vars: const(0x0) and (0x0) 
+
+17: Input vars: (PLUS, const(0x0), const(0x22)) and 1-to-32Z(0x0) 
+
+18: Input vars: const(0x0) and (0x0) 
+
+19: Input vars: const(0x0) and (0x0) 
+
+20: Input vars: const(0x0) and (0x0) 
+
+22: Input vars: (PLUS, const(0x0), const(0x22)) and 1-to-32Z(0x0) 
+
+23: Input vars: const(0x0) and (0x0) 
+
+24: Input vars: const(0x0) and (0x0) 
+
+25: Input vars: (PLUS, const(0x0), const(0x22)) and 1-to-32Z(0x0) 
+
+Cluster 1 (3) : 
+1: Input vars: (PLUS, const(0x0), const(0x2)) and (0x0) 
+
+2: Input vars: (PLUS, const(0x0), const(0x2)) and (0x0) 
+
+3: Input vars: (PLUS, const(0x0), const(0x2)) and (0x0) 
+
+Cluster 2 (2) : 
+4: Input vars: (MINUS, const(0xb2), const(0xffff)) and 1-to-32Z(0xc) 
+
+11: Input vars: (PLUS, arg(0x5), const(0x0)) and 32-to-1(0x0) 
+
+Cluster 3 (1) : 
+16: Input vars: (MINUS, const(0x7ffff), arg(0x3)) and 1-to-32Z(0x2) 
+
+Cluster 4 (1) : 
+21: Input vars: (MINUS, const(0x9), arg(0x4)) and 1-to-32Z(0x4) 
+
