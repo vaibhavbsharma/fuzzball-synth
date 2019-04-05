@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+
+use strict;
+
+die "Usage: post-process-adapters.pl <refK-arithmetic-adapters.lst file>"
+    unless @ARGV==1;
+my $file = @ARGV;
+
+open(F, "<$file") or die;
+my $num_adapters = 0;
+while (<F>) {
+    chomp $_;
+    my $line = $_;
+    $line =~ s/\(/{/g;
+    $line =~ s/\)/}/g;
+    $line =~ s/and {/, /g;
+    $line = '{' . $line . "},\n";
+    print $line;
+    $num_adapters++;
+}
+close F;
+
+
