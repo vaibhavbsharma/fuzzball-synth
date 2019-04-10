@@ -3,7 +3,7 @@ use POSIX;
 use strict;
 use File::Basename;
 
-die "Usage: run-funcs.pl <max_buckets> <bucket-num(1-max_buckets)> <1=argsub, 2=typeconv adaptor, 3=arithmetic-depth-2-adapter> <constant lower bound> <constant upper bound>"
+die "Usage: run-funcs.pl <max_buckets> <bucket-num(1-max_buckets)> <1=argsub+retvalsub, 2=typeconv+retvalsub, 3=arithmetic-depth-2+retvalsub, 4=memsub+argsub+retvalsub> <constant lower bound> <constant upper bound>"
   unless @ARGV == 5;
 
 
@@ -15,8 +15,8 @@ my ($max_buckets,$bucket_num,$adapter_family,$const_lb,$const_ub) = @ARGV;
 
 my $rand_seed = 1;
 my $num_secs_to_timeout = 300;
-if ($adapter_family == 3) { $num_secs_to_timeout = 600; } # arithmetic adapter gets 10m timeout
-my $num_glibc_fns = 1316;
+if ($adapter_family == 3 || $adapter_family == 4) { $num_secs_to_timeout = 600; } # arithmetic adapter and memsub adapter gets 10m timeout
+my $num_glibc_fns = $adapter_family != 4 ? 1316 : 69;
 my $binary = "two-funcs";
 
 open(LOG, ">> logs/run-funcs.log");
@@ -32,6 +32,11 @@ my $this_bucket_num_fns = $ending_target_fn-$starting_target_fn+1;
 print "bucket_size = $bucket_size\n";
 print "starting_target_fn = $starting_target_fn\n";
 print "ending_target_fn = $ending_target_fn\n";
+if ($starting_target_fn >= $num_glibc_fns) {
+    print "starting target fnum already exceeds number of total functions, exiting...\n";
+    exit 0;
+}
+
 my $last_index = -1;
 open (FILE, "< $checkpoint_file");
 while (<FILE>) {
@@ -135,8 +140,10 @@ sub report_time_stats {
 for(my $i = $last_index+1; $i < $this_bucket_num_fns; $i++) {
     my $target_fn = $starting_target_fn + $i;
     my $inner_func_start = $target_fn-5;
+    if ($adapter_family == 4) { $inner_func_start = 0; }
     if ($inner_func_start < 0 ) { $inner_func_start = 0; }
     my $inner_func_end = $target_fn+5;
+    if ($adapter_family == 4) { $inner_func_end = $num_glibc_fns-1; }
     if ($inner_func_end >= $num_glibc_fns) { $inner_func_end = $num_glibc_fns-1; }
     for (my $inner_fn = $inner_func_start; 
 	 $inner_fn <= $inner_func_end; 
@@ -145,6 +152,7 @@ for(my $i = $last_index+1; $i < $this_bucket_num_fns; $i++) {
 	my $adaptor_driver = "synth-argsub.pl";
 	if($adapter_family==2) { $adaptor_driver = "synth-typeconv.pl"; }
 	elsif($adapter_family==3) { $adaptor_driver = "synth-arithmetic.ml"; }
+	elsif($adapter_family==4) { $adaptor_driver = "synth-memsub.pl"; }
 	my @cmd = ("perl",$adaptor_driver,$target_fn,$inner_fn,$rand_seed, "0", 
 		   $const_lb, $const_ub, "0", "0");
 	if ($adapter_family == 3) {

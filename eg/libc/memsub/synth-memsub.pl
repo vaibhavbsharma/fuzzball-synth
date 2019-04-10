@@ -421,6 +421,7 @@ sub check_adapter {
     $sane_addr = $sane_addr + $max_conc_region_size;
 
     if ($matches == 0 and $fails == 0) {
+	print "CounterExample search failed";
 	die "Missing results from check run";
     }
     if ($fails == 0) {
@@ -639,7 +640,7 @@ while (!$done) {
 	if ($f1_completed_count == $iteration_count) {
 	    $verified="complete";
 	}
-	printf "Final adapters: arg=$adapt_s, ret=$ret_adapt_s, ".
+	printf "Final adaptor is arg=$adapt_s, ret=$ret_adapt_s, ".
 	    "struct=%s with $f1_completed_count,$iteration_count,$verified\n", 
 	    get_struct_adapt_str();
 	$done = 1;
