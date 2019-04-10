@@ -36,8 +36,8 @@ for ((i=1; i<=num_dirs; i++)); do
     FILE=$PREFIX_DIR/$SUBDIR/glibc-$i/logs/$LOGFILE
     inequivalent=`grep 'not equivalent' $FILE | wc -l`; 
     adapters=`grep 'Final adaptor' $FILE | wc -l`; 
-    missing=`grep 'Missing results' $FILE | wc -l`; 
-    killed=`grep 'TIME OUT' $FILE | wc -l`;
+    missing=`egrep -e 'Missing results|found ce fail' $FILE | wc -l`; 
+    killed=`grep 'found timeout' $FILE | wc -l`;
     strange_term=`grep 'Strange term' $FILE | wc -l`;
     r_total=`grep 'cmd = perl ' $FILE | wc -l`;
     total=$((inequivalent+adapters+killed+missing));
