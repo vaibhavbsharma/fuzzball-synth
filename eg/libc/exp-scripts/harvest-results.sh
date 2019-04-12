@@ -3,7 +3,7 @@
 if [[ $# -ne 4 ]]; then
     echo -e "$0: usage: harvest-results.sh <argument 1> <argument 2> <argument 3> <argument 4> <argument 5>"
     echo "arguments list is as follows";
-    echo "1. <adapter family, 1=argsub, 2=typeconv, 3=arithmetic-int>";
+    echo "1. <adapter family, 1=argsub, 2=typeconv, 3=arithmetic-int, 4=memsub>";
     echo "2. <log file to search through, e.g. 1.log>";
     echo "3. <prefix directory containing the argsub/typeconv/arith subdirectories, e.g. /export/scratch/vaibhav/glibc-exps>";
     echo "4. <number of bucket directories expected in prefix-directory/argsub or typeconv or arith/, e.g. 32>";
@@ -24,7 +24,9 @@ g_total=0;
 g_strange_term=0;
 suffix="";
 echo -e '#\tIneq\t\t#adpt\tTimeout\tf1_crash\ttotal';
-if [[ $ADAPTER_FAMILY -eq 3 ]]; then
+if [[ $ADAPTER_FAMILY -eq 4 ]]; then
+    export SUBDIR="memsub";
+elif [[ $ADAPTER_FAMILY -eq 3 ]]; then
     export SUBDIR="arith";
 elif [[ $ADAPTER_FAMILY -eq 2 ]]; then
     export SUBDIR="typeconv";
