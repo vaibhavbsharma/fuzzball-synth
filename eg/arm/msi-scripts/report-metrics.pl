@@ -2,9 +2,9 @@
 
 use strict;
 
-die "Usage: report-metrics.pl <log file name> <number of bucket directories> <base dir. absolute paths file>"
+die "Usage: report-metrics.pl <log file name> <number of bucket directories> <base dir. absolute paths file> <time budget for each experiment in seconds, e.g. 600>"
   unless @ARGV >= 3;
-my($log_file_name,$num_dirs,$dir_paths_file) = @ARGV;
+my($log_file_name,$num_dirs,$dir_paths_file, $total_runtime) = @ARGV;
 my $log_file_name = $ARGV[0];
 my $num_dirs = $ARGV[1];
 my $dir_path = $ARGV[2];
@@ -162,16 +162,6 @@ sub report_metrics {
     if(index($fn_name, "ref1") != -1
        && index($fn_name, "ref10-") == -1) { $fn_name = "prev_pow_2(#1)"; }
     if(index($fn_name, "ref2") != -1) { $fn_name = "abs_diff(#2)"; }
-    my $total_runtime = 300;
-    if(index($dir_path, "2.5m") != -1) {
-	$total_runtime = 150;
-    } elsif(index($dir_path, "10m") != -1) {
-	$total_runtime = 600;
-    } elsif(index($dir_path, "20m") != -1) {
-	$total_runtime = 1200;
-    }elsif(index($dir_path, "40m") != -1) {
-	$total_runtime = 2400;
-    }
 
     print "Starting analysis for $fn_name\n";
 

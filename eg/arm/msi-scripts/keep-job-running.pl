@@ -24,6 +24,11 @@ sub keep_job_running {
     }
 
     my $output;
+    $output = `ssh itasca "file $dir/$job_name.qsub"`;
+	  if(index($output, "No such file") != -1) {
+	   	print "$dir/$job_name.qsub does not exist\n";
+			return 1;
+	  }
     my $not_done = 0;
     for(my $i = $start_bucket; $i <= $start_bucket + 7; $i++) {
 	$output = `ssh itasca "file $dir/arm-$i/done$i"`;
@@ -39,6 +44,7 @@ sub keep_job_running {
     if(index($output, "Connection closed") != -1) { printf("Connection closed!\n"); exit(1); }
     if(index($output, "Connection timed out") != -1) { printf("Connection closed!\n"); exit(1); }
     if(index($output, "Connection closed") != -1) { printf("Connection closed!\n"); exit(1); }
+	  
     my $found = 0;
     if(index($output, $job_name) != -1) { $found = 1; }
 # printf("found = $found\n");

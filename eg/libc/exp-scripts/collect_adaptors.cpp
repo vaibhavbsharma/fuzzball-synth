@@ -43,6 +43,9 @@ string getFileName(char *prefix_dir, int adapter_family, char *log_file, int n) 
   case 3:
     sprintf(str, "%s/arith/glibc-%d/logs/%s", prefix_dir, n, log_file);
     break;
+  case 4:
+    sprintf(str, "%s/memsub/glibc-%d/logs/%s", prefix_dir, n, log_file);
+    break;
   default: 
     cout<<"dont know how to generate log file for adapter family = "<<adapter_family<<endl;
     assert(false); 
@@ -55,7 +58,7 @@ int main(int argc, char * argv[]) {
   if (argc < 5) {
     fprintf(stderr, "Usage: collect-adapters <argument 1> <argument 2> <argument 3> <argument 4>\n");
     fprintf(stderr, "arguments list is as follows\n");
-    fprintf(stderr, "1. <adapter family, 1=argsub, 2=typeconv, 3=arithmetic-int>\n");
+    fprintf(stderr, "1. <adapter family, 1=argsub, 2=typeconv, 3=arithmetic-int, 4=memsub>\n");
     fprintf(stderr, "2. <log file to search through, e.g. 1.log>\n");
     fprintf(stderr, "3. <prefix directory containing the argsub/typeconv/arith subdirectories, e.g. /export/scratch/vaibhav/glibc-exps>\n");
     fprintf(stderr, "4. <number of bucket directories expected in prefix-directory/argsub or typeconv or arith/, e.g. 32>\n");
@@ -73,6 +76,8 @@ int main(int argc, char * argv[]) {
   // these two offsets are a bit different in the arithmetic adapter logs
   if (adapter_family == 3) {
     f1_line_offset-=2; f2_line_offset-=2;
+  } else if (adapter_family == 4) {
+    f1_line_offset=8; f2_line_offset=9;
   }
   //vector<string> blacklisted_fns;
   //populate_blacklisted_fns(blacklisted_fns);
@@ -112,18 +117,21 @@ int main(int argc, char * argv[]) {
 	  string tmpstr;
 	  ss1>>f1_num>>tmpstr>>f1_name; //line is <f1num> = <f1name>
 	  ss2>>f2_num>>tmpstr>>f2_name; //line is <f2num> = <f2name>
-	  if (adapter_family != 3) { 
+	  if (adapter_family == 1 || adapter_family == 2) { 
 	    ss3>>tmpstr>>tmpstr>>tmpstr>>adaptor>>tmpstr>>ret_adaptor>>tmpstr>>tmpstr>>tmpstr>>tmpstr>>tmpstr;
 	    adaptor=pretty_adaptor(adaptor);
 	    ret_adaptor=pretty_adaptor(ret_adaptor);
-	  } else {
+	    cout<<f1_num<<" "<<f2_num<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<" "<<endl;
+	  } else if (adapter_family == 3) {
 	    if (line.find(':', 0) == string::npos) {
 	      cout<<"line = "<<line<<" -- should have contained a : but did not"<<endl;
 	      exit(1);
 	    }
 	    adaptor = line.substr(line.find(':', 0)+1, line.length());
+	    cout<<f1_num<<" "<<f2_num<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<" "<<endl;
+	  } else if (adapter_family == 4) {
+	    cout <<f1_num<<"("<<f1_name<<"), "<<f2_num<<"("<<f2_name<<"), "<<line<<endl;
 	  }
-	  cout<<f1_num<<" "<<f2_num<<" ("<<adaptor<<") ("<<ret_adaptor<<") "<<f1_name<<" "<<f2_name<<" "<<endl;
 	}
 	//else cout<<"Skipping adaptor because one of the functions was pthread_* or blacklisted"<<endl;
 	if(ignore_flag==1) ignored_adaptor_count++;
