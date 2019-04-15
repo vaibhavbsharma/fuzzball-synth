@@ -5,7 +5,9 @@
 //#include "all_adapters_tilepos.h"
 
 #if ADAPTER_FAMILY==2
-#if REFNUM==25
+#if REFNUM==26
+#include "typeconv/all_adapters_clamp.h"
+#elif REFNUM==25
 #include "typeconv/all_adapters_ref25.h"
 #elif REFNUM==24
 #include "typeconv/all_adapters_ref24.h"
@@ -57,7 +59,9 @@
 #include "typeconv/all_adapters_ref1.h"
 #endif
 #elif ADAPTER_FAMILY==3
-#if REFNUM==25
+#if REFNUM==26
+#include "arithmetic/all_adapters_clamp.h"
+#elif REFNUM==25
 #include "arithmetic/all_adapters_ref25.h"
 #elif REFNUM==24
 #include "arithmetic/all_adapters_ref24.h"
@@ -135,41 +139,50 @@ extern "C" int boost_clamp(int val, int lo, int hi, int a) {
 }
 
 struct func_info funcs[] = {
-  // must match types-no-float-1204.lst
+  // must match the order expected in the input of cluster-adapters.cpp 
   /* 0 */  {"identity_fn", (func*)&identity_fn, 4, 0, 0},
-  /* 1 */  {"identity_fn", (func*)&identity_fn, 4, 0, 0},
-  /* 2 */  {"boost_clamp", (func*)&boost_clamp, 4, 0, 0}, // placeholder
-  /* 3 */  {"ref1",         (func*)&ref1,       3, 0, 0},
-  /* 4 */  {"ref2",         (func*)&ref2,       3, 0, 0},
-  /* 5 */  {"ref3",         (func*)&ref3,       3, 0, 0},
-  /* 6 */  {"ref4",         (func*)&ref4,       3, 0, 0},
-  /* 7 */  {"ref5",         (func*)&ref5,       3, 0, 0},
-  /* 8 */  {"ref6",         (func*)&ref6,       3, 0, 0},
-  /* 9 */  {"ref7",         (func*)&ref7,       3, 0, 0},
-  /* 10 */ {"ref8",         (func*)&ref8,       3, 0, 0},
-  /* 11 */ {"ref9",         (func*)&ref9,       3, 0, 0},
-  /* 12 */ {"ref10",        (func*)&ref10,      3, 0, 0},
-  /* 13 */ {"ref11",        (func*)&ref11,      3, 0, 0},
-  /* 14 */ {"ref12",        (func*)&ref12,      3, 0, 0},
-  /* 15 */ {"ref13",        (func*)&ref13,    3, 0, 0},
-  /* 16 */ {"ref14",        (func*)&ref14,    3, 0, 0},
-  /* 17 */ {"ref15",        (func*)&ref15,    3, 0, 0},
-  /* 18 */ {"ref16",        (func*)&ref16,    3, 0, 0},
-  /* 19 */ {"ref17",        (func*)&ref17,    3, 0, 0},
-  /* 20 */ {"ref18",        (func*)&ref18,    3, 0, 0},
-  /* 21 */ {"ref19",        (func*)&ref19,    3, 0, 0},
-  /* 22 */ {"ref20",        (func*)&ref20,    3, 0, 0},
-  /* 23 */ {"ref21",        (func*)&ref21,    3, 0, 0},
-  /* 24 */ {"ref22",        (func*)&ref22,    3, 0, 0},
-  /* 25 */ {"ref23",        (func*)&ref23,    3, 0, 0},
-  /* 26 */ {"ref24",        (func*)&ref24,    3, 0, 0},
-  /* 27 */ {"ref25",        (func*)&ref25,    3, 0, 0},
+  /* 1 */  {"ref1",         (func*)&ref1,       3, 0, 0},
+  /* 2 */  {"ref2",         (func*)&ref2,       3, 0, 0},
+  /* 3 */  {"ref3",         (func*)&ref3,       3, 0, 0},
+  /* 4 */  {"ref4",         (func*)&ref4,       3, 0, 0},
+  /* 5 */  {"ref5",         (func*)&ref5,       3, 0, 0},
+  /* 6 */  {"ref6",         (func*)&ref6,       3, 0, 0},
+  /* 7 */  {"ref7",         (func*)&ref7,       3, 0, 0},
+  /* 8 */  {"ref8",         (func*)&ref8,       3, 0, 0},
+  /* 9 */  {"ref9",         (func*)&ref9,       3, 0, 0},
+  /* 10 */ {"ref10",        (func*)&ref10,      3, 0, 0},
+  /* 11 */ {"ref11",        (func*)&ref11,      3, 0, 0},
+  /* 12 */ {"ref12",        (func*)&ref12,      3, 0, 0},
+  /* 13 */ {"ref13",        (func*)&ref13,    3, 0, 0},
+  /* 14 */ {"ref14",        (func*)&ref14,    3, 0, 0},
+  /* 15 */ {"ref15",        (func*)&ref15,    3, 0, 0},
+  /* 16 */ {"ref16",        (func*)&ref16,    3, 0, 0},
+  /* 17 */ {"ref17",        (func*)&ref17,    3, 0, 0},
+  /* 18 */ {"ref18",        (func*)&ref18,    3, 0, 0},
+  /* 19 */ {"ref19",        (func*)&ref19,    3, 0, 0},
+  /* 20 */ {"ref20",        (func*)&ref20,    3, 0, 0},
+  /* 21 */ {"ref21",        (func*)&ref21,    3, 0, 0},
+  /* 22 */ {"ref22",        (func*)&ref22,    3, 0, 0},
+  /* 23 */ {"ref23",        (func*)&ref23,    3, 0, 0},
+  /* 24 */ {"ref24",        (func*)&ref24,    3, 0, 0},
+  /* 25 */ {"ref25",        (func*)&ref25,    3, 0, 0},
+  /* 26 */ {"clamp",        (func*)&boost_clamp,    3, 0, 0},
 };
 
 
 int convert32to32(int a) {
   int a1=(int) a;
   a1 += 0x80000000;
+  return a1;
+}
+
+int convert32to32s(int a) {
+  int a1=(int) a;
+  return a1;
+}
+
+int convert32to32u(int a) {
+  int a1=(int) a;
   return a1;
 }
 

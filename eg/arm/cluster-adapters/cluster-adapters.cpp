@@ -117,9 +117,12 @@ int main(int argc, char **argv) {
 	vector<int> v;
 	clusters[cluster_ind] = v;
 	clusters[cluster_ind].push_back(i);
+	cout << "number of clusters = " << cluster_ind+1<<endl;
       } else {
 	clusters[found_cluster_ind].push_back(i);
       }
+      cout <<"finished "<< i <<" out of "<<num_adapters<<" adapters\n";
+      fflush(stdout);
     }
     cout << "number of clusters = " << cluster_ind+1<<endl;
     for(int i=0; i <= cluster_ind; i++) {

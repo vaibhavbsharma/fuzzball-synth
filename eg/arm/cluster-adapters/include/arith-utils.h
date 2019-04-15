@@ -52,6 +52,8 @@ void print_adapter(arithd2ret ad, int fnargs) {
   char r_type_string[100];
   switch(ad.r_ad.ret_type) {
   case 0:  sprintf(r_type_string, "("); break;
+  case 51:  sprintf(r_type_string, "("); break;
+  case 52:  sprintf(r_type_string, "("); break;
   case 53: sprintf(r_type_string, "32-to-1("); break;
   case 61: sprintf(r_type_string, "16-to-32S("); break;
   case 62: sprintf(r_type_string, "16-to-32Z("); break;
@@ -111,17 +113,17 @@ int wrap_f(arithd2ret ad, int a, int b, int c, int d, int e, int f,
 		   f2args[12]);
   switch(ad.r_ad.ret_type) {
   case 0: break;
-    // case 1: ret_val = ad.r_ad.ret_val; break;
-    // case 11: ret_val = convert32to32s(f2args[ad.r_ad.ret_val]); break;
-    // case 12: ret_val = convert32to32u(f2args[ad.r_ad.ret_val]); break;
-    // case 21: ret_val = convert16to32s(f2args[ad.r_ad.ret_val]); break;
-    // case 22: ret_val = convert16to32u(f2args[ad.r_ad.ret_val]); break;
-    // case 31: ret_val =  convert8to32s(f2args[ad.r_ad.ret_val]); break;
-    // case 32: ret_val =  convert8to32u(f2args[ad.r_ad.ret_val]); break;
-    // case 41: ret_val =  convert1to32s(f2args[ad.r_ad.ret_val]); break;
-    // case 42: ret_val =  convert1to32u(f2args[ad.r_ad.ret_val]); break;
-    // case 51: ret_val = convert32to32s(ret_val); break;
-    // case 52: ret_val = convert32to32u(ret_val); break;
+  case 1: ret_val = ad.r_ad.ret_val; break;
+  case 11: ret_val = convert32to32s(f2args[ad.r_ad.ret_val]); break;
+  case 12: ret_val = convert32to32u(f2args[ad.r_ad.ret_val]); break;
+  case 21: ret_val = convert16to32s(f2args[ad.r_ad.ret_val]); break;
+  case 22: ret_val = convert16to32u(f2args[ad.r_ad.ret_val]); break;
+  case 31: ret_val =  convert8to32s(f2args[ad.r_ad.ret_val]); break;
+  case 32: ret_val =  convert8to32u(f2args[ad.r_ad.ret_val]); break;
+  case 41: ret_val =  convert1to32s(f2args[ad.r_ad.ret_val]); break;
+  case 42: ret_val =  convert1to32u(f2args[ad.r_ad.ret_val]); break;
+  case 51: ret_val = convert32to32s(ret_val); break;
+  case 52: ret_val = convert32to32u(ret_val); break;
   case 53: ret_val = convert32to1  (ret_val); break;
   case 61: ret_val = convert16to32s(ret_val); break;
   case 62: ret_val = convert16to32u(ret_val); break;

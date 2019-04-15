@@ -18,7 +18,8 @@ while (<F>) {
     $line =~ s/\(/{/g;
     $line =~ s/\)/}/g;
     $line =~ s/and \{/, /g;
-    $line =~ s/,$/}}, /g;
+    if ($family == 3) { $line =~ s/,$/}}, /g; }
+    else { $line =~ s/$/, /g; }
     $line = '{' . $line . "\n";
     $adapters = $adapters . $line;
     $num_adapters++;
