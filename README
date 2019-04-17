@@ -20,3 +20,8 @@ with argument substitution and return value substitution on a suitable subset of
 among all their arguments). The exp-scripts/ subdirectory contains scripts to setup experiments, run them in buckets, and harvest summary results
 as well as the final adapters. 
 
+The eg/rc4_conc directory contains scripts to run concrete enumeration-based adapter search on the RC4 pairs of functions.
+
+The eg/rc4_fb directory contains scripts to run symbolic execution-based adapter search on the RC4 pairs of functions.
+
+The eg/lookup directory contains the security case study-related scripts.
