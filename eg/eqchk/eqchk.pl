@@ -3,9 +3,9 @@
 use strict;
 
 my $bin = "./two-funcs";
-die "Usage: synth-one.pl <fuzzball-feature-to-test, e.g. implied-value-conc> <fnum> <seed> <recompile $bin=1, use $bin as-is=0> <verbose=1, non-verbose=0, extra-verbose=2 (is logging-heavy, be warned)>"
-  unless @ARGV == 5;
-my($opt_to_eqchk, $fnum, $rand_seed, $recompile, $verbose) = @ARGV;
+die "Usage: synth-one.pl \n1. <fuzzball-feature-to-test, e.g. implied-value-conc> \n2. <on or off> \n3. <fnum> \n4. <seed> \n5. <recompile $bin=1, use $bin as-is=0> \n6. <verbose=1, non-verbose=0, extra-verbose=2 (is logging-heavy, be warned)>"
+  unless @ARGV == 6;
+my($opt_to_eqchk, $opt_control, $fnum, $rand_seed, $recompile, $verbose) = @ARGV;
 
 my $fnargs = 6;
 my $region_limit = 936;
@@ -16,7 +16,7 @@ if (exists $ENV{FUZZBALL_LOC}) {
     $fuzzball = $ENV{FUZZBALL_LOC};
 }
 my $stp="stp";
-if (exists $ENV{STPL_LOC}) {
+if (exists $ENV{STP_LOC}) {
     $stp = $ENV{STP_LOC};
 }
 
@@ -66,7 +66,7 @@ for my $i (0 .. 5) {
 }
 print "branch: $match_jne_addr\n";
 
-my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
+my @solver_opts = ("-solver", "smtlib", "-solver-path", $stp
 		   # , "-save-solver-files"
 		   #, "-solver-timeout",5,"-timeout-as-unsat"
     );
@@ -96,8 +96,8 @@ my @verbose_opts = ($verbose == 1) ? @verbose_1_opts : (($verbose == 2) ? @verbo
 
 my @common_opts = (
     "-no-fail-on-huer",
-    "-return-zero-missing-x64-syscalls",
-    "-region-limit", $region_limit,
+    #"-return-zero-missing-x64-syscalls",
+    #"-region-limit", $region_limit,
     "-trace-iterations", "-trace-assigns", "-solve-final-pc",
     "-trace-stopping",
     "-table-limit","12",
@@ -105,12 +105,12 @@ my @common_opts = (
     #"-match-syscalls-in-addr-range",
     #$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
     "-random-seed", int(rand(10000000)),
-    "-turn-opt-off-range", $opt_to_eqchk.":".$f1_call_addr.":".$post_f1_call
+    "-turn-opt-". $opt_control . "-range", $opt_to_eqchk.":".$f1_call_addr.":".$post_f1_call
     );
 
 # Given the specification of a FuzzBALL option, execute it with symbolic
 # inputs and look for a "mismatch" between when the option is turned off and turned on
-sub check_adaptor {
+sub run_test_harness {
     my @args = ($fuzzball, "-linux-syscalls", "-arch", "x64",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
@@ -124,7 +124,6 @@ sub check_adaptor {
 		@verbose_opts,
 		"-branch-preference", "$match_jne_addr:0",
 		@common_opts,
-		"-$opt_to_eqchk",
 		"--", $bin, $fnum);
     my @printable;
     for my $a (@args) {
@@ -202,7 +201,7 @@ sub check_adaptor {
 my $start_time = time();
 my $diff;
 print "Checking $opt_to_eqchk using function $fnum:\n";
-my ($res, $cer, $extra_ce_info) = check_adaptor();
+my ($res, $cer, $extra_ce_info) = run_test_harness();
 $diff = time() - $start_time;
 print "elapsed time = $diff\n";
 if ($res) {
