@@ -102,7 +102,7 @@ my @common_opts = (
     "-trace-stopping",
     "-table-limit","12",
     "-omit-pf-af",
-    #"-match-syscalls-in-addr-range",
+    #"-match-syscalls-in-addr-range", before using this option, fix the null f2_call_addr 
     #$f1_call_addr.":".$post_f1_call.":".$f2_call_addr.":".$post_f2_call,
     "-random-seed", int(rand(10000000)),
     "-turn-opt-". $opt_control . "-range", $opt_to_eqchk.":".$f1_call_addr.":".$post_f1_call
@@ -121,6 +121,7 @@ sub run_test_harness {
 		"-symbolic-long", "$arg_addr[4]=e",
 		"-symbolic-long", "$arg_addr[5]=f",
 		"-trace-regions", #useful for the "Address ... is region ..." line matching below
+		"-trace-loopsum",
 		@verbose_opts,
 		"-branch-preference", "$match_jne_addr:0",
 		@common_opts,

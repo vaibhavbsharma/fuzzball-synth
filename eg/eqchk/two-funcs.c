@@ -28,6 +28,7 @@ int compare(long *r1p, long *r2p,
   } else {
     printf("Mismatch\n");
   }
+  fflush(stdout);
   return r1 == r2;
 }
 
