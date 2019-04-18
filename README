@@ -1,27 +1,27 @@
-Code in this directory was authored by the University of Minnesota.
-
-University of Minnesota Proprietary Information per CFAR ACA.
-Copyright (C) 2015, University of Minnesota
-University of Minnesota's development of non-commercial software is
-provided to the Government with Unlimited Rights under the terms of
-the contract.
-
 This directory contains materials related to using the binary-level
-symbolic execution tool FuzzBALL to search for adaptors that show the
-equivalence between binary code fragments. FuzzBALL itself is not
-included in this directory; there is a suitable branched version of it
-in
-
-  ../../tools/fuzzball
+symbolic execution tool FuzzBALL to search for adaptors that show substitutability between binary code fragments. FuzzBALL itself is not
+included in this directory; there is a suitable branched version of it here: https://github.com/vaibhavbsharma/fuzzball-adaptersynth.
 
 and you can also see the public upstream version at
 
   https://github.com/bitblaze-fuzzball/fuzzball
 
-We don't yet have a end-to-end automated tool: the "eg" directory
-contains examples of applying FuzzBALL in this style to specific
-examples.
+The "eg" directory contains examples of applying FuzzBALL to specific sets of target/reference pairs.
 
-The "args-count" directory contains related tools which use FuzzBALL
-to infer which registers represent the arguments to a binary code
-function.
+The "args-count" directory contains related tools which use FuzzBALL to infer which registers represent the arguments to a binary code function.
+
+The eg/arm/ directory contains all the scripts needed to run argument substitution (synth-argsub-frag.pl), type conversion (synth-typeconv-frag.pl), 
+and arithmetic adapter (synth-arithmetic-frag.pl) families on the fragments of ARM binary code (present under fragments8/). The msi-scripts/
+subdirectory contains helper scripts needed to setup experiments, run them on MSI (at UMN), and collect results from these experiments.
+
+The eg/libc/ directory contains subdirectories to run the argument substitution (simple/synth-argsub.pl), type conversion (simple/synth-typeconv.pl)
+and arithmetic (simple/synth-arithmetic.ml) adapter families. It also contains a directory (memsub/synth-memsub.pl) that runs the memory substitution adapter along
+with argument substitution and return value substitution on a suitable subset of C library functions (functions that take exactly one structure argument
+among all their arguments). The exp-scripts/ subdirectory contains scripts to setup experiments, run them in buckets, and harvest summary results
+as well as the final adapters. 
+
+The eg/rc4_conc directory contains scripts to run concrete enumeration-based adapter search on the RC4 pairs of functions.
+
+The eg/rc4_fb directory contains scripts to run symbolic execution-based adapter search on the RC4 pairs of functions.
+
+The eg/lookup directory contains the security case study-related scripts.
