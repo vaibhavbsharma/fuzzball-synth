@@ -420,7 +420,7 @@ sub check_adaptor {
 	} elsif (/.*Fatal error.*/) {
 	    $fatal_error = 1;print "  $_";
 	}
-	if ($verbose == 1) { print "  $_"; }
+	print "  $_";
     }
     close LOG;
     if ($matches == 0 and $fails == 0) {
