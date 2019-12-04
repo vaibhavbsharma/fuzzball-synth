@@ -1,0 +1,4 @@
+2  _f1 int (int, unsigned)
+4  _f2 int (int, int, int, int)
+2  sketch_f1 int (int, int)
+4  sketch_f2 int (int, int, int, int)
