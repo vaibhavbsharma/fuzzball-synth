@@ -19,6 +19,7 @@ my @crash_cond_opt = ("-disqualify-path-on-nonfalse-cond",
 		      "-check-condition-at", $check_eip . ":" . $check_overflow_cond,
 		      "-tracepoint", $check_eip . ":" . "R_EAX:reg32_t"); 
 
+my $tests_file_prefix = "input_ce";
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 my $adaptor_score = 0;
@@ -66,7 +67,7 @@ my $cgc_check_call_addr =
 
 my $post_cgc_check_call = sprintf("0x%x",hex($cgc_check_call_addr)+0x5);
 
-my @repair_opts = (@symbolic_arg_opt, # TODO make FB support repair-frag-start and repair-frag-end 
+my @repair_opts = (
     "-repair-frag-start", $cgc_check_call_addr, 
     "-repair-frag-end", $post_cgc_check_call);
 
@@ -113,7 +114,7 @@ my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
 		   , "-solver-timeout",5,"-timeout-as-unsat"
     );
 
-my @synth_opt = ("-synthesize-repair-adaptor", #TODO make FB support a simple adapter with only number of arguments specified 
+my @synth_opt = ("-synthesize-repair-adaptor",
 		 join(":", "simple", $fnargs));
 
 my @synth_ret_opt = ("-synthesize-repair-return-adaptor",
@@ -121,6 +122,7 @@ my @synth_ret_opt = ("-synthesize-repair-return-adaptor",
 print "synth_ret_opt = @synth_ret_opt\n";
 
 my @verbose_1_opts = (
+    "-trace-repair",
     "-trace-conditions",
     "-trace-decisions",
     "-trace-adaptor",
@@ -200,15 +202,16 @@ sub generate_new_file
 }
 
 sub create_input_ce_file {
-    my $numTests = shift(@_);
-    my @input_ce = shift(@_);
+    my ($numTests) = shift(@_);
+    my ($input_ce_ref) = shift(@_);
+    my @input_ce= @{ $input_ce_ref};
     my $input_ce_contents="";
     for my $i (0 .. (2*$input_len)-1) {
 	$input_ce_contents .= sprintf("%02x", $input_ce[$i]);
     }
     printf("input_ce_contents = $input_ce_contents\n");;
     my @data_ary = split //, $input_ce_contents;
-    generate_new_file("input_ce$numTests", \@data_ary);
+    generate_new_file("$tests_file_prefix$numTests", \@data_ary);
 }
 
 # Given the specification of an adaptor, execute it with symbolic
@@ -232,7 +235,7 @@ sub check_adaptor {
     	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
     	push @conc_ret_adapt, ("-extra-condition", $s);
     }
-    my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch,
+    my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, @symbolic_arg_opt,
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
 		"-trace-regions", # do not turn off, necessary for finding the "Address <> is region <>" line in output below
@@ -244,7 +247,7 @@ sub check_adaptor {
 		"-iteration-limit", $iteration_limit,
 		#"-branch-preference", "$match_jne_addr:0",
 		@common_opts,
-		"--", $bin); # TODO make FuzzBALL detect function calls in adapted target and apply the adapter on them
+		"--", $bin);
     my @printable;
     for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
@@ -299,7 +302,7 @@ sub check_adaptor {
 	} elsif (/^Input vars: (.*)$/ and $this_ce) {
 	    my $vars = $1;
 	    @ce = (0) x $fnargs;
-	    @input_ce = (0) x $input_len;
+	    @input_ce = (0) x (2*$input_len);
 	    for my $v (split(/ /, $vars)) {
 		if ($v =~ /^([a-f])=(0x[0-9a-f]+)$/) {
 		    my $index = ord($1) - ord("a");
@@ -361,7 +364,7 @@ sub check_adaptor {
 		my @data_ary = split //, $str_arg_contents;
 		generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
-	    create_input_ce_file($numTests, @input_ce);
+	    create_input_ce_file($numTests, \@input_ce);
 	    $this_ce = 0;
 	    if ($verbose != 0) { print "  $_"; }
 	    last;
@@ -420,6 +423,7 @@ sub try_synth {
     close TESTS;
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, $bin,
+		"-repair-frag-input", $arg_addr . "+" . (2*$input_len),
 		@solver_opts, 
 		"-fuzz-start-addr", $fuzz_start_addr,
 		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
@@ -432,7 +436,7 @@ sub try_synth {
 		@fuzzball_extra_args,
 		"-zero-memory",
 		@common_opts,
-		"-repair-test-inputs", "input_ce:$numTests", # TODO make FB support -repair-test-inputs
+		"-repair-tests-file", "$tests_file_prefix:$numTests", # TODO make FB support -repair-test-inputs
 		"--", $bin);
     
     my @printable;
