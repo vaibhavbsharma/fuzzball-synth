@@ -118,7 +118,7 @@ my @synth_opt = ("-synthesize-repair-adaptor",
 		 join(":", "simple", $fnargs));
 
 my @synth_ret_opt = ("-synthesize-repair-return-adaptor",
-		 join(":", "return-typeconv", $fnargs));
+		 join(":", "return-typeconv", 0)); # not applying return-typeconv adapter that uses callee arguments
 print "synth_ret_opt = @synth_ret_opt\n";
 
 my @verbose_1_opts = (
@@ -213,6 +213,18 @@ sub create_input_ce_file {
     my @data_ary = split //, $input_ce_contents;
     generate_new_file("$tests_file_prefix$numTests", \@data_ary);
 }
+
+sub write_wrong_adapters {
+    my ($file_name) = shift(@_);
+    my ($wrong_adapters_ref) = shift(@_);
+    my @wrong_adapters = @{ $wrong_adapters_ref};
+    open (FILE, "> $file_name") || die "problem opening $file_name\n";
+    for my $i (0 .. $#wrong_adapters) {
+	print "$i wrong adapter: $wrong_adapters[$i]\n";
+	print FILE $wrong_adapters[$i] . "\n";
+    }
+    close FILE;
+} 
 
 # Given the specification of an adaptor, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
@@ -411,8 +423,10 @@ sub check_adaptor {
 # Given a set of tests, run with the adaptor symbolic to see if we can
 # synthesize an adaptor that works for those tests.
 sub try_synth {
-    my($testsr, $_fuzzball_extra_args) = @_;
+    my($testsr, $_fuzzball_extra_args, $wrong_argsub_adapters_ref, $wrong_ret_adapters_ref) = @_;
     my @fuzzball_extra_args = @{ $_fuzzball_extra_args };
+    my @wrong_argsub_adapters = @{ $wrong_argsub_adapters_ref };
+    my @wrong_ret_adapters = @{ $wrong_ret_adapters_ref };
     open(TESTS, ">tests");
     for my $t (@$testsr) {
 	my @vals = (@$t, (0) x 6);
@@ -421,6 +435,9 @@ sub try_synth {
 	print TESTS $test_str, "\n";
     }
     close TESTS;
+    my ($wrong_argsub_adapters_file, $wrong_ret_adapters_file) = ("wrong-argsub-adapters.lst", "wrong-ret-adapters.lst");
+    write_wrong_adapters($wrong_argsub_adapters_file, \@wrong_argsub_adapters);
+    write_wrong_adapters($wrong_ret_adapters_file,\@wrong_ret_adapters);
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, $bin,
 		"-repair-frag-input", $arg_addr . "+" . (2*$input_len),
@@ -436,7 +453,9 @@ sub try_synth {
 		@fuzzball_extra_args,
 		"-zero-memory",
 		@common_opts,
-		"-repair-tests-file", "$tests_file_prefix:$numTests", # TODO make FB support -repair-test-inputs
+		"-repair-tests-file", "$tests_file_prefix:$numTests",
+		"-wrong-argsub-adapters-file", $wrong_argsub_adapters_file, # TODO 
+		"-wrong-ret-adapters-file", $wrong_ret_adapters_file, # TODO
 		"--", $bin);
     
     my @printable;
@@ -494,6 +513,194 @@ sub try_synth {
     return ([@afields],[@bfields]);
 }
 
+# Given the specification of an adaptor, execute it with symbolic
+# inputs to check if it violates a security property 
+sub verify_adaptor {
+    my($adapt,$ret_adapt) = (@_);
+    my @conc_adapt = ();
+    if ($fnargs > 0) {
+	for my $i (0 .. $#$adapt) {
+	    my($name, $ty, $fmt) = @{$fields[$i]};
+	    my $val = $adapt->[$i];
+	    my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+	    push @conc_adapt, ("-extra-condition", $s);
+	}
+    }
+    my @conc_ret_adapt = ();
+    for my $i (0 .. $#$ret_adapt) {
+    	my($name, $ty, $fmt) = @{$ret_fields[$i]};
+    	my $val = $ret_adapt->[$i];
+    	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
+    	push @conc_ret_adapt, ("-extra-condition", $s);
+    }
+    my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, @symbolic_arg_opt,
+		$bin,
+		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
+		"-trace-regions", # do not turn off, necessary for finding the "Address <> is region <>" line in output below
+		@verbose_opts,
+		#"-narrow-bitwidth-cutoff","1", # I have no idea what this option does
+		"-verify-adaptor",
+		@synth_opt, @conc_adapt, @const_bounds_ec,
+		@synth_ret_opt, @conc_ret_adapt,
+		#"-path-depth-limit", $path_depth_limit,
+		"-iteration-limit", $iteration_limit,
+		#"-branch-preference", "$match_jne_addr:0",
+		@common_opts,
+		"--", $bin);
+    my @printable;
+    for my $a (@args) {
+	if ($a =~ /[\s|<>]/) {
+	    push @printable, "'$a'";
+	} else {
+	    push @printable, $a;
+	}
+    }
+    if ($verbose != 0) { print "@printable\n"; }
+    open(LOG, "-|", @args);
+    my($matches, $fails) = (0, 0);
+    my(@ce, $this_ce);
+    my (@input_ce);
+    my(@arg_to_regnum, @regnum_to_arg, @fuzzball_extra_args, @regnum_to_saneaddr);
+    my(@region_contents);
+    $this_ce = 0;
+    $iteration_count = 0;
+    while (<LOG>) {
+	if ($_ eq "Match\n" ) {
+	    $matches++;
+	} elsif (/^Iteration (.*):$/) {
+	    @arg_to_regnum = (0) x $fnargs;
+	    @regnum_to_arg = (0) x 1000;
+	    @regnum_to_saneaddr = (0) x ($fnargs+1);
+	    my @tmp_reg_arr;
+	    @region_contents = ();
+	    # region_contents is row-indexed by argument number starting from 0
+	    # but col-indexed from 1 up to region_limit
+	    # this is because region_contents[i][0] indicates if a argument
+	    # has a region assigned to it
+	    for my $i (0 .. $region_limit+1) { push @tmp_reg_arr, 0; }
+	    for my $i (0 .. $fnargs-1) { push @region_contents, [@tmp_reg_arr]; }
+	    for my $i (0 .. $#region_contents) {
+		for my $j (0 .. $#{$region_contents[$i]}) {
+		    $region_contents[$i][$j]=0;
+		}
+	    }
+	    $iteration_count++;
+	} elsif (($_ eq "Mismatch\n") or
+		 (/^Stopping at null deref at (0x[0-9a-f]+)$/) or
+		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/) or
+		 (/^Stopping on disqualified path at (0x[0-9a-f]+)$/) or 
+		 (/^Disqualified path at (0x[0-9a-f]+)$/)) {
+	    $fails++;
+	    $this_ce = 1;
+	} elsif (/^Input vars: (.*)$/ and $this_ce) {
+	    my $vars = $1;
+	    @ce = (0) x $fnargs;
+	    @input_ce = (0) x (2*$input_len);
+	    for my $v (split(/ /, $vars)) {
+		if ($v =~ /^([a-f])=(0x[0-9a-f]+)$/) {
+		    my $index = ord($1) - ord("a");
+		    $ce[$index] = hex $2;
+		    # printf("arg_to_regnum[$index] = %d\n",
+		    # 	   $arg_to_regnum[$index]);
+		    if ($arg_to_regnum[$index] != 0) {
+			$ce[$index] = $sane_addr;
+			$regnum_to_saneaddr[$arg_to_regnum[$index]] = $sane_addr;
+			$sane_addr = $sane_addr + $region_limit;
+		    }
+		} elsif ($v =~ /^input0_([0-9]+)=(0x[0-9a-f]+)$/) {
+		    $input_ce[$1] = hex $2;
+		}
+	    }
+	    for my $v (split (/ /, $vars)) {
+		if($v =~ /^region_([0-9]+)_byte_0x([0-9a-f]+)=(0x[0-9a-f]+)$/) {
+		    if ($verbose != 0) { print "region assignment $1 $2 $3 for arg $regnum_to_arg[$1]\n"; }
+		    # $1 -> region number, starts with 1
+		    # $2 -> offset within region, starts with 0
+		    # $3 -> value to be set, any value
+		    my $region_number = $1 + 0;
+		    my $region_offset = hex $2;
+		    $region_offset += 1; # because first value is 1 if region is used
+		    my $arg_num = $regnum_to_arg[$region_number];
+		    # printf("arg_num = %d, region_number = $region_number\n", $arg_num);
+		    if($regnum_to_saneaddr[$region_number] != 0) {
+			$region_contents[$arg_num][$region_offset]=$3;
+			# printf("region_contents[$arg_num][$region_offset] = %s (%s), with saneaddr = 0x%x\n", 
+			#        $region_contents[$arg_num][$region_offset], $3,
+			#        $regnum_to_saneaddr[$1]);
+		    }
+		    else { # printf("cannot find regnum_to_saneaddr for $1\n"); 
+		    }
+		}
+	    }
+	    for my $i (0 .. $fnargs-1) {
+		my $str_arg_contents="";
+		for my $j (1 .. $region_limit) {
+		    # printf("region_contents[$i][$j] = %s, sane_addr = 0x%x\n", 
+		    # 	   $region_contents[$i][$j],
+		    # 	   $regnum_to_saneaddr[$arg_to_regnum[$i]]);
+		    my $byte="0x00";
+		    if($region_contents[$i][0] == 1) {
+			push @fuzzball_extra_args, "-store-byte";
+			push @fuzzball_extra_args, 
+			sprintf("0x%x=%s", 
+				$regnum_to_saneaddr[$arg_to_regnum[$i]]+$j-1, 
+				$region_contents[$i][$j]);
+			# printf("pushed 0x%x=%s\n", 
+			# 	$regnum_to_saneaddr[$arg_to_regnum[$i]]+$j-1, 
+			# 	$region_contents[$i][$j]); 
+			$str_arg_contents .= substr $region_contents[$i][$j], 2;
+		    } else { 
+			$str_arg_contents .= "00";
+		    }
+		}
+		# printf("str_arg_contents = $str_arg_contents\n");;
+		my @data_ary = split //, $str_arg_contents;
+		# generate_new_file("str_arg${i}_$numTests", \@data_ary);
+	    }
+	    # create_input_ce_file($numTests, \@input_ce);
+	    $this_ce = 0;
+	    if ($verbose != 0) { print "  $_"; }
+	    last;
+	} elsif (/Address [a-f]:${reg_size} is region ([0-9]+)/) {
+	    my $add_line = $_;
+	    my $add_var = -1;
+	    for my $v (split(/ /, $add_line)) {
+		if ($v =~ /^[a-f]:${reg_size}$/) { # matches argument name
+		    $add_var = ord($v) - ord('a');
+		    if ($verbose != 0) { printf("add_var = $add_var\n"); }
+		} elsif ($v =~ /^[0-9]$/) { # matches region number
+		    if ($add_var < $fnargs and $add_var >= 0) {
+			$arg_to_regnum[$add_var] = $v-'0';
+			# printf("arg_to_regnum[$add_var] = %d\n", 
+			#        $arg_to_regnum[$add_var]);
+			$regnum_to_arg[$v-'0'] = $add_var;
+			# 1 indicates symbolic input created a region
+			$region_contents[$add_var][0]=1;
+		    }
+		}
+	    }
+	} # elsif print strings used by eg/libc/exp-scripts/run-funcs.pl 
+	elsif(/.*total query time = (.*)$/ || 
+		/.*Query time = (.*) sec$/ || 
+		/.*Starting new query.*$/) {
+	    print "  $_";
+	}
+ 
+	if ($verbose != 0) { print "  $_"; }
+    }
+    close LOG;
+    if ($matches == 0 and $fails == 0) {
+	print "VerifyAdaptor failed";
+	die "Missing results from check run";
+    }
+    # $numTests++;
+    if ($fails == 0) {
+	return (1);
+    } else {
+	return (0);
+    }
+}
+
 # Main loop: starting with a stupid adaptor and no tests, alternate
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
@@ -531,9 +738,14 @@ my $start_time = time();
 my $reset_time = time();
 my $total_ce_time = 0;
 my $total_as_time = 0;
+my $total_va_time = 0;
 my $diff;
 my $diff1;
+# these two lists will contain comma-separated string representations of wrong adapters 
+my @wrong_argsub_adapters = ();
+my @wrong_ret_adapters = ();
 `rm str_arg*`;
+`rm input_ce*`;
 `rm -rf fuzzball-tmp-*`;
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
@@ -567,12 +779,30 @@ while (!$done) {
 	push @tests, [@$cer];
     }
 
-    ($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr);
-    print "Synthesized arg adaptor ".join(",",@$adapt).
-	" and return adaptor ".join(",",@$ret_adapt)."\n";
-    $diff = time() - $start_time;
-    $diff1 = time() - $reset_time;
-    print "elapsed time = $diff, last AS search time = $diff1\n";
-    $total_as_time += $diff1;
-    $reset_time = time();
+    my $verified_adapter = 0;
+    while (!$verified_adapter) {
+		
+	($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr, \@wrong_argsub_adapters, \@wrong_ret_adapters);
+	print "Synthesized arg adaptor ".join(",",@$adapt).
+	    " and return adaptor ".join(",",@$ret_adapt)."\n";
+	$diff = time() - $start_time;
+	$diff1 = time() - $reset_time;
+	print "elapsed time = $diff, last AS search time = $diff1\n";
+	$total_as_time += $diff1;
+	$reset_time = time();
+
+	$adapt_s = join(",", @$adapt);
+	$ret_adapt_s = join(",", @$ret_adapt);
+	print "Verifying $adapt_s and $ret_adapt_s:\n";
+	($verified_adapter) = verify_adaptor($adapt,$ret_adapt);
+	$diff = time() - $start_time;
+	$diff1 = time() - $reset_time;
+	print "elapsed time = $diff, last VA search time = $diff1\n";
+	$total_va_time += $diff1;
+	if (!$verified_adapter) {
+	    push @wrong_argsub_adapters, $adapt_s;
+	    push @wrong_ret_adapters, $ret_adapt_s;
+	}
+	$reset_time = time();
+    }
 }
