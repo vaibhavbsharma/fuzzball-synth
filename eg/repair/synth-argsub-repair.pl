@@ -3,26 +3,27 @@
 use strict;
 
 my $bin = "./Palindrome";
-die "Usage: synth-argsub-repair.pl <arch=x86 only> <seed> <default adaptor(0=zero,1=identity) [<lower bound for constant> <upper bound for constant>] <recompile $bin=1, use $bin as-is=0> <verbose=1, non-verbose=0, extra-verbose=2 (is logging-heavy, be warned)>"
-  unless @ARGV == 7;
-my($arch, $rand_seed, $default_adaptor_pref, $const_lb, $const_ub, $recompile, $verbose) = @ARGV;
+die "Usage: synth-argsub-repair.pl <arch=x86 only> <seed> <default adapter(0=zero,1=identity) <ret-adapter=1, any other value otherwise>[<lower bound for constant> <upper bound for constant>] <recompile $bin=1, use $bin as-is=0> <verbose=1, non-verbose=0, extra-verbose=2 (is logging-heavy, be warned)>"
+  unless @ARGV == 8;
+my($arch, $rand_seed, $default_adapter_pref, $ret_adapter_on, $const_lb, $const_ub, $recompile, $verbose) = @ARGV;
 
 
 srand($rand_seed);
-my $input_len = 2;
+my $input_len = 3;
 
-my $check_eip = "0x08048923";
+my $check_eip = "0x080488ee";
 my $check_overflow_cond = "R_EAX:reg32_t\>=\$" . sprintf("0x%x", $input_len) . ":reg32_t";
 my $check_underflow_cond = "R_EAX:reg32_t\<\$0x00000000:reg32_t";
 my @crash_cond_opt = ("-disqualify-path-on-nonfalse-cond", 
-		      "-check-condition-at", $check_eip . ":" . $check_underflow_cond,
+		      #"-check-condition-at", $check_eip . ":" . $check_underflow_cond,
 		      "-check-condition-at", $check_eip . ":" . $check_overflow_cond,
-		      "-tracepoint", $check_eip . ":" . "R_EAX:reg32_t"); 
+		      "-tracepoint", $check_eip . ":" . "R_EAX:reg32_t", 
+		      "-tracepoint", "0x080488fa:R_EAX:reg32_t"); # checks value of length 
 
 my $tests_file_prefix = "input_ce";
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
-my $adaptor_score = 0;
+my $adapter_score = 0;
 
 my $region_limit = 936;
 my $reg_size = $arch eq "x64" ? "reg64_t" : "reg32_t";
@@ -106,7 +107,7 @@ my @ret_fields =
 );
 
 
-my $fnargs = 6;
+my $fnargs = 4;
 splice(@fields, 2 * $fnargs);
 
 my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
@@ -114,10 +115,10 @@ my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
 		   , "-solver-timeout",5,"-timeout-as-unsat"
     );
 
-my @synth_opt = ("-synthesize-repair-adaptor",
+my @synth_opt = ("-synthesize-repair-adapter",
 		 join(":", "simple", $fnargs));
 
-my @synth_ret_opt = ("-synthesize-repair-return-adaptor",
+my @synth_ret_opt = ("-synthesize-repair-return-adapter",
 		 join(":", "return-typeconv", 0)); # not applying return-typeconv adapter that uses callee arguments
 print "synth_ret_opt = @synth_ret_opt\n";
 
@@ -125,7 +126,7 @@ my @verbose_1_opts = (
     "-trace-repair",
     "-trace-conditions",
     "-trace-decisions",
-    "-trace-adaptor",
+    "-trace-adapter",
     "-trace-sym-addr-details",
     "-trace-sym-addrs",
     "-trace-syscalls",
@@ -160,10 +161,12 @@ my @common_opts = (
     # $cgc_check_call_addr.":".($cgc_check_call_addr+7),
     "-random-seed", int(rand(10000000)),
     "-nonzero-divisors",
+    "-dont-compare-memory-sideeffects",
+    "-iteration-f2-limit", 4*$input_len,
     @repair_opts);
 
 my @const_bounds_ec = ();
-if($const_lb != $const_ub) {
+if($const_lb <= $const_ub) {
     for (my $i=0; $i<$fnargs; $i++) {
 	my $n = chr(97 + $i);
 	my $s1='';
@@ -226,11 +229,11 @@ sub write_wrong_adapters {
     close FILE;
 } 
 
-# Given the specification of an adaptor, execute it with symbolic
+# Given the specification of an adapter, execute it with symbolic
 # inputs to either check it, or produce a counterexample.
-sub check_adaptor {
+sub check_adapter {
     my($adapt,$ret_adapt) = (@_);
-    #print "checking arg-adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
+    #print "checking arg-adapter = @$adapt ret-adapter = @$ret_adapt\n";
     my @conc_adapt = ();
     if ($fnargs > 0) {
 	for my $i (0 .. $#$adapt) {
@@ -254,7 +257,8 @@ sub check_adaptor {
 		@verbose_opts,
 		#"-narrow-bitwidth-cutoff","1", # I have no idea what this option does
 		@synth_opt, @conc_adapt, @const_bounds_ec,
-		@synth_ret_opt, @conc_ret_adapt,
+		($ret_adapter_on == 1 ? @synth_ret_opt : ()), 
+		($ret_adapter_on == 1 ? @conc_ret_adapt : ()),
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		#"-branch-preference", "$match_jne_addr:0",
@@ -420,8 +424,8 @@ sub check_adaptor {
     }
 }
 
-# Given a set of tests, run with the adaptor symbolic to see if we can
-# synthesize an adaptor that works for those tests.
+# Given a set of tests, run with the adapter symbolic to see if we can
+# synthesize an adapter that works for those tests.
 sub try_synth {
     my($testsr, $_fuzzball_extra_args, $wrong_argsub_adapters_ref, $wrong_ret_adapters_ref) = @_;
     my @fuzzball_extra_args = @{ $_fuzzball_extra_args };
@@ -437,25 +441,25 @@ sub try_synth {
     close TESTS;
     my ($wrong_argsub_adapters_file, $wrong_ret_adapters_file) = ("wrong-argsub-adapters.lst", "wrong-ret-adapters.lst");
     write_wrong_adapters($wrong_argsub_adapters_file, \@wrong_argsub_adapters);
-    write_wrong_adapters($wrong_ret_adapters_file,\@wrong_ret_adapters);
+    if ($ret_adapter_on == 1) {write_wrong_adapters($wrong_ret_adapters_file,\@wrong_ret_adapters);}
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, $bin,
 		"-repair-frag-input", $arg_addr . "+" . (2*$input_len),
 		@solver_opts, 
 		"-fuzz-start-addr", $fuzz_start_addr,
-		#tell FuzzBALL to run in adaptor search mode, FuzzBALL will run in
+		#tell FuzzBALL to run in adapter search mode, FuzzBALL will run in
 		#counter example search mode otherwise
-		"-adaptor-search-mode",
+		"-adapter-search-mode",
 		@verbose_opts,
 		@synth_opt, @const_bounds_ec,
-		@synth_ret_opt,
+		($ret_adapter_on == 1 ? @synth_ret_opt : ()),
 		#"-branch-preference", "$match_jne_addr:1",
 		@fuzzball_extra_args,
 		"-zero-memory",
 		@common_opts,
 		"-repair-tests-file", "$tests_file_prefix:$numTests",
-		"-wrong-argsub-adapters-file", $wrong_argsub_adapters_file, # TODO 
-		"-wrong-ret-adapters-file", $wrong_ret_adapters_file, # TODO
+		"-wrong-argsub-adapters-file", $wrong_argsub_adapters_file, 
+		($ret_adapter_on == 1 ? ("-wrong-ret-adapters-file", $wrong_ret_adapters_file) : ()), 
 		"--", $bin);
     
     my @printable;
@@ -485,8 +489,8 @@ sub try_synth {
 	    }
 	    if ($verbose != 0) { print "  $_"; }
 	    last;
-	} elsif (/^adaptor_score = (.*)$/ and $success) {
-	    $adaptor_score = $1;
+	} elsif (/^adapter_score = (.*)$/ and $success) {
+	    $adapter_score = $1;
 	} # elsif print strings used by eg/libc/exp-scripts/run-funcs.pl 
 	elsif(/.*total query time = (.*)$/ || 
 		/.*Query time = (.*) sec$/ || 
@@ -513,9 +517,9 @@ sub try_synth {
     return ([@afields],[@bfields]);
 }
 
-# Given the specification of an adaptor, execute it with symbolic
+# Given the specification of an adapter, execute it with symbolic
 # inputs to check if it violates a security property 
-sub verify_adaptor {
+sub verify_adapter {
     my($adapt,$ret_adapt) = (@_);
     my @conc_adapt = ();
     if ($fnargs > 0) {
@@ -539,9 +543,10 @@ sub verify_adaptor {
 		"-trace-regions", # do not turn off, necessary for finding the "Address <> is region <>" line in output below
 		@verbose_opts,
 		#"-narrow-bitwidth-cutoff","1", # I have no idea what this option does
-		"-verify-adaptor",
+		"-verify-adapter",
 		@synth_opt, @conc_adapt, @const_bounds_ec,
-		@synth_ret_opt, @conc_ret_adapt,
+		($ret_adapter_on == 1 ? @synth_ret_opt : ()), 
+		($ret_adapter_on == 1 ? @conc_ret_adapt: ()),
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		#"-branch-preference", "$match_jne_addr:0",
@@ -690,7 +695,7 @@ sub verify_adaptor {
     }
     close LOG;
     if ($matches == 0 and $fails == 0) {
-	print "VerifyAdaptor failed";
+	print "VerifyAdapter failed";
 	die "Missing results from check run";
     }
     # $numTests++;
@@ -701,13 +706,13 @@ sub verify_adaptor {
     }
 }
 
-# Main loop: starting with a stupid adaptor and no tests, alternate
+# Main loop: starting with a stupid adapter and no tests, alternate
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
 
-# Setting up the default adaptor to be the identity adaptor
-if ($default_adaptor_pref == 1) {
+# Setting up the default adapter to be the identity adapter
+if ($default_adapter_pref == 1) {
     my $f1_narg_counter=0;
     for my $i (0 .. $#$adapt) {
 	if ($i%2 == 1) {
@@ -722,7 +727,7 @@ if ($default_adaptor_pref == 1) {
 #$adapt->[0]=1;
 
 # If outer function takes no arguments, then the inner function can only use constants
-if ($fnargs==0 || $default_adaptor_pref == 0) {
+if ($fnargs==0 || $default_adapter_pref == 0) {
     for my $i (0 .. $#$adapt) {
 	if ($i%2 == 0) { # X_is_const field
 	    $adapt->[$i] = 1;
@@ -731,7 +736,7 @@ if ($fnargs==0 || $default_adaptor_pref == 0) {
     }
 }
 
-print "default adaptor = @$adapt ret-adaptor = @$ret_adapt\n";
+print "default adapter = @$adapt ret-adapter = @$ret_adapt\n";
 my @tests = ();
 my $done = 0;
 my $start_time = time();
@@ -747,16 +752,19 @@ my @wrong_ret_adapters = ();
 `rm str_arg*`;
 `rm input_ce*`;
 `rm -rf fuzzball-tmp-*`;
+`rm wrong-*-adapters.lst`;
+my ($ce_steps,$as_steps,$va_steps) = (0,0,0);
 while (!$done) {
     my $adapt_s = join(",", @$adapt);
     my $ret_adapt_s = join(",", @$ret_adapt);
     print "Checking $adapt_s and $ret_adapt_s:\n";
-    my($res, $cer, $_fuzzball_extra_args) = check_adaptor($adapt,$ret_adapt);
+    my($res, $cer, $_fuzzball_extra_args) = check_adapter($adapt,$ret_adapt);
     $diff = time() - $start_time;
     $diff1 = time() - $reset_time;
     print "elapsed time = $diff, last CE search time = $diff1\n";
     $total_ce_time += $diff1;
     $reset_time = time();
+    $ce_steps += 1;
     if ($res) {
 	print "Success!\n";
 	print "Final test set:\n";
@@ -767,9 +775,10 @@ while (!$done) {
 	if ($f1_completed_count == $iteration_count) {
 	    $verified="complete";
 	}
-	my $scaled_adaptor_score = ($adaptor_score * $f1_completed_count) / $iteration_count;
-	print "Final adaptor is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified, adaptor_score = $scaled_adaptor_score ($adaptor_score)\n";
-	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time\n";
+	my $scaled_adapter_score = ($adapter_score * $f1_completed_count) / $iteration_count;
+	print "Final adapter is $adapt_s and $ret_adapt_s with $f1_completed_count,$iteration_count,$verified, adapter_score = $scaled_adapter_score ($adapter_score)\n";
+	print "total_as_time = $total_as_time, total_ce_time = $total_ce_time, total_va_time = $total_va_time\n";
+	print "(CE-steps,AS-steps,VA-steps)=($ce_steps,$as_steps,$va_steps)\n";
 	$done = 1;
 	last;
     } else {
@@ -783,25 +792,30 @@ while (!$done) {
     while (!$verified_adapter) {
 		
 	($adapt,$ret_adapt) = try_synth(\@tests, \@fuzzball_extra_args_arr, \@wrong_argsub_adapters, \@wrong_ret_adapters);
-	print "Synthesized arg adaptor ".join(",",@$adapt).
-	    " and return adaptor ".join(",",@$ret_adapt)."\n";
+	print "Synthesized arg adapter ".join(",",@$adapt).
+	    " and return adapter ".join(",",@$ret_adapt)."\n";
 	$diff = time() - $start_time;
 	$diff1 = time() - $reset_time;
 	print "elapsed time = $diff, last AS search time = $diff1\n";
 	$total_as_time += $diff1;
+	$as_steps += 1;
 	$reset_time = time();
 
 	$adapt_s = join(",", @$adapt);
 	$ret_adapt_s = join(",", @$ret_adapt);
 	print "Verifying $adapt_s and $ret_adapt_s:\n";
-	($verified_adapter) = verify_adaptor($adapt,$ret_adapt);
+	($verified_adapter) = verify_adapter($adapt,$ret_adapt);
 	$diff = time() - $start_time;
 	$diff1 = time() - $reset_time;
 	print "elapsed time = $diff, last VA search time = $diff1\n";
 	$total_va_time += $diff1;
+	$va_steps += 1;
 	if (!$verified_adapter) {
 	    push @wrong_argsub_adapters, $adapt_s;
 	    push @wrong_ret_adapters, $ret_adapt_s;
+	    print "Invalidated adapter: $adapt_s and $ret_adapt_s\n";
+	} else {
+	    print "Failed to invalidate adapter: $adapt_s and $ret_adapt_s\n";
 	}
 	$reset_time = time();
     }

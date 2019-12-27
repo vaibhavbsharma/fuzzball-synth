@@ -52,7 +52,7 @@ int cgc_receive_delim(int fd, char *buf, const cgc_size_t size, char delim) {
     buf[i] = global_str[i];
     i++;
   }
-  //buf[size] = '\0';
+  buf[size-1] = '\0';
   return 0;
 }
 
