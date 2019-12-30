@@ -9,18 +9,22 @@ my($arch, $rand_seed, $default_adapter_pref, $ret_adapter_on, $const_lb, $const_
 
 
 srand($rand_seed);
-my $input_len = 3;
+my $input_len = 32;
 
-my $check_eip = "0x080488ee";
+my $strlen_check_eip = "0x080488f5";
+my $cgc_receive_delim_overflow_eip = "0x08048855";
+my $underflow_check_eip = "0x08048938";
 my $check_overflow_cond = "R_EAX:reg32_t\>=\$" . sprintf("0x%x", $input_len) . ":reg32_t";
 my $check_underflow_cond = "R_EAX:reg32_t\<\$0x00000000:reg32_t";
 my @crash_cond_opt = ("-disqualify-path-on-nonfalse-cond", 
-		      #"-check-condition-at", $check_eip . ":" . $check_underflow_cond,
-		      "-check-condition-at", $check_eip . ":" . $check_overflow_cond,
-		      "-tracepoint", $check_eip . ":" . "R_EAX:reg32_t", 
-		      "-tracepoint", "0x080488fa:R_EAX:reg32_t"); # checks value of length 
+		      # "-check-condition-at", $underflow_check_eip . ":" . $check_underflow_cond,
+		      "-check-condition-at", $strlen_check_eip . ":" . $check_overflow_cond, # checks OOB access when calculating string length in cgc_check
+		      "-check-condition-at", $cgc_receive_delim_overflow_eip . ":" . $check_overflow_cond, # checks OOB access when writing to passed argument string in cgc_receive_delim 
+		      "-tracepoint", $strlen_check_eip . ":" . "R_EAX:reg32_t", 
+		      "-tracepoint", "0x08048901:R_EAX:reg32_t"); # checks value of length 
 
 my $tests_file_prefix = "input_ce";
+my $invalid_tests_file_prefix = "invalid_input_ce";
 my $path_depth_limit = 300;
 my $iteration_limit = 4000;
 my $adapter_score = 0;
@@ -30,7 +34,7 @@ my $reg_size = $arch eq "x64" ? "reg64_t" : "reg32_t";
 my $sane_addr = 0x42420000;  # starting sane address also assumed in SRFM#region_for (SRFM.ml line 873)
 
 my @fuzzball_extra_args_arr;
-my $numTests=0;
+my ($numTests,$numInvalidTests)=(0,0);
 my $fuzzball="fuzzball";
 my $stp="stp";
 
@@ -61,7 +65,9 @@ my $cgc_check_addr = "0x" . substr(`nm $bin | fgrep " T cgc_check"`, 0, $arch eq
 my $arg_addr =
       "0x" . substr(`nm $bin | fgrep " B global_str"`, 0, $arch eq "x64" ? 16 : 8);
 
-my @symbolic_arg_opt = ("-symbolic-cstring", "$arg_addr" . "+" . (2*$input_len));
+my @symbolic_arg_opt = ("-symbolic-cstring", sprintf("0x%x", (hex $arg_addr)+0) . "+" . sprintf("0x%x", ((2*$input_len)-0)),
+			#"-store-byte", "$arg_addr=0x42", "-store-byte", sprintf("0x%x=0x42", (hex $arg_addr)+1));
+			"-extra-condition", "input0_0:reg8_t==0x42:reg8_t", "-extra-condition", "input0_1:reg8_t==0x42:reg8_t");
 
 my $cgc_check_call_addr =
     "0x" . substr(`objdump -dr $bin | grep 'call.*<cgc_check>'`, $obj_start, $obj_end);
@@ -205,8 +211,8 @@ sub generate_new_file
 }
 
 sub create_input_ce_file {
-    my ($numTests) = shift(@_);
     my ($input_ce_ref) = shift(@_);
+    my ($file_name) = shift(@_);
     my @input_ce= @{ $input_ce_ref};
     my $input_ce_contents="";
     for my $i (0 .. (2*$input_len)-1) {
@@ -214,7 +220,7 @@ sub create_input_ce_file {
     }
     printf("input_ce_contents = $input_ce_contents\n");;
     my @data_ary = split //, $input_ce_contents;
-    generate_new_file("$tests_file_prefix$numTests", \@data_ary);
+    generate_new_file($file_name, \@data_ary);
 }
 
 sub write_wrong_adapters {
@@ -378,9 +384,9 @@ sub check_adapter {
 		}
 		# printf("str_arg_contents = $str_arg_contents\n");;
 		my @data_ary = split //, $str_arg_contents;
-		generate_new_file("str_arg${i}_$numTests", \@data_ary);
+		# generate_new_file("str_arg${i}_$numTests", \@data_ary);
 	    }
-	    create_input_ce_file($numTests, \@input_ce);
+	    create_input_ce_file(\@input_ce, $tests_file_prefix . "" . $numTests);
 	    $this_ce = 0;
 	    if ($verbose != 0) { print "  $_"; }
 	    last;
@@ -420,7 +426,7 @@ sub check_adapter {
     if ($fails == 0) {
 	return 1;
     } else {
-	return (0, [@ce], [@fuzzball_extra_args]);
+	return (0, [@input_ce], [@fuzzball_extra_args]);
     }
 }
 
@@ -458,6 +464,7 @@ sub try_synth {
 		"-zero-memory",
 		@common_opts,
 		"-repair-tests-file", "$tests_file_prefix:$numTests",
+		"-invalid-repair-tests-file", "$invalid_tests_file_prefix:$numInvalidTests", # TODO
 		"-wrong-argsub-adapters-file", $wrong_argsub_adapters_file, 
 		($ret_adapter_on == 1 ? ("-wrong-ret-adapters-file", $wrong_ret_adapters_file) : ()), 
 		"--", $bin);
@@ -660,9 +667,10 @@ sub verify_adapter {
 		}
 		# printf("str_arg_contents = $str_arg_contents\n");;
 		my @data_ary = split //, $str_arg_contents;
-		# generate_new_file("str_arg${i}_$numTests", \@data_ary);
+		# generate_new_file("str_arg${i}_$numInvalidTests", \@data_ary);
 	    }
-	    # create_input_ce_file($numTests, \@input_ce);
+	    create_input_ce_file(\@input_ce, $invalid_tests_file_prefix . "" . $numInvalidTests);
+	    $numInvalidTests++;
 	    $this_ce = 0;
 	    if ($verbose != 0) { print "  $_"; }
 	    last;
@@ -698,7 +706,6 @@ sub verify_adapter {
 	print "VerifyAdapter failed";
 	die "Missing results from check run";
     }
-    # $numTests++;
     if ($fails == 0) {
 	return (1);
     } else {
@@ -751,6 +758,7 @@ my @wrong_argsub_adapters = ();
 my @wrong_ret_adapters = ();
 `rm str_arg*`;
 `rm input_ce*`;
+`rm invalid_input_ce*`;
 `rm -rf fuzzball-tmp-*`;
 `rm wrong-*-adapters.lst`;
 my ($ce_steps,$as_steps,$va_steps) = (0,0,0);
