@@ -46,7 +46,7 @@ int main(int cgc_argc, char *cgc_argv[]) {
 
 
 typedef long unsigned int cgc_size_t;
-int cgc_receive_delim(int fd, char *buf, const cgc_size_t size, char delim) {
+/* int cgc_receive_delim(int fd, char *buf, const cgc_size_t size, char delim) {
   int i = 0;
   while (i < size-1) {
     buf[i] = global_str[i];
@@ -54,7 +54,40 @@ int cgc_receive_delim(int fd, char *buf, const cgc_size_t size, char delim) {
   }
   buf[size-1] = '\0';
   return 0;
+}*/
+
+int cgc_receive_delim(int fd, char *buf, const cgc_size_t size, char delim) {
+    cgc_size_t rx = 0;
+    cgc_size_t rx_now = 0;
+    int ret;
+
+    // if (!buf) 
+    //     return 1;
+
+    // if (!size)
+    //     return 2;
+
+    while (rx < size) {
+        //ret = cgc_receive(fd, buf + rx, 1, &rx_now);
+	buf[rx] = global_str[rx];
+        // if (rx_now == 0) {
+        //     //should never return until at least something was received
+        //     //so consider this an error too
+        //     return 3;
+        // }
+        // if (ret != 0) {
+        //     return 3;
+        // }
+        if (buf[rx] == delim) {
+           break;
+        }
+        // rx += rx_now;
+        rx += 1;
+    }
+
+    return 0;
 }
+
 
 int cgc_check(){
   int len = -1;
