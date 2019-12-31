@@ -3,6 +3,20 @@
 //#include "libcgc.h"
 //#include "cgc_libc.h"
 
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/select.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <err.h>
+
+
 #define HI "\nWelcome to Palindrome Finder\n\n"
 #define ASK "\tPlease enter a possible palindrome: "
 #define YES "\t\tYes, that's a palindrome!\n\n"
@@ -11,7 +25,7 @@
 
 int cgc_check();
 #define GLOBAL_STR_SIZE 2*INPUT_LEN
-char global_str[GLOBAL_STR_SIZE]; // 128 in original binary
+// char global_str[GLOBAL_STR_SIZE]; // 128 in original binary
 
 // INPUT_LEN is 64 in the original Palindrome binary
 
@@ -56,6 +70,19 @@ typedef long unsigned int cgc_size_t;
   return 0;
 }*/
 
+typedef long cgc_ssize_t;
+/* Receives data from another CGC process. */
+int cgc_receive(int fd, void *buf, cgc_size_t count, cgc_size_t *rx_bytes) {
+    const cgc_ssize_t ret = read(fd, buf, count);
+
+    if (ret < 0) {
+        return errno;
+    } else if (rx_bytes != NULL) {
+        *rx_bytes = ret;
+    }
+
+    return 0;
+}
 int cgc_receive_delim(int fd, char *buf, const cgc_size_t size, char delim) {
     cgc_size_t rx = 0;
     cgc_size_t rx_now = 0;
@@ -68,21 +95,21 @@ int cgc_receive_delim(int fd, char *buf, const cgc_size_t size, char delim) {
     //     return 2;
 
     while (rx < size) {
-        //ret = cgc_receive(fd, buf + rx, 1, &rx_now);
-	buf[rx] = global_str[rx];
-        // if (rx_now == 0) {
-        //     //should never return until at least something was received
-        //     //so consider this an error too
-        //     return 3;
-        // }
-        // if (ret != 0) {
-        //     return 3;
-        // }
+        ret = cgc_receive(fd, buf + rx, 1, &rx_now);
+	 /* buf[rx] = global_str[rx]; */
+        if (rx_now == 0) {
+            //should never return until at least something was received
+            //so consider this an error too
+            return 3;
+        }
+        if (ret != 0) {
+            return 3;
+        }
         if (buf[rx] == delim) {
            break;
         }
-        // rx += rx_now;
-        rx += 1;
+        rx += rx_now;
+        /* rx += 1; */
     }
 
     return 0;
