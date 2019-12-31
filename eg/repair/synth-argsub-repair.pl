@@ -9,19 +9,21 @@ my($arch, $rand_seed, $default_adapter_pref, $ret_adapter_on, $const_lb, $const_
 
 
 srand($rand_seed);
-my $input_len = 32;
+my $input_len = 16;
+my $sym_prefix_suffix_size = 4;
 
-my $strlen_check_eip = "0x080488f5";
-my $cgc_receive_delim_overflow_eip = "0x08048855";
-my $underflow_check_eip = "0x08048938";
+my $strlen_check_eip = "0x0804895b";
+my $cgc_receive_delim_overflow_eip = "0x08048896";
 my $check_overflow_cond = "R_EAX:reg32_t\>=\$" . sprintf("0x%x", $input_len) . ":reg32_t";
-my $check_underflow_cond = "R_EAX:reg32_t\<\$0x00000000:reg32_t";
 my @crash_cond_opt = ("-disqualify-path-on-nonfalse-cond", 
-		      # "-check-condition-at", $underflow_check_eip . ":" . $check_underflow_cond,
 		      "-check-condition-at", $strlen_check_eip . ":" . $check_overflow_cond, # checks OOB access when calculating string length in cgc_check
 		      "-check-condition-at", $cgc_receive_delim_overflow_eip . ":" . $check_overflow_cond, # checks OOB access when writing to passed argument string in cgc_receive_delim 
 		      "-tracepoint", $strlen_check_eip . ":" . "R_EAX:reg32_t", 
-		      "-tracepoint", "0x08048901:R_EAX:reg32_t"); # checks value of length 
+		      "-tracepoint", "0x08048967:R_EAX:reg32_t"); # checks value of length 
+
+my $strlen_check_jne_eip = "0x08048962";
+my $delim_check_je_eip = "0x080488d6";
+my @branch_pref_opts = ("-branch-preference","$strlen_check_jne_eip:0","-branch-preference","$delim_check_je_eip:0");
 
 my $tests_file_prefix = "input_ce";
 my $invalid_tests_file_prefix = "invalid_input_ce";
@@ -61,14 +63,8 @@ my ($obj_start,$obj_end) = $arch eq "x64" ? (2,6) : (1,7);
 
 my $cgc_check_addr = "0x" . substr(`nm $bin | fgrep " T cgc_check"`, 0, $arch eq "x64" ? 16 : 8);
 
-
-my $arg_addr =
-      "0x" . substr(`nm $bin | fgrep " B global_str"`, 0, $arch eq "x64" ? 16 : 8);
-
-my @symbolic_arg_opt = ("-symbolic-cstring", sprintf("0x%x", (hex $arg_addr)+0) . "+" . sprintf("0x%x", ((2*$input_len)-0)),
-			#"-store-byte", "$arg_addr=0x42", "-store-byte", sprintf("0x%x=0x42", (hex $arg_addr)+1));
-			"-extra-condition", "input0_0:reg8_t==0x42:reg8_t", "-extra-condition", "input0_1:reg8_t==0x42:reg8_t");
-
+my @symbolic_arg_opts = ("-symbolic-stdin-concrete-size", "-input-region-sympresuf", sprintf("stdin:%d:%d:%d:0x42", $input_len, $sym_prefix_suffix_size, $sym_prefix_suffix_size));
+    
 my $cgc_check_call_addr =
     "0x" . substr(`objdump -dr $bin | grep 'call.*<cgc_check>'`, $obj_start, $obj_end);
 
@@ -83,7 +79,6 @@ print "stp path = $stp\n";
 print "fuzz-start-addr : $fuzz_start_addr\n";
 print "cgc_check:   $cgc_check_addr\n";
 print "post_cgc_check_call : $post_cgc_check_call\n";
-print "arg: $arg_addr\n";
 
 my($fields_addr);
 
@@ -256,7 +251,7 @@ sub check_adapter {
     	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
     	push @conc_ret_adapt, ("-extra-condition", $s);
     }
-    my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, @symbolic_arg_opt,
+    my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, @symbolic_arg_opts, 
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
 		"-trace-regions", # do not turn off, necessary for finding the "Address <> is region <>" line in output below
@@ -268,6 +263,7 @@ sub check_adapter {
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		#"-branch-preference", "$match_jne_addr:0",
+		@branch_pref_opts,
 		@common_opts,
 		"--", $bin);
     my @printable;
@@ -290,7 +286,7 @@ sub check_adapter {
     $f1_completed_count = 0;
     $iteration_count = 0;
     while (<LOG>) {
-	if ($_ eq "Match\n" ) { # TODO make FB print Match
+	if ($_ eq "Match\n" ) { 
 	    $matches++;
 	} elsif (/^Iteration (.*):$/) {
 	    $f1_completed = 0;
@@ -314,7 +310,7 @@ sub check_adapter {
 	} elsif ($_ eq "Completed f1\n") { # TODO make FB print "Completed f1"
 	    $f1_completed = 1;
 	    $f1_completed_count++;
-	} elsif (($_ eq "Mismatch\n") or  # TODO make FB print Mismatch
+	} elsif (($_ eq "Mismatch\n") or
 		 (/^Stopping at null deref at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
 		 (/^Stopping at access to unsupported address at (0x[0-9a-f]+)$/ and $f1_completed == 1) or
 		 (/^Stopping on disqualified path at (0x[0-9a-f]+)$/ and $f1_completed == 1) or 
@@ -450,7 +446,6 @@ sub try_synth {
     if ($ret_adapter_on == 1) {write_wrong_adapters($wrong_ret_adapters_file,\@wrong_ret_adapters);}
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, $bin,
-		"-repair-frag-input", $arg_addr . "+" . (2*$input_len),
 		@solver_opts, 
 		"-fuzz-start-addr", $fuzz_start_addr,
 		#tell FuzzBALL to run in adapter search mode, FuzzBALL will run in
@@ -463,8 +458,9 @@ sub try_synth {
 		@fuzzball_extra_args,
 		"-zero-memory",
 		@common_opts,
-		"-repair-tests-file", "$tests_file_prefix:$numTests",
-		"-invalid-repair-tests-file", "$invalid_tests_file_prefix:$numInvalidTests", # TODO
+		# "-repair-frag-input", $arg_addr . "+" . (2*$input_len), # TODO: tell AS how to read inputs
+		"-repair-tests-file", "$tests_file_prefix:$numTests", # TODO: tell AS how to read inputs
+		"-invalid-repair-tests-file", "$invalid_tests_file_prefix:$numInvalidTests", # TODO: tell AS how to read inputs
 		"-wrong-argsub-adapters-file", $wrong_argsub_adapters_file, 
 		($ret_adapter_on == 1 ? ("-wrong-ret-adapters-file", $wrong_ret_adapters_file) : ()), 
 		"--", $bin);
@@ -482,7 +478,7 @@ sub try_synth {
     my($success, %fields);
     $success = 0;
     while (<LOG>) {
-	if ($_ eq "All tests succeeded!\n") { # TODO make FuzzBALL print all tests succeeded
+	if ($_ eq "All tests succeeded!\n") {
 	    $success = 1;
 	} elsif (/^Disqualified path at (0x[0-9a-f]+)$/) {
 	    $success = 0;
@@ -544,7 +540,7 @@ sub verify_adapter {
     	my $s = sprintf("%s:%s==0x$fmt:%s", $name, $ty, $val, $ty);
     	push @conc_ret_adapt, ("-extra-condition", $s);
     }
-    my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, @symbolic_arg_opt,
+    my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, @symbolic_arg_opts,
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
 		"-trace-regions", # do not turn off, necessary for finding the "Address <> is region <>" line in output below
@@ -557,6 +553,7 @@ sub verify_adapter {
 		#"-path-depth-limit", $path_depth_limit,
 		"-iteration-limit", $iteration_limit,
 		#"-branch-preference", "$match_jne_addr:0",
+		@branch_pref_opts,
 		@common_opts,
 		"--", $bin);
     my @printable;
