@@ -88,11 +88,11 @@ int cgc_receive_delim(int fd, char *buf, const cgc_size_t size, char delim) {
     cgc_size_t rx_now = 0;
     int ret;
 
-    // if (!buf) 
-    //     return 1;
+    if (!buf) 
+        return 1;
 
-    // if (!size)
-    //     return 2;
+    if (!size)
+        return 2;
 
     while (rx < size) {
         ret = cgc_receive(fd, buf + rx, 1, &rx_now);

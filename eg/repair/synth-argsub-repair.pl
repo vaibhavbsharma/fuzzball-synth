@@ -10,19 +10,20 @@ my($arch, $rand_seed, $default_adapter_pref, $ret_adapter_on, $const_lb, $const_
 
 srand($rand_seed);
 my $input_len = 16;
-my $sym_prefix_suffix_size = 4;
+my $sym_prefix_suffix_size = 4; # $input_len/2; # makes the entire input be symbolic
 
-my $strlen_check_eip = "0x0804895b";
-my $cgc_receive_delim_overflow_eip = "0x08048896";
+my $strlen_check_eip = $input_len < 64 ? "0x08048973" : "0x08048976";
+my $cgc_receive_delim_overflow_eip = "0x080488ae";
 my $check_overflow_cond = "R_EAX:reg32_t\>=\$" . sprintf("0x%x", $input_len) . ":reg32_t";
 my @crash_cond_opt = ("-disqualify-path-on-nonfalse-cond", 
 		      "-check-condition-at", $strlen_check_eip . ":" . $check_overflow_cond, # checks OOB access when calculating string length in cgc_check
 		      "-check-condition-at", $cgc_receive_delim_overflow_eip . ":" . $check_overflow_cond, # checks OOB access when writing to passed argument string in cgc_receive_delim 
 		      "-tracepoint", $strlen_check_eip . ":" . "R_EAX:reg32_t", 
-		      "-tracepoint", "0x08048967:R_EAX:reg32_t"); # checks value of length 
+		      "-tracepoint", sprintf("%s:R_EAX:reg32_t", $input_len < 64 ? "0x0804897f" : "0x08048982"), # checks value of length
+		      "-tracepoint", "0x080488eb:R_EAX:reg32_t"); # prints value read from read system call
 
-my $strlen_check_jne_eip = "0x08048962";
-my $delim_check_je_eip = "0x080488d6";
+my $strlen_check_jne_eip = $input_len < 64 ? "0x0804897a" : "0x0804897d";
+my $delim_check_je_eip = "0x080488ee";
 my @branch_pref_opts = ("-branch-preference","$strlen_check_jne_eip:0","-branch-preference","$delim_check_je_eip:0");
 
 my $tests_file_prefix = "input_ce";
@@ -63,7 +64,8 @@ my ($obj_start,$obj_end) = $arch eq "x64" ? (2,6) : (1,7);
 
 my $cgc_check_addr = "0x" . substr(`nm $bin | fgrep " T cgc_check"`, 0, $arch eq "x64" ? 16 : 8);
 
-my @symbolic_arg_opts = ("-symbolic-stdin-concrete-size", "-input-region-sympresuf", sprintf("stdin:%d:%d:%d:0x42", $input_len, $sym_prefix_suffix_size, $sym_prefix_suffix_size));
+my @symbolic_arg_opts = ("-symbolic-stdin-concrete-size", "-replace-stdin-with-zero", 
+			 "-input-region-sympresuf", sprintf("stdin:%d:%d:%d:0x42", $input_len, $sym_prefix_suffix_size, $sym_prefix_suffix_size));
     
 my $cgc_check_call_addr =
     "0x" . substr(`objdump -dr $bin | grep 'call.*<cgc_check>'`, $obj_start, $obj_end);
@@ -112,7 +114,7 @@ my $fnargs = 4;
 splice(@fields, 2 * $fnargs);
 
 my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
-		   # , "-save-solver-files"
+		    # , "-save-solver-files"
 		   , "-solver-timeout",5,"-timeout-as-unsat"
     );
 
@@ -149,7 +151,12 @@ my @verbose_2_opts = (@verbose_1_opts,
 		      "-trace-stores");
 my @verbose_opts = ($verbose == 1) ? @verbose_1_opts : (($verbose == 2) ? @verbose_2_opts : ());
 
+
+my $cgc_receive_delim_call_addr =
+    "0x" . substr(`objdump -dr $bin | grep 'call.*<cgc_receive_delim>'`, $obj_start, $obj_end);
+
 my @common_opts = (
+    "-apply-call-repair-adapter-at", $cgc_receive_delim_call_addr, # TODO figure this out as part of the adapter search
     @crash_cond_opt,
     "-no-fail-on-huer",
     "-return-zero-missing-x64-syscalls",
@@ -159,6 +166,8 @@ my @common_opts = (
     "-table-limit","12",
     "-omit-pf-af",
     # "-match-syscalls-in-addr-range", # option isn't needed since we're already providing the repair-frag-start and repair-frag-end
+    # those serve as the starting and ending points where syscalls should be matched. We're asking FuzzBALL to match syscalls and their args
+    # by not giving the -dont-compare-linux-syscalls option.
     # $cgc_check_call_addr.":".($cgc_check_call_addr+7),
     "-random-seed", int(rand(10000000)),
     "-nonzero-divisors",
@@ -320,7 +329,7 @@ sub check_adapter {
 	} elsif (/^Input vars: (.*)$/ and $this_ce) {
 	    my $vars = $1;
 	    @ce = (0) x $fnargs;
-	    @input_ce = (0) x (2*$input_len);
+	    @input_ce = (0) x $input_len;
 	    for my $v (split(/ /, $vars)) {
 		if ($v =~ /^([a-f])=(0x[0-9a-f]+)$/) {
 		    my $index = ord($1) - ord("a");
@@ -334,6 +343,8 @@ sub check_adapter {
 		    }
 		} elsif ($v =~ /^input0_([0-9]+)=(0x[0-9a-f]+)$/) {
 		    $input_ce[$1] = hex $2;
+		} elsif ($v =~ /^stdin_byte_0x([0-9a-f]+)=(0x[0-9a-f]+)$/) {
+		    $input_ce[(hex $1)] = hex $2;
 		}
 	    }
 	    for my $v (split (/ /, $vars)) {
@@ -447,6 +458,7 @@ sub try_synth {
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, $bin,
 		@solver_opts, 
+		# "-dont-compare-linux-syscalls",
 		"-fuzz-start-addr", $fuzz_start_addr,
 		#tell FuzzBALL to run in adapter search mode, FuzzBALL will run in
 		#counter example search mode otherwise
@@ -458,10 +470,14 @@ sub try_synth {
 		@fuzzball_extra_args,
 		"-zero-memory",
 		@common_opts,
-		# "-repair-frag-input", $arg_addr . "+" . (2*$input_len), # TODO: tell AS how to read inputs
-		"-repair-tests-file", "$tests_file_prefix:$numTests", # TODO: tell AS how to read inputs
-		"-invalid-repair-tests-file", "$invalid_tests_file_prefix:$numInvalidTests", # TODO: tell AS how to read inputs
-		"-wrong-argsub-adapters-file", $wrong_argsub_adapters_file, 
+		# "-repair-frag-input", $arg_addr . "+" . (2*$input_len), # not needed for Palindrome version that uses read syscalls
+		#    "-extra-condition", "a_is_const:reg1_t==0x0:reg1_t", "-extra-condition", "a_val:reg32_t==0x0000000000000000:reg32_t",,
+		#    "-extra-condition", "b_is_const:reg1_t==0x0:reg1_t", "-extra-condition", "b_val:reg32_t==0x0000000000000001:reg32_t",,
+		#    "-extra-condition", "c_is_const:reg1_t==0x1:reg1_t", "-extra-condition", "c_val:reg32_t==0x0000000000000010:reg32_t",,
+		#    "-extra-condition", "d_is_const:reg1_t==0x0:reg1_t", "-extra-condition", "d_val:reg32_t==0x0000000000000003:reg32_t",,
+		"-repair-tests-file", "$tests_file_prefix:$numTests",
+		"-invalid-repair-tests-file", "$invalid_tests_file_prefix:$numInvalidTests",
+		"-wrong-argsub-adapters-file", $wrong_argsub_adapters_file,
 		($ret_adapter_on == 1 ? ("-wrong-ret-adapters-file", $wrong_ret_adapters_file) : ()), 
 		"--", $bin);
     
@@ -541,6 +557,7 @@ sub verify_adapter {
     	push @conc_ret_adapt, ("-extra-condition", $s);
     }
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, @symbolic_arg_opts,
+		"-dont-compare-linux-syscalls",
 		$bin,
 		@solver_opts, "-fuzz-start-addr", $fuzz_start_addr,
 		"-trace-regions", # do not turn off, necessary for finding the "Address <> is region <>" line in output below
@@ -604,7 +621,7 @@ sub verify_adapter {
 	} elsif (/^Input vars: (.*)$/ and $this_ce) {
 	    my $vars = $1;
 	    @ce = (0) x $fnargs;
-	    @input_ce = (0) x (2*$input_len);
+	    @input_ce = (0) x $input_len;
 	    for my $v (split(/ /, $vars)) {
 		if ($v =~ /^([a-f])=(0x[0-9a-f]+)$/) {
 		    my $index = ord($1) - ord("a");
@@ -618,6 +635,8 @@ sub verify_adapter {
 		    }
 		} elsif ($v =~ /^input0_([0-9]+)=(0x[0-9a-f]+)$/) {
 		    $input_ce[$1] = hex $2;
+		} elsif ($v =~ /^stdin_byte_0x([0-9a-f]+)=(0x[0-9a-f]+)$/) {
+		    $input_ce[(hex $1)] = hex $2;
 		}
 	    }
 	    for my $v (split (/ /, $vars)) {
@@ -728,7 +747,14 @@ if ($default_adapter_pref == 1) {
     }
 }
 
-#$adapt->[0]=1;
+# $adapt->[0]=0;
+# $adapt->[1]=0;
+# $adapt->[2]=0;
+# $adapt->[3]=1;
+# $adapt->[4]=1;
+# $adapt->[5]=15;
+# $adapt->[6]=0;
+# $adapt->[7]=3;
 
 # If outer function takes no arguments, then the inner function can only use constants
 if ($fnargs==0 || $default_adapter_pref == 0) {
