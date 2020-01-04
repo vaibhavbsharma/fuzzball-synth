@@ -9,21 +9,21 @@ my($arch, $rand_seed, $default_adapter_pref, $ret_adapter_on, $const_lb, $const_
 
 
 srand($rand_seed);
-my $input_len = 16;
+my $input_len = 64;
 my $sym_prefix_suffix_size = 4; # $input_len/2; # makes the entire input be symbolic
 
-my $strlen_check_eip = $input_len < 64 ? "0x08048973" : "0x08048976";
-my $cgc_receive_delim_overflow_eip = "0x080488ae";
+my $strlen_check_eip = $input_len < 64 ? "0x08048aed" : "0x08048af0";
+my $cgc_receive_delim_overflow_eip = "0x08048a28";
 my $check_overflow_cond = "R_EAX:reg32_t\>=\$" . sprintf("0x%x", $input_len) . ":reg32_t";
 my @crash_cond_opt = ("-disqualify-path-on-nonfalse-cond", 
 		      "-check-condition-at", $strlen_check_eip . ":" . $check_overflow_cond, # checks OOB access when calculating string length in cgc_check
 		      "-check-condition-at", $cgc_receive_delim_overflow_eip . ":" . $check_overflow_cond, # checks OOB access when writing to passed argument string in cgc_receive_delim 
 		      "-tracepoint", $strlen_check_eip . ":" . "R_EAX:reg32_t", 
-		      "-tracepoint", sprintf("%s:R_EAX:reg32_t", $input_len < 64 ? "0x0804897f" : "0x08048982"), # checks value of length
-		      "-tracepoint", "0x080488eb:R_EAX:reg32_t"); # prints value read from read system call
+		      "-tracepoint", sprintf("%s:R_EAX:reg32_t", $input_len < 64 ? "0x08048af9" : "0x08048afc"), # checks value of length
+		      "-tracepoint", "0x08048a65:R_EAX:reg32_t"); # prints value read from read system call
 
-my $strlen_check_jne_eip = $input_len < 64 ? "0x0804897a" : "0x0804897d";
-my $delim_check_je_eip = "0x080488ee";
+my $strlen_check_jne_eip = $input_len < 64 ? "0x08048af4" : "0x08048af7";
+my $delim_check_je_eip = "0x08048a68";
 my @branch_pref_opts = ("-branch-preference","$strlen_check_jne_eip:0","-branch-preference","$delim_check_je_eip:0");
 
 my $tests_file_prefix = "input_ce";
@@ -71,6 +71,11 @@ my $cgc_check_call_addr =
     "0x" . substr(`objdump -dr $bin | grep 'call.*<cgc_check>'`, $obj_start, $obj_end);
 
 my $post_cgc_check_call = sprintf("0x%x",hex($cgc_check_call_addr)+0x5);
+my $cgc_receive_delim_call_addr =
+    "0x" . substr(`objdump -dr $bin | grep 'call.*<cgc_receive_delim>'`, $obj_start, $obj_end);
+
+my $first_libc_read_call_addr = 
+    (hex "0x" . substr(`objdump -dr $bin | grep 'call.*<__libc_read>' | head -n 1`, $obj_start, $obj_end));
 
 my @repair_opts = (
     "-repair-frag-start", $cgc_check_call_addr, 
@@ -81,6 +86,7 @@ print "stp path = $stp\n";
 print "fuzz-start-addr : $fuzz_start_addr\n";
 print "cgc_check:   $cgc_check_addr\n";
 print "post_cgc_check_call : $post_cgc_check_call\n";
+print "first_libc_read_call_addr : " . sprintf("0x%016x\n", $first_libc_read_call_addr);
 
 my($fields_addr);
 
@@ -88,7 +94,9 @@ my($fields_addr);
 # Field [1]: Vine type
 # Field [2]: printf format for the string form
 
-my @fields =
+my @adapter_location_fields = (["repair_EIP", "reg64_t", "%016x"]);
+
+my @argsub_fields =
   (["a_is_const",  "reg1_t", "%01x"],
    ["a_val",      $reg_size, "%016x"],
    ["b_is_const",  "reg1_t", "%01x"],
@@ -111,7 +119,8 @@ my @ret_fields =
 
 
 my $fnargs = 4;
-splice(@fields, 2 * $fnargs);
+splice(@argsub_fields, 2 * $fnargs);
+my @fields = (@argsub_fields, @adapter_location_fields);
 
 my @solver_opts = ("-solver", "smtlib-batch", "-solver-path", $stp
 		    # , "-save-solver-files"
@@ -122,7 +131,8 @@ my @synth_opt = ("-synthesize-repair-adapter",
 		 join(":", "simple", $fnargs));
 
 my @synth_ret_opt = ("-synthesize-repair-return-adapter",
-		 join(":", "return-typeconv", 0)); # not applying return-typeconv adapter that uses callee arguments
+		     join(":", "return-typeconv", 0)); # not applying return-typeconv adapter that uses callee arguments
+
 print "synth_ret_opt = @synth_ret_opt\n";
 
 my @verbose_1_opts = (
@@ -152,11 +162,8 @@ my @verbose_2_opts = (@verbose_1_opts,
 my @verbose_opts = ($verbose == 1) ? @verbose_1_opts : (($verbose == 2) ? @verbose_2_opts : ());
 
 
-my $cgc_receive_delim_call_addr =
-    "0x" . substr(`objdump -dr $bin | grep 'call.*<cgc_receive_delim>'`, $obj_start, $obj_end);
-
 my @common_opts = (
-    "-apply-call-repair-adapter-at", $cgc_receive_delim_call_addr, # TODO figure this out as part of the adapter search
+    # "-apply-call-repair-adapter-at", $cgc_receive_delim_call_addr, # this is now figured out as part of the adapter search, hence this is no longer required
     @crash_cond_opt,
     "-no-fail-on-huer",
     "-return-zero-missing-x64-syscalls",
@@ -733,7 +740,8 @@ sub verify_adapter {
 # between test generation and synthesis.
 my $adapt = [(0) x @fields];
 my $ret_adapt = [(0) x @ret_fields];
-
+$adapt->[8]=$first_libc_read_call_addr;
+    
 # Setting up the default adapter to be the identity adapter
 if ($default_adapter_pref == 1) {
     my $f1_narg_counter=0;
@@ -755,6 +763,7 @@ if ($default_adapter_pref == 1) {
 # $adapt->[5]=15;
 # $adapt->[6]=0;
 # $adapt->[7]=3;
+# $adapt->[8]=$cgc_receive_delim_call_addr;
 
 # If outer function takes no arguments, then the inner function can only use constants
 if ($fnargs==0 || $default_adapter_pref == 0) {
