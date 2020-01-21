@@ -9,7 +9,7 @@ my($arch, $rand_seed, $default_adapter_pref, $ret_adapter_on, $const_lb, $const_
 
 
 srand($rand_seed);
-my $input_len = 16;
+my $input_len = 64;
 my $sym_prefix_suffix_size = 4; # $input_len/2; # makes the entire input be symbolic
 
 my $strlen_check_eip = $input_len < 64 ? "0x08048aed" : "0x08048af0";
@@ -179,7 +179,7 @@ my @common_opts = (
     "-random-seed", int(rand(10000000)),
     "-nonzero-divisors",
     "-dont-compare-memory-sideeffects",
-    "-iteration-f2-limit", 4*$input_len,
+    "-f2-iteration-limit", 4*$input_len,
     @repair_opts);
 
 my @const_bounds_ec = ();
@@ -756,15 +756,15 @@ if ($default_adapter_pref == 1) {
     }
 }
 
-$adapt->[0]=0;
-$adapt->[1]=0;
-$adapt->[2]=0;
-$adapt->[3]=1;
-$adapt->[4]=1;
-$adapt->[5]=15;
-$adapt->[6]=0;
-$adapt->[7]=3;
-$adapt->[8]=$cgc_receive_delim_call_addr;
+# $adapt->[0]=0;
+# $adapt->[1]=0;
+# $adapt->[2]=0;
+# $adapt->[3]=1;
+# $adapt->[4]=1;
+# $adapt->[5]=15;
+# $adapt->[6]=0;
+# $adapt->[7]=3;
+# $adapt->[8]=$cgc_receive_delim_call_addr;
 
 # If outer function takes no arguments, then the inner function can only use constants
 if ($fnargs==0 || $default_adapter_pref == 0) {

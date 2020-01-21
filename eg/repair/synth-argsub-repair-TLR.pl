@@ -150,6 +150,7 @@ my @verbose_opts = ($verbose == 1) ? @verbose_1_opts : (($verbose == 2) ? @verbo
 
 
 my @common_opts = (
+    "-noprint-to-stdout",
     "-stdin-replay-file", "/export/scratch/vaibhav/cb-multios/TLR-read-pkts",
     "-stdin-replay-file-target-frag-offset", 1025, # got this number by subtracting the total number of bytes read in the target fragment from the total number of bytes read by the binary - 1
     "-skip-output-concretize",
@@ -168,7 +169,7 @@ my @common_opts = (
     "-random-seed", int(rand(10000000)),
     "-nonzero-divisors",
     "-dont-compare-memory-sideeffects",
-    "-iteration-f2-limit", 100,
+    "-f2-iteration-limit", 100,
     @repair_opts);
 
 my @const_bounds_ec = ();
@@ -262,7 +263,8 @@ sub check_adapter {
 		"-trace-regions", # do not turn off, necessary for finding the "Address <> is region <>" line in output below
 		@verbose_opts,
 		#"-narrow-bitwidth-cutoff","1", # I have no idea what this option does
-		@synth_opt, @conc_adapt, @const_bounds_ec,
+		@synth_opt, @conc_adapt, 
+		@const_bounds_ec,
 		($ret_adapter_on == 1 ? @synth_ret_opt : ()), 
 		($ret_adapter_on == 1 ? @conc_ret_adapt : ()),
 		#"-path-depth-limit", $path_depth_limit,
@@ -460,7 +462,8 @@ sub try_synth {
 		#counter example search mode otherwise
 		"-adapter-search-mode",
 		@verbose_opts,
-		@synth_opt, @const_bounds_ec,
+		@synth_opt, 
+		@const_bounds_ec,
 		($ret_adapter_on == 1 ? @synth_ret_opt : ()),
 		#"-branch-preference", "$match_jne_addr:1",
 		@fuzzball_extra_args,
@@ -560,7 +563,8 @@ sub verify_adapter {
 		@verbose_opts,
 		#"-narrow-bitwidth-cutoff","1", # I have no idea what this option does
 		"-verify-adapter",
-		@synth_opt, @conc_adapt, @const_bounds_ec,
+		@synth_opt, @conc_adapt, 
+		@const_bounds_ec,
 		($ret_adapter_on == 1 ? @synth_ret_opt : ()), 
 		($ret_adapter_on == 1 ? @conc_ret_adapt: ()),
 		#"-path-depth-limit", $path_depth_limit,
