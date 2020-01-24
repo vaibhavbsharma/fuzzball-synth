@@ -12,7 +12,7 @@ srand($rand_seed);
 
 my @target_frag_call_insn_opt = ( 
 		"-target-frag-call-insn-eips","0x804893a:0x80489bf:0x8048a34:0x8048ac3:0x806d4cc"); 
-# derived from WhackJack_pov_1.log by grepping for "target fragment call" see longer comment in synth-argsub-repair-TLR.pl
+# derived from Palindrome_pov_1.log.nonpathmerging by grepping for "target fragment call" see longer comment in synth-argsub-repair-TLR.pl
 my $input_len = 64;
 my $sym_prefix_suffix_size = 4; # $input_len/2; # makes the entire input be symbolic
 

@@ -10,6 +10,9 @@ my($arch, $rand_seed, $default_adapter_pref, $ret_adapter_on, $const_lb, $const_
 
 
 srand($rand_seed);
+my @target_frag_call_insn_opt = ( 
+		"-target-frag-call-insn-eips","0x80488d7:0x8048943:0x80489ae:0x8048a8b:0x806d45c"); 
+# derived from Palindrome_pov_1.log.pathmerging by grepping for "target fragment call" see longer comment in synth-argsub-repair-TLR.pl
 my $sym_prefix_suffix_size = $input_len/2; # makes the entire input be symbolic
 
 my $strlen_check_eip = $input_len < 64 ? "0x080489c9" : "0x080489cc";
@@ -468,7 +471,8 @@ sub try_synth {
     if ($ret_adapter_on == 1) {write_wrong_adapters($wrong_ret_adapters_file,\@wrong_ret_adapters);}
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, $bin,
-		@solver_opts, 
+		@solver_opts,
+		@target_frag_call_insn_opt,
 		# "-dont-compare-linux-syscalls",
 		"-fuzz-start-addr", $fuzz_start_addr,
 		#tell FuzzBALL to run in adapter search mode, FuzzBALL will run in
