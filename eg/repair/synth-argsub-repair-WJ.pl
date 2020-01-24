@@ -10,6 +10,10 @@ my($arch, $rand_seed, $default_adapter_pref, $ret_adapter_on, $const_lb, $const_
 
 srand($rand_seed);
 
+my @target_frag_call_insn_opt = ( 
+		"-target-frag-call-insn-eips","0x8048c02:0x804b4b3:0x804b517:0x804d44a:0x804d467:0x804d663:0x80747bc"); 
+# derived from WhackJack_pov_1.log by grepping for "target fragment call" see longer comment in synth-argsub-repair-TLR.pl
+
 my $input_len = 4;
 # my ($sym_prefix_size,$sym_suffix_size) = ($input_len/2, $input_len/2);
 
@@ -448,6 +452,7 @@ sub try_synth {
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, $bin,
 		@solver_opts, 
+		@target_frag_call_insn_opt,
 		# "-dont-compare-linux-syscalls",
 		"-fuzz-start-addr", $fuzz_start_addr,
 		#tell FuzzBALL to run in adapter search mode, FuzzBALL will run in

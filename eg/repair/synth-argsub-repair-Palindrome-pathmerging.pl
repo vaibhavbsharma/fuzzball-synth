@@ -182,7 +182,7 @@ my @common_opts = (
     "-random-seed", int(rand(10000000)),
     "-nonzero-divisors",
     "-dont-compare-memory-sideeffects",
-    "-iteration-f2-limit", 4*$input_len,
+    "-f2-iteration-limit", 4*$input_len,
     @repair_opts);
 
 my @const_bounds_ec = ();

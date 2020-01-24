@@ -10,6 +10,11 @@ my($arch, $rand_seed, $default_adapter_pref, $ret_adapter_on, $const_lb, $const_
 
 srand($rand_seed);
 
+my @target_frag_call_insn_opt = ( 
+    "-target-frag-call-insn-eips",
+    "0x8048ab2:0x80492b9:0x804930c:0x8049f8d:0x804ca9d:0x804cab4:0x804cae2:0x804cc8c:0x804cf93:0x804d013:0x807416c:0x80741dc");
+# derived from The_Longest_Road_pov_1.log using the command grep "target fragment call" The_Longest_Road_pov_1.log | sort | uniq  | cut -d ' ' -f 6 | cut -d '=' -f 2 | paste -sd: where the pov log file was generated using the challenger_runner.py script that gives FuzzBALL the target fragment start and end addresses and asks it to report call instructions in the target fragment)
+
 my ($sym_prefix_size,$sym_suffix_size) = (4,0);
 my $input_len = 5;
 my $check_win_overflow_eip = "0x0804caf6"; # value of len returned by cgc_receive_until into EAX
@@ -455,8 +460,8 @@ sub try_synth {
     if ($ret_adapter_on == 1) {write_wrong_adapters($wrong_ret_adapters_file,\@wrong_ret_adapters);}
     
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, $bin,
-		@solver_opts, 
-		# "-dont-compare-linux-syscalls",
+		@solver_opts,
+		@target_frag_call_insn_opt,
 		"-fuzz-start-addr", $fuzz_start_addr,
 		#tell FuzzBALL to run in adapter search mode, FuzzBALL will run in
 		#counter example search mode otherwise
