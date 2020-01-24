@@ -9,6 +9,9 @@ my($arch, $rand_seed, $default_adapter_pref, $ret_adapter_on, $const_lb, $const_
 
 
 srand($rand_seed);
+my @target_frag_call_insn_opt = ( 
+		"-target-frag-call-insn-eips","0x8048d92:0x804c2cf"); 
+# derived from ShoutCTF_pov_1.log by grepping for "target fragment call" see longer comment in synth-argsub-repair-TLR.pl
 
 my $input_len = 256;
 #my $input_len = 145; # obtained by subtracting the number of reads that happened before the target fragment with the total number of reads that happened
@@ -459,6 +462,7 @@ sub try_synth {
     my @args = ($fuzzball, "-linux-syscalls", "-arch", $arch, $bin,
 		# "-trace-detailed-range","$repair_frag_start-$repair_frag_end",
 		@solver_opts, 
+		@target_frag_call_insn_opt, 
 		# "-dont-compare-linux-syscalls",
 		"-fuzz-start-addr", $fuzz_start_addr,
 		#tell FuzzBALL to run in adapter search mode, FuzzBALL will run in
